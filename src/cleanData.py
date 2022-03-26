@@ -1,262 +1,92 @@
-# This is a sample Python script.
-
-# This is a sample Python script.
 import datetime
 import json
-import os
+import pathlib
 import re
 
 import pandas as pd
 
 
-def import_json():
-    dfs = []  # an empty list to store the data frames
+class CleanData:
+    def __init__(self):
+        self.message = 'cleanData'
 
-    # path_to_json = 'M:/+Dokumente/+Studium/11. Semester/Masterarbeit/RabbitHoleTrackerData/toUse/*'
-    data_path = r'M:\+Dokumente\PycharmProjects\toUse\data.json'
-    data_pathtest = r'M:\+Dokumente\PycharmProjects\cleanFiles\xxxxmm\xxxxmm_logs_2022_03_25_13_41_18.json'
+    def extractMetaData(self, logs):
+        """
+        extract the metaData from json child logs
+        :param logs: the dataframe with the colum of metaData to extract
+        """
+        print("Extracting MetaData")
+        # fill Nan
+        # logs['metaData'].fillna('{}', inplace=True)
 
-    with open(data_pathtest, encoding='utf-8') as data:
-        d = json.load(data)
+        # Normalize the metaData
+        logs_meta = pd.json_normalize(logs['metaData'])  # record path??
+        # Merge metaData and logs
+        logs_final = pd.concat([logs.reset_index(drop=True), logs_meta.reset_index(drop=True)], axis=1)
+        return logs_final
 
-    # us = pd.json_normalize(jd["users"])
-    # print(us.head())
-    # data = jd['hits']['hits']
-    #  dict_flattened = (flatten(record, '.') for record in jd)
-    # df = pd.DataFrame(dict_flattened)
-    # print(df)
+    def extractLogs(self, directory, end_directory):
+        """
+        Extracts for all json files in a directory the logs for each user and stores them in seperate files.
+        :param directory: the directory where all json files to extract are stored
+        :param end_directory: the directory where the extracted logs will be stored
+        """
+        print("Extracting Logs")
+        pathlist = pathlib.Path(directory).glob('**/*.json')
+        for data_path in pathlist:
+            # because path is object not string
+            path_in_str = str(data_path)
+            print(f"extract: {path_in_str}")
+            with open(path_in_str, encoding='utf-8') as data:
+                json_data = json.load(data)
 
-    logs = pd.read_json(data_pathtest, orient="index")
-    print(logs)
+            users = json_data['users']
+            # loglist = {} # needed when puting all logs in one file
+            currentDate = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
-    # fill Nan
-    # logs['metaData'].fillna('{}', inplace=True)
-    logs_meta = pd.json_normalize(logs['metaData'])
-    logs.drop(columns=['metaData'])
+            # save logs in dic and delete from cleaned file.
+            for key in users:
+                try:
+                    temp_user = json_data['users'][key]
+                    stud_id = self.getStudyID(temp_user['account_email'])
+                    print(stud_id)
+                    logs = temp_user['logs']
 
-    logs_final = logs.join(logs_meta)
-    logs.drop(columns=['metaData'])
-    print(logs_final.columns.tolist())
-    print(logs_final)
+                    dirname = f"{end_directory}\{stud_id}"
+                    pathlib.Path(dirname).mkdir(parents=True, exist_ok=True)
+                    # filename = f'{dirname}\{stud_id}_logs_{currentDate}.json'
+                    filename = f'{dirname}\{stud_id}_logs_{data_path.stem}_{currentDate}.json'
+                    with open(filename, "w+") as file:
+                        json.dump(json_data['users'][key], file, sort_keys=True)
 
-    # Convert strings to JSON objects
-    # df['readings'] = df['readings'].map(json.loads)
+                    del temp_user['logs']
 
-    # Can't use nested lists of JSON objects in pd.json_normalize
-    # df = logs.explode(column='metaData').reset_index(drop=True)
+                except:
+                    print(f"error extracting logs for {key}")
+                    continue
+        print("finished extrating.")
 
-    # logs.drop(columns=['metaData'])
-    # logs = pd.concat([logs[['eventName']], pd.json_normalize(logs['metaData'])])
-    # logs.drop(columns=['dataKey'])
-    # print(logs)
-    # print(logs.columns.tolist())
+    def extractUsers(self, file_path):
+        print("Extracting User")
+        with open(file_path, encoding='utf-8') as data:
+            json_data = json.load(data)
 
-    # d = logs.to_dict(orient='records')
-    # df = pd.json_normalize(d, record_path=['line_items'], meta=['order_id', 'email'])
+        users = json_data['users']
 
-    # df1 = (pd.concat({i: pd.json_normalize(x) for i, x in logs.pop('metaData').items()})
-    #        .reset_index(level=1, drop=True)
-    #        .join(logs)
-    #        .reset_index(drop=True))
+        # save logs in dic and delete from cleaned file.
+        for key in users:
+            try:
+                temp_user = json_data['users'][key]
+                del temp_user['logs']
 
+            except:
+                continue
 
-    # Target_df = pd.concat([json_normalize(source_df['COLUMN'][key], 'volumes', ['name','id','state','nodes'], record_prefix='volume_') for key in source_df.index]).reset_index(drop=True)
+        # save the users
+        output_users_name = ".\cleanFiles\cleanedUsers.json"
+        with open(output_users_name, "w+") as file:
+            json.dump(json_data, file, sort_keys=True)
 
-    #  df_final = pd.json_normalize(json.loads(logs['metaData']))
-    # print(metan)
-    # print(df_final)
-
-
-#  print(logs)
-
-#  print(logs.columns.tolist())
-# except:
-# print("error")
-
-
-# d["data"] = [d["data"][k] for k in d["data"].keys()]
-# pd.json_normalize(pd.json_normalize(d).explode("data").to_dict(orient="records"))
-
-# users = jd['users']
-# for key in users:
-# us = pd.json_normalize(jd[key])
-# print(us.head())
-
-
-def cleanFiles():
-    data_path = r'M:\+Dokumente\PycharmProjects\toUse\data.json'
-
-    with open(data_path, encoding='utf-8') as data:
-        jsonData = json.load(data)
-
-    users = jsonData['users']
-    user_list_json = []
-    loglist = {}
-    currentDate = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-    print(currentDate)
-
-    # save logs in dic and delete from cleaned file.
-    for key in users:
-        try:
-            temp_user = jsonData['users'][key]
-            stud_id = getStudyID(temp_user['account_email'])
-            loglist[stud_id] = temp_user['logs']
-
-            filename = f".\cleanFiles\{stud_id}"
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
-            with open(f'{filename}\{stud_id}_logs_{currentDate}.json', "w+") as file:
-                json.dump(temp_user['logs'], file, sort_keys=True, indent=4)
-
-            del temp_user['logs']
-
-        except:
-            continue
-
-    # # save the logs
-    # output_logs_name = ".\cleanFiles\cleanedLogs.json"
-    # with open(output_logs_name, "w+") as file:
-    #     json.dump(loglist, file, sort_keys=True, indent=4)
-
-    # save the users
-    output_users_name = ".\cleanFiles\cleanedUsers.json"
-    with open(output_users_name, "w+") as file:
-        json.dump(jsonData, file, sort_keys=True, indent=4)
-
-
-def getStudyID(studyID_email):
-    study_id = re.sub('@email\.com$', '', studyID_email)
-    print(study_id)
-    return study_id
-
-
-# cleanFiles()
-import_json()
-# importFiles()
-
-# def test():
-# extract columes
-# new = old[['A', 'C', 'D']].copy()
-
-# nested json object:
-#  FIELDS = ["key", "fields.summary", "fields.issuetype.name", "fields.status.name", "fields.status.statusCategory.name"]
-# df = pd.json_normalize(results["issues"])
-# df[FIELDS]
-# Only recurse down to the second level
-# pd.json_normalize(results, record_path="issues", max_level =
-
-
-# _____________________________________________________________________________________________________________________________
-# if __name__ == '__main__':
-#     import_json()
-
-def import_json():
-    dfs = []  # an empty list to store the data frames
-    temp = pd.DataFrame()
-
-    # path_to_json = 'M:/+Dokumente/+Studium/11. Semester/Masterarbeit/RabbitHoleTrackerData/toUse/*'
-    dataPath = r'M:\+Dokumente\PycharmProjects\toUse\data.json'
-
-    with open(dataPath, encoding='utf-8') as data:
-        jsonData = json.load(data)
-
-    # pd.read_json (r'M:\+Dokumente\PycharmProjects\data.json')
-
-    # json_pattern = os.path.join(path_to_json, '*.json')
-    # file_list = glob.glob(json_pattern)
-    data = pd.read_json(path_to_file)
-    # read compressed
-    # df_gzip = pd.read_json('sample_file.gz', compression='infer')
-
-    # data_n = pd.json_normalize(path_to_file)
-    print(data.head())
-    # print(data_n.head())
-
-    # for file in file_list:
-    #     data = pd.read_json(file, lines=True)  # read data frame from json file
-    #     dfs.append(data)  # append the data frame to the list
-    # temp = pd.concat(dfs, ignore_index=True)  # concatenate all the data frames in the list.
-    # dfs[0].head()
-
-
-# def importFiles1():
-#     dataPath = r'M:\+Dokumente\PycharmProjects\toUse\data.json'
-#     with open(dataPath, encoding='utf-8') as data:
-#         jsonData = json.load(data)
-#
-#     data = pd.read_json(r'M:\+Dokumente\PycharmProjects\toUse\data.json')
-#
-#     users = jsonData['users']
-#     user_list_json = []
-#     user_list_df = []
-#
-#     for key in users:
-#         try:
-#             temp_user = jsonData['users'][key]
-#             user_list_json.append(temp_user)
-#         except:
-#             continue
-#
-#     # for user in user_list_json:
-#     #     data = pd.read_json(user)
-#     #     user_list_df.append(data)
-#
-
-def cleanFiles():
-    dataPath = r'M:\+Dokumente\PycharmProjects\toUse\data.json'
-
-    with open(dataPath, encoding='utf-8') as data:
-        jsonData = json.load(data)
-
-    users = jsonData['users']
-    user_list_json = []
-    loglist = {}
-    currentDate = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-    print(currentDate)
-
-    # save logs in dic and delete from cleaned file.
-    for key in users:
-        try:
-            temp_user = jsonData['users'][key]
-            stud_id = getStudyID(temp_user['account_email'])
-            loglist[stud_id] = temp_user['logs']
-
-            filename = f".\cleanFiles\{stud_id}"
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
-            with open(f'{filename}\{stud_id}_logs_{currentDate}.json', "w+") as file:
-                json.dump(temp_user['logs'], file, sort_keys=True, indent=4)
-
-            del temp_user['logs']
-
-        except:
-            continue
-
-    # # save the logs
-    # output_logs_name = ".\cleanFiles\cleanedLogs.json"
-    # with open(output_logs_name, "w+") as file:
-    #     json.dump(loglist, file, sort_keys=True, indent=4)
-
-    # save the users
-    output_users_name = ".\cleanFiles\cleanedUsers.json"
-    with open(output_users_name, "w+") as file:
-        json.dump(jsonData, file, sort_keys=True, indent=4)
-
-
-def getStudyID(studyID_email):
-    study_id = re.sub('@email\.com$', '', studyID_email)
-    print(study_id)
-    return study_id
-
-
-cleanFiles()
-# importFiles()
-
-# def test():
-# extract columes
-# new = old[['A', 'C', 'D']].copy()
-
-# nested json object:
-#  FIELDS = ["key", "fields.summary", "fields.issuetype.name", "fields.status.name", "fields.status.statusCategory.name"]
-# df = pd.json_normalize(results["issues"])
-# df[FIELDS]
-# Only recurse down to the second level
-# pd.json_normalize(results, record_path="issues", max_level =
+    def getStudyID(self, studyID_email):
+        study_id = re.sub('@email\.com$', '', studyID_email)
+        return study_id
