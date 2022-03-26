@@ -50,14 +50,13 @@ class CleanData:
                     temp_user = json_data['users'][key]
                     stud_id = self.getStudyID(temp_user['account_email'])
                     print(stud_id)
-                    logs = temp_user['logs']
 
                     dirname = f"{end_directory}\{stud_id}"
                     pathlib.Path(dirname).mkdir(parents=True, exist_ok=True)
                     # filename = f'{dirname}\{stud_id}_logs_{currentDate}.json'
                     filename = f'{dirname}\{stud_id}_logs_{data_path.stem}_{currentDate}.json'
                     with open(filename, "w+") as file:
-                        json.dump(json_data['users'][key], file, sort_keys=True)
+                        json.dump(temp_user['logs'], file, sort_keys=True)
 
                     del temp_user['logs']
 
