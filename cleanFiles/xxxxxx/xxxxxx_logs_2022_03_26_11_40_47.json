@@ -1,0 +1,22 @@
+{
+    "23-03-2022 18:02:22,450 USAGE_EVENTS": {
+        "description": "Rabbit Hole Tracker",
+        "event": "ACTIVITY_RESUMED",
+        "eventName": "USAGE_EVENTS",
+        "id": "1648055105519_de815b26-692f-43cb-b889-e9df159f6caa",
+        "name": "com.lmu.trackingapp.activity.esm.ESMIntentionLockActivity",
+        "packageName": "com.lmu.trackingapp",
+        "timestamp": 1648054942450,
+        "timezoneOffset": 3600000
+    },
+    "23-03-2022 18:02:22,453 USAGE_EVENTS": {
+        "description": "Rabbit Hole Tracker",
+        "event": "ACTIVITY_PAUSED",
+        "eventName": "USAGE_EVENTS",
+        "id": "1648055105519_de815b26-692f-43cb-b889-e9df159f6caa",
+        "name": "com.lmu.trackingapp.activity.esm.ESMIntentionLockActivity",
+        "packageName": "com.lmu.trackingapp",
+        "timestamp": 1648054942453,
+        "timezoneOffset": 3600000
+    }
+}

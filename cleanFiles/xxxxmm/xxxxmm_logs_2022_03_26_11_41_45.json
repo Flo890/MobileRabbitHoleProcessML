@@ -1,0 +1,35 @@
+{
+    "23-03-2022 18:02:22,450 USAGE_EVENTS": {
+        "description": "Rabbit Hole Tracker",
+        "event": "ACTIVITY_RESUMED",
+        "eventName": "USAGE_EVENTS",
+        "id": "1648055105519_de815b26-692f-43cb-b889-e9df159f6caa",
+        "name": "com.lmu.trackingapp.activity.esm.ESMIntentionLockActivity",
+        "packageName": "com.lmu.trackingapp",
+        "timestamp": 1648054942450,
+        "timezoneOffset": 3600000
+    },
+    "23-03-2022 18:02:22,453 USAGE_EVENTS": {
+        "description": "Rabbit Hole Tracker",
+        "event": "ACTIVITY_PAUSED",
+        "eventName": "USAGE_EVENTS",
+        "id": "1648055105519_de815b26-692f-43cb-b889-e9df159f6caa",
+        "name": "com.lmu.trackingapp.activity.esm.ESMIntentionLockActivity",
+        "packageName": "com.lmu.trackingapp",
+        "timestamp": 1648054942453,
+        "timezoneOffset": 3600000
+    },
+	"26-02-2022 15:58:01,416 DATA_TRAFFIC" : {
+          "eventName" : "DATA_TRAFFIC",
+          "id" : "1645887481125_bfcd1ea8-a4ff-44ef-86df-92cf41675ac1",
+          "metaData" : {
+            "dataKey" : "DATA_TRAFFIC_META",
+            "mobile_BYTES_RECEIVED" : 5517,
+            "mobile_BYTES_TRANSMITTED" : 5374,
+            "wifi_BYTES_RECEIVED" : 2883904,
+            "wifi_BYTES_TRANSMITTED" : 495825
+          },
+          "timestamp" : 1645887481416,
+          "timezoneOffset" : 3600000
+    }
+}
