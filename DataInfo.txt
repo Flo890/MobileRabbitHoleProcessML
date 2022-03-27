@@ -1,5 +1,35 @@
 package com.lmu.trackingapp.models
 
+"23-03-2022 17:40:08,775 USAGE_EVENTS": {
+		"description": "Android system",
+		"event": "SCREEN_NON_INTERACTIVE",
+		"eventName": "USAGE_EVENTS",
+		"id": "1648053628075_393cc87d-21c0-4d6b-8447-a437ce721051",
+		"packageName": "android",
+		"metaData" : "",
+		"timestamp": 1648053608775,
+		"timezoneOffset": 3600000
+	},
+
+"23-03-2022 18:19:59,120 NOTIFICATION ": {
+ 	"description ": " - 2119633786 ",
+ 	"event ": "1582296304 ",
+ 	"eventName ": "NOTIFICATION ",
+ 	"id ": "",
+ 	"metaData ": {
+ 		"category ": "msg ",
+ 		"dataKey ": "NOTIFICATION_META ",
+ 		"infoText ": "",
+ 		"interaction ": "NOTIFICATION_REMOVED ",
+ 		"priority ": 0,
+ 		"subText ": ""
+ 	},
+ 	"packageName ": "org.telegram.messenger ",
+ 	"timestamp ": 1648055999120,
+ 	"timezoneOffset ": 3600000
+ },
+
+
 enum class LogEventName {
 
     ACCESSIBILITY,
@@ -137,7 +167,6 @@ AccessibilityEvent.TYPE_ANNOUNCEMENT -> return "TYPE_ANNOUNCEMENT"
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> ACCESSIBILITY_BROWSER_URL
             AccessibilityEvent.TYPE_VIEW_CONTEXT_CLICKED 
             AccessibilityEvent.TYPE_WINDOWS_CHANGED 
-			
 			
 			
 			
