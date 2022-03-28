@@ -113,4 +113,7 @@ if __name__ == '__main__':
     # import_json(logs_test_user, dataframe_dir)
 
     # extract user files without logs
-    extract_sessions(fr'{dataframe_dir}\testxx')
+    #extract_sessions(fr'{dataframe_dir}\testxx')
+
+    logs_all = "M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\logFiles\logs_all.pickle"
+    extract_sessions(logs_all)
