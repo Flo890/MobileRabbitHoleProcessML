@@ -55,7 +55,7 @@ def extract_sessions(directory_files):
     logs = pd.read_pickle(directory_files)
 
     # drop rows without an id
-    # TODO logs.drop(logs.index[logs['id'] == ''], inplace=True)
+    logs.drop(logs.index[logs['id'] == ''], inplace=True)
     logs.drop(logs.index[logs['event'] == 'TYPE_WINDOW_CONTENT_CHANGED'], inplace=True)
     # TODO Clean notification duplicates?
 
@@ -70,10 +70,11 @@ def extract_sessions(directory_files):
     # logs.dropna(subset=['id'], inplace=True)
 
     session_grouped = logs.groupby(['id'])
+    print(len(session_grouped))
     # print(session_grouped[['id', 'timestamp']].head(10))
     # groups = session_grouped.groups
     # print(session_grouped.head(1))
-    session_grouped = session_grouped.apply(cut_sessions)
+    session_grouped_cut = session_grouped.apply(cut_sessions)
 
     # temp_session = logs[logs.duplicated(['id'])]
 

@@ -22,6 +22,7 @@ class CleanJson:
 
         # Normalize the metaData
         logs_meta = pd.json_normalize(logs['metaData'])  # record path??
+        logstest = pd.DataFrame.from_dict(logs['metaData'], orient="index")
         # Merge metaData and logs
         logs_final = pd.concat([logs.reset_index(drop=True), logs_meta.reset_index(drop=True)], axis=1)
         return logs_final
@@ -50,7 +51,7 @@ class CleanJson:
             #     json_data = json.load(data)
             # for gzip
             with gzip.open(path_in_str, 'r') as data:
-                 json_data = json.loads(data.read().decode('utf-8'))
+                json_data = json.loads(data.read().decode('utf-8'))
 
             users = json_data['users']
             #  currentDate = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -98,12 +99,12 @@ class CleanJson:
         print(all_logs.size)
         print(all_logs.columns.values)
 
-        output_users_name_dic = "M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\logFiles\logs_dic.pickle"
+        output_users_name_dic = fr"{end_directory}\logs_dic.pickle"
         with open(output_users_name_dic, 'wb') as f:
             # Pickle the 'data' dictionary using the highest protocol available.
             pickle.dump(logs_dic, f, pickle.HIGHEST_PROTOCOL)
 
-        output_users_name_all = "M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\logFiles\logs_all.pickle"
+        output_users_name_all = fr"{end_directory}\logs_all.pickle"
         with open(output_users_name_all, 'wb') as f:
             # Pickle the 'data' dictionary using the highest protocol available.
             pickle.dump(all_logs, f, pickle.HIGHEST_PROTOCOL)
@@ -118,9 +119,9 @@ class CleanJson:
         """
         print("Extracting Logs")
         # for raw json
-        pathlist = pathlib.Path(directory).glob('**/*.json')
+        # pathlist = pathlib.Path(directory).glob('**/*.json')
         # for gzip
-        # pathlist = pathlib.Path(directory).glob('**/*.gz')
+        pathlist = pathlib.Path(directory).glob('**/*.gz')
 
         logs_dic = {}
         for data_path in pathlist:
@@ -129,11 +130,9 @@ class CleanJson:
             path_in_str = str(data_path)
             print(f"extract: {path_in_str}")
 
-            chunks = pd.read_json(path_in_str, orient="index")
-            print(chunks.head(10))
-            print(chunks.columns.values)
-            print(chunks.size)
-            print("_______________________")
+            data = pd.read_json(path_in_str, orient="index")
+            print(data.head(10))
+            print("-------------------------")
             # read howle json iterate throgh?
 
             # dic = pd.DataFrame()
@@ -142,29 +141,32 @@ class CleanJson:
             # df = pd.concat(chunks)
             # print(dic.head())
 
-            for key in chunks:
-                try:
-                    # user = chunks[key].apply(pd.Series)
-                    print(chunks[key])
-                    print(chunks[key].size)
-                    print(".......")
-                    user = pd.json_normalize(chunks[key], max_level=1)
-                    print(user)
-                    print(user.size)
-                    print("_______________________")
-                    # print(user.head())
-                    # print(user.columns.values)
-                    # print("_______________________")
-                    # logs = user['logs'].apply(pd.Series)
-                    # logs = pd.json_normalize(user['logs'])  # record path??
-                    # Merge metaData and logs
-                    # logs_final = pd.concat([logs.reset_index(drop=True), logs_meta.reset_index(drop=True)], axis=1)
-                    # print(logs.head(5))
-                    # print(logs.columns.values)
+            logs_dic = {}
+            user_dic = {}
+            for key in data:
+                # try:
+                user_dataframe = data[key].apply(pd.Series)
+                print("_______________________")
+                print(user_dataframe.head())
+                print(user_dataframe.columns.values)
+                print("....._")
+                stud_id = self.getStudyID(user_dataframe['account_email'])
 
-                except:
-                    print(f"error extracting logs for {key}")
-                    continue
+                logs = pd.json_normalize(user_dataframe["logs"], max_level=0) #user_dataframe["logs"].apply(pd.Series)
+                logs = user_dataframe["logs"].apply(pd.Series)
+                print(logs.head())
+                print(logs.columns.values)
+                print("_______________________")
+                #if stud_id not in user_dic:
+                #    user_dic[stud_id] = []
+                #    logs_dic[stud_id] = []
+
+                # TODO make sure to not add email etc suplicate? save intentions extrac?
+                # logs_dic[stud_id].append(df)
+
+            # except:
+            #     print(f"error extracting logs for {key}")
+            #     continue
 
         print("finished extrating.")
 
@@ -194,7 +196,7 @@ class CleanJson:
             json.dump(json_data, file, sort_keys=True)
 
     def getStudyID(self, studyID_email):
-        study_id = re.sub('@email\.com$', '', studyID_email)
+        study_id = re.sub('@email\.com$', '', str(studyID_email))
         return study_id
 
 
@@ -208,4 +210,5 @@ if __name__ == '__main__':
     # extract all logs for each user
     cleanJson = CleanJson()
     # cleanJson.extractUsers(raw_data_user)
-    cleanJson.extract_logs(directory=raw_data_dir, end_directory=logs_dir)
+    # cleanJson.extract_logs(directory=raw_data_dir, end_directory=logs_dir)
+    cleanJson.extract_logs_different(directory=raw_data_dir, end_directory=logs_dir)
