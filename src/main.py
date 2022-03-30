@@ -4,7 +4,7 @@ import pathlib
 import re
 import pandas as pd
 import numpy as np
-from cleanJson import CleanJson
+from testcleanJson import CleanJson
 
 
 def import_json(directory_files, dir_dataframe):
@@ -112,9 +112,6 @@ if __name__ == '__main__':
     # TODO for all users
     # logs_test_user = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\logFiles\testxx'
     # import_json(logs_test_user, dataframe_dir)
-
-    # extract user files without logs
-    #extract_sessions(fr'{dataframe_dir}\testxx')
 
     logs_all = "M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\logFiles\logs_all.pickle"
     extract_sessions(logs_all)

@@ -30,6 +30,10 @@ package com.lmu.trackingapp.models
  },
 
 
+ weekday:
+ 0: Monday
+
+
 enum class LogEventName {
 
     ACCESSIBILITY,
@@ -151,6 +155,9 @@ enum class InstallEventType {
     UNKNOWN
 }
 
+
+usage events:
+https://developer.android.com/reference/android/app/usage/UsageEvents.Event
 
 
 AccessibilityEvent.TYPE_ANNOUNCEMENT -> return "TYPE_ANNOUNCEMENT"

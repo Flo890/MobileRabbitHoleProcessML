@@ -27,17 +27,25 @@ class CleanJson:
         logs_final = pd.concat([logs.reset_index(drop=True), logs_meta.reset_index(drop=True)], axis=1)
         return logs_final
 
-    def extract_logs(self, directory, end_directory):
+    def extract_logs(self, directory, end_directory, save_type, is_gzip):
         """
         Extracts for all json files in a directory the logs for each user and stores them in seperate files.
         :param directory: the directory where all json files to extract are stored
         :param end_directory: the directory where the extracted logs will be stored
+        :param save_type: specify if the logs should be stored:
+            1 for all in one df and file
+            2 for all in one dic file, user-sorted
+            3 for each user get extra file
+        :param is_gzip: specify if the files to read are gzip (true) or json(false)
         """
         print("Extracting Logs")
-        # for raw json
-        # pathlist = pathlib.Path(directory).glob('**/*.json')
-        # for gzip
-        pathlist = pathlib.Path(directory).glob('**/*.gz')
+
+        if is_gzip:
+            # for gzip
+            pathlist = pathlib.Path(directory).glob('**/*.gz')
+        else:
+            # for raw json
+            pathlist = pathlib.Path(directory).glob('**/*.json')
 
         logs_dic = {}
         for data_path in pathlist:
@@ -46,40 +54,35 @@ class CleanJson:
             path_in_str = str(data_path)
             print(f"extract: {path_in_str}")
 
-            # for raw json
-            # with open(path_in_str, encoding='utf-8') as data:
-            #     json_data = json.load(data)
-            # for gzip
-            with gzip.open(path_in_str, 'r') as data:
-                json_data = json.loads(data.read().decode('utf-8'))
+            if is_gzip:
+                # for gzip
+                with gzip.open(path_in_str, 'r') as data:
+                    json_data = json.loads(data.read().decode('utf-8'))
+            else:
+                # for raw json
+                with open(path_in_str, encoding='utf-8') as data:
+                    json_data = json.load(data)
 
             users = json_data['users']
             #  currentDate = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
             for key in users:
                 try:
+                    # Find the studyId
                     stud_id = self.getStudyID(json_data['users'][key]['account_email'])
                     temp_user = json_data['users'][key]['logs']
-                    print(f"getlogs from {stud_id}")
+                    print(f"get logs from {stud_id}")
 
-                    # df = pd.read_json("myJson.json")
-                    # df.locations = pd.DataFrame(df.locations.values.tolist())['name']
-                    # df = df.groupby(['date','name','number'])['locations'].apply(','.join).reset_index()
-
-                    # dirname = f"{end_directory}\{stud_id}"
-                    # pathlib.Path(dirname).mkdir(parents=True, exist_ok=True)
-                    # filename = f'{dirname}\{stud_id}_logs_{currentDate}.json'
-                    # filename = f'{dirname}\{stud_id}_logs_{data_path.stem}_{currentDate}.json'
-                    # with open(filename, "w+") as file:
-                    #     json.dump(temp_user['logs'], file, sort_keys=True)
+                    # create a dataframe form the json logs
                     df = pd.DataFrame.from_dict(temp_user, orient="index")
 
                     if stud_id not in logs_dic:
                         logs_dic[stud_id] = []
 
+                    # save the logs of current file to user dic
                     logs_dic[stud_id].append(df)
 
-                except:
+                except(Exception,):
                     print(f"error extracting logs for {key}")
                     continue
 
@@ -88,26 +91,39 @@ class CleanJson:
         for key in logs_dic.keys():
             try:
                 df_concat = pd.concat(logs_dic[key], ignore_index=False)
+                # add a colum with the studyId to each log
                 df_concat["studyID"] = key
                 logs_dic[key] = df_concat
-                temp_all_Logs.append(df_concat)
-            except:
+
+                if save_type == 1:
+                    temp_all_Logs.append(df_concat)
+                elif save_type == 3:
+                    # save all logs from one user to file
+                    output_users_name_dic = fr"{end_directory}\{key}_logs.pickle"
+                    with open(output_users_name_dic, 'wb') as f:
+                        # Pickle the 'data' dictionary using the highest protocol available.
+                        pickle.dump(logs_dic[key], f, pickle.HIGHEST_PROTOCOL)
+
+                print(f"saved logs for {key}")
+
+            except(Exception,):
                 print(f"error concat logs for {key}")
                 continue
 
-        all_logs = pd.concat(temp_all_Logs, ignore_index=False)
-        print(all_logs.size)
-        print(all_logs.columns.values)
+        if save_type == 1:
+            # save all logs in one giant dataframe
+            all_logs = pd.concat(temp_all_Logs, ignore_index=False)
+            output_users_name_all = fr"{end_directory}\+_logs_all.pickle"
+            with open(output_users_name_all, 'wb') as f:
+                # Pickle the 'data' dictionary using the highest protocol available.
+                pickle.dump(all_logs, f, pickle.HIGHEST_PROTOCOL)
 
-        output_users_name_dic = fr"{end_directory}\logs_dic.pickle"
-        with open(output_users_name_dic, 'wb') as f:
-            # Pickle the 'data' dictionary using the highest protocol available.
-            pickle.dump(logs_dic, f, pickle.HIGHEST_PROTOCOL)
-
-        output_users_name_all = fr"{end_directory}\logs_all.pickle"
-        with open(output_users_name_all, 'wb') as f:
-            # Pickle the 'data' dictionary using the highest protocol available.
-            pickle.dump(all_logs, f, pickle.HIGHEST_PROTOCOL)
+        elif save_type == 2:
+            # save all logs sorted by user
+            output_users_name_dic = fr"{end_directory}\+_logs_dic.pickle"
+            with open(output_users_name_dic, 'wb') as f:
+                # Pickle the 'data' dictionary using the highest protocol available.
+                pickle.dump(logs_dic, f, pickle.HIGHEST_PROTOCOL)
 
         print("finished extrating.")
 
@@ -117,6 +133,11 @@ class CleanJson:
         :param directory: the directory where all json files to extract are stored
         :param end_directory: the directory where the extracted logs will be stored
         """
+
+        #other idea: delete everything exept for logs? and then read json?
+        # use dask
+
+
         print("Extracting Logs")
         # for raw json
         # pathlist = pathlib.Path(directory).glob('**/*.json')
@@ -152,12 +173,12 @@ class CleanJson:
                 print("....._")
                 stud_id = self.getStudyID(user_dataframe['account_email'])
 
-                logs = pd.json_normalize(user_dataframe["logs"], max_level=0) #user_dataframe["logs"].apply(pd.Series)
+                logs = pd.json_normalize(user_dataframe["logs"], max_level=0)  # user_dataframe["logs"].apply(pd.Series)
                 logs = user_dataframe["logs"].apply(pd.Series)
                 print(logs.head())
                 print(logs.columns.values)
                 print("_______________________")
-                #if stud_id not in user_dic:
+                # if stud_id not in user_dic:
                 #    user_dic[stud_id] = []
                 #    logs_dic[stud_id] = []
 
@@ -210,5 +231,5 @@ if __name__ == '__main__':
     # extract all logs for each user
     cleanJson = CleanJson()
     # cleanJson.extractUsers(raw_data_user)
-    # cleanJson.extract_logs(directory=raw_data_dir, end_directory=logs_dir)
-    cleanJson.extract_logs_different(directory=raw_data_dir, end_directory=logs_dir)
+    # cleanJson.extract_logs(directory=raw_data_dir, end_directory=logs_dir,  save_as_one=False)
+    cleanJson.extract_logs_different(directory=raw_data_dir, end_directory=dataframe_dir, )

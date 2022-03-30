@@ -9,6 +9,15 @@ import re
 import pandas as pd
 
 
+# filter select row from colum condition
+# get all eventNames, drop UNKNOWN
+# gapminder[gapminder['year']==2002]
+# df[(df["colume_name"] == "some_value1") & (pd[pd["colume_name"] == "some_value2"])]
+
+# mask = df['A'].values == 'foo'
+# return df[mask]
+
+
 def import_json():
     dfs = []  # an empty list to store the data frames
 
@@ -58,7 +67,6 @@ def import_json():
     #        .reset_index(level=1, drop=True)
     #        .join(logs)
     #        .reset_index(drop=True))
-
 
     # Target_df = pd.concat([json_normalize(source_df['COLUMN'][key], 'volumes', ['name','id','state','nodes'], record_prefix='volume_') for key in source_df.index]).reset_index(drop=True)
 
@@ -131,6 +139,8 @@ def getStudyID(studyID_email):
 
 # cleanFiles()
 import_json()
+
+
 # importFiles()
 
 # def test():
