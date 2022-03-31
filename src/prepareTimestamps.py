@@ -3,7 +3,6 @@ import pathlib
 import pickle
 
 
-
 # Do this all for one user at a time
 def process_timestamps(df_logs):
     """

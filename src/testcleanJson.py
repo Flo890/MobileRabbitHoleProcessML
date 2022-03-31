@@ -103,6 +103,8 @@ class CleanJson:
                     with open(output_users_name_dic, 'wb') as f:
                         # Pickle the 'data' dictionary using the highest protocol available.
                         pickle.dump(logs_dic[key], f, pickle.HIGHEST_PROTOCOL)
+                        f.close()
+
 
                 print(f"saved logs for {key}")
 
@@ -117,6 +119,8 @@ class CleanJson:
             with open(output_users_name_all, 'wb') as f:
                 # Pickle the 'data' dictionary using the highest protocol available.
                 pickle.dump(all_logs, f, pickle.HIGHEST_PROTOCOL)
+                f.close()
+
 
         elif save_type == 2:
             # save all logs sorted by user
@@ -124,6 +128,7 @@ class CleanJson:
             with open(output_users_name_dic, 'wb') as f:
                 # Pickle the 'data' dictionary using the highest protocol available.
                 pickle.dump(logs_dic, f, pickle.HIGHEST_PROTOCOL)
+                f.close()
 
         print("finished extrating.")
 
@@ -215,6 +220,7 @@ class CleanJson:
         output_users_name = "M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\cleanedUsers\cleanedUsers.json"
         with open(output_users_name, "w+") as file:
             json.dump(json_data, file, sort_keys=True)
+            file.close()
 
     def getStudyID(self, studyID_email):
         study_id = re.sub('@email\.com$', '', str(studyID_email))

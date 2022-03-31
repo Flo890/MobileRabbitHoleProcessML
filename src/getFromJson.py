@@ -6,21 +6,28 @@ import pandas as pd
 import pickle
 
 
-def extractMetaData(logs):
+def extractMetaData(df_logs):
     """
     extract the metaData from json child logs
     :param logs: the dataframe with the colum of metaData to extract
     """
-    print("Extracting MetaData")
-    # fill Nan
-    # logs['metaData'].fillna('{}', inplace=True)
+    print("_Extracting MetaData_")
+    # test = df_logs['metaData'].apply(pd.Series)
+    # print(test.columns.values)
+    # df_logs.drop(columns=['metaData'], inplace=True)
+    # t = pd.concat([df_logs, test], axis=1)
 
-    # Normalize the metaData
-    logs_meta = pd.json_normalize(logs['metaData'])  # record path??
-    logstest = pd.DataFrame.from_dict(logs['metaData'], orient="index")
-    # Merge metaData and logs
-    logs_final = pd.concat([logs.reset_index(drop=True), logs_meta.reset_index(drop=True)], axis=1)
-    return logs_final
+    if 'metaData' in df_logs.columns:
+        # df_logs['metaData'].fillna('{}', inplace=True)
+        # Normalize the metaData
+        logs_meta = pd.json_normalize(df_logs['metaData'])  # record path??
+        # Merge metaData and logs
+        df_logs.drop(columns=['metaData'], inplace=True)
+        logs_final = pd.concat([df_logs.reset_index(drop=False), logs_meta.reset_index(drop=True)], axis=1)
+        return logs_final
+        # logs_final.to_csv(fr'{dataframe_dir}\test2.csv')
+    else:
+        return df_logs
 
 
 def extract_logs(directory, end_directory, save_type, is_gzip):
@@ -154,7 +161,6 @@ def extractUsers(file_path, end_directory, is_gzip):
 def getStudyID(studyID_email):
     study_id = re.sub('@email\.com$', '', str(studyID_email))
     return study_id
-
 
 # if __name__ == '__main__':
 #     raw_data_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live'

@@ -155,6 +155,16 @@ enum class InstallEventType {
     UNKNOWN
 }
 
+notification prio
+IMPORTANCE_NON: 0
+IMPORTANCE_MIN: 1
+IMPORTANCE_LOW: 2
+IMPORTANCE_DEFAULT: 3
+IMPORTANCE_HIGH: 4
+IMPORTANCE_MAX: 5
+IMPORTANCE_UNSPECIFIED: -10000
+
+
 
 usage events:
 https://developer.android.com/reference/android/app/usage/UsageEvents.Event
