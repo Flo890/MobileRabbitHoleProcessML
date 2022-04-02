@@ -45,14 +45,13 @@ def extract_sessions(df_logs):
                                     (screen_logs['event'].values == 'SHUTDOWN')) &
                                    (screen_logs['correct_timestamp'] > timestamp_1)]
 
-
         # get last timestamp of log list if ts2 is empty
         timestamp_2 = timestamps_2['correct_timestamp'].values[0] if not timestamps_2.empty else last_ts
         id_saved = timestamps_2['id'].values[0] if not timestamps_2.empty else last_id
         # print(f'ts2 {timestamp_2}')
 
         # calculate length of session in ms
-        session_length = (timestamp_2 - timestamp_1) # / np.timedelta64(1, 'ms')
+        session_length = (timestamp_2 - timestamp_1)  # / np.timedelta64(1, 'ms')
         # print(f'sesionlength {session_length}')
 
         # assign sessionID: count and timestamp? #TODO only use count?
@@ -83,6 +82,7 @@ def extract_sessions(df_logs):
     print("finished")
     return df_logs, sessions_list
 
+
 # discard session that are very small/very big?
 
 def extract_meta(df_logs):
@@ -107,7 +107,7 @@ if __name__ == '__main__':
 
         # ['description' 'event' 'eventName' 'id' 'name' 'packageName' 'timestamp' 'timezoneOffset' 'metaData' 'studyID' 'correct_timestamp' 'weekday']
 
-        extracted = extract_sessions(df_logs, study_id=data_path.stem)  # can i assign to same variable again?
+        extracted = extract_sessions(df_logs)  # can i assign to same variable again?
         user_sessions[data_path.stem] = extracted[1]
 
         with open(fr'{dataframe_dir_logs}\{data_path.stem}.pickle', 'wb') as f:

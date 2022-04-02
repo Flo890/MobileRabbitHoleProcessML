@@ -27,4 +27,7 @@ def transform_strings(logs):
              'SMS': 25,
              'USAGE_EVENTS': 26
              }
+
+
     logs['eventName'].replace(event, inplace=True)
+    logs[logs['event'] == 1].replace(event, inplace=True)

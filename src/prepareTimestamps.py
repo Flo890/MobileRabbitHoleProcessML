@@ -26,6 +26,7 @@ def process_timestamps(df_logs):
     # Reset index?
     # df_logs_ordered = df_logs.reset_index().set_index(df_logs['correct_timestamp'], drop=False)
 
+    # TODO Needed as we do this in feature extraction as well?
     # add further interesting variables etc weekday
     # For weekday as number: 0: is Monday and  6 is Sunday
     df_logs['weekday'] = df_logs['correct_timestamp'].dt.dayofweek

@@ -132,6 +132,13 @@ def extract_logs(directory, end_directory, save_type, is_gzip):
 
 
 def extractUsers(file_path, end_directory, is_gzip):
+    """
+    Extract all users without the logs
+    :param file_path:
+    :param end_directory:
+    :param is_gzip:
+    :return:
+    """
     print("Extracting User")
 
     if is_gzip:
@@ -152,10 +159,19 @@ def extractUsers(file_path, end_directory, is_gzip):
         except:
             continue
 
-    # save the users
-    output_users_name = fr"{end_directory}\cleanedUsers.json"
-    with open(output_users_name, "w+") as file:
-        json.dump(json_data, file, sort_keys=True)
+    # save the users as dataframe
+    df_users = pd.DataFrame.from_dict(json_data)
+    df_users_n = pd.json_normalize(df_users['users'], max_level=0)
+    df_users.drop(columns=['users'], inplace=True)
+    users_final = pd.concat([df_users.reset_index(drop=True), df_users_n.reset_index(drop=True)], axis=1)
+
+    users_final.to_csv(fr'{end_directory}\cleand_users.csv')
+
+    output_users_name = fr"{end_directory}\cleaned_users.json"
+    with open(output_users_name, "wb") as f:
+        pickle.dump(users_final, f, pickle.HIGHEST_PROTOCOL)
+
+    return users_final
 
 
 def getStudyID(studyID_email):
