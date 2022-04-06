@@ -130,12 +130,14 @@ enum class NotificationInteraction {
         NOTIFICATION_REMOVED
     }
 
+Where This only is used id WIFI is enabled
 enum class WifiConnectionState {
     DISABLED,
     ENABLED,
     UNKNOWN
 }
 
+UNKNOWN if no Internetconnection exists
 enum class ConnectionType {
     CONNECTED_WIFI,
     CONNECTED_MOBILE,
@@ -217,7 +219,27 @@ IMPORTANCE_UNSPECIFIED: -10000
 
 usage events:
 https://developer.android.com/reference/android/app/usage/UsageEvents.Event
-
+    ACTIVITY_PAUSED
+    ACTIVITY_RESUMED
+    ACTIVITY_STOPPED
+    CONFIGURATION_CHANGE // device configuration changes
+    DEVICE_SHUTDOWN
+    DEVICE_STARTUP
+    FOREGROUND_SERVICE_START
+    FOREGROUND_SERVICE_STOP
+    KEYGUARD_HIDDEN
+    KEYGUARD_SHOWN
+    MOVE_TO_BACKGROUND// deprecated in API 29 by ACTIVITY_PAUSED
+    MOVE_TO_FOREGROUND// deprecated in API 29 by ACTIVITY_RESUMED
+    NONE
+    SCREEN_INTERACTIVE
+    SCREEN_NON_INTERACTIVE
+    SHORTCUT_INVOCATION
+    STANDBY_BUCKET_CHANGED
+    USER_INTERACTION
+    NOTIFICATION_INTERRUPTION 12
+    NOTIFICATION_SEEN 10
+    UNKNOWN
 
 AccessibilityEvent.TYPE_ANNOUNCEMENT -> return "TYPE_ANNOUNCEMENT"
             AccessibilityEvent.TYPE_TOUCH_INTERACTION_END 

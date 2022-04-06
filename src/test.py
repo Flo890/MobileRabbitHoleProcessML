@@ -17,6 +17,46 @@ import pandas as pd
 # mask = df['A'].values == 'foo'
 # return df[mask]
 
+def get_internet_usage(df_logs, df_sessions):
+    print('test')
+    # Do that seperatly not in this loop?
+    # Separate between Mobile and WIFI
+    # Separate between each wifi connection and wifi all together
+
+    # get all Internet logs
+    # internet_logs = df_logs[(df_logs['eventName'].values == 'INTERNET')]
+    # timestamps_1 = screen_logs[screen_logs['event'].values == 'ON_USERPRESENT']['correct_timestamp']
+
+
+    # for (i in 1:length(ids)) {
+    #    df1 = dplyr::filter(wifidata, userId == ids[i])
+    #    df1 = df1[my.rle(df1$wifi.event), ] # delete duplicate entries
+    #
+    #    wifiStart = which(df1$wifi.event == "ENABLED_CONNECTED")
+    #    wifiEnd = which(df1$wifi.event == "ENABLED_DISCONNECTED" | df1$wifi.event == "DISABLED")
+    #
+    #    difftime = rep(NA, length(wifiStart))
+    #
+    #    for (start in wifiStart) {
+    #      # if there is no "ENABLED_DISCONNECTED" or "DISABLED" after the current "ENABLED_CONNECTED", break out of loop
+    #      # (this should only happen towards the end of the dataframe)
+    #      if (length(wifiEnd[wifiEnd > start]) == 0) {break}
+    #      end = min(wifiEnd[wifiEnd > start])
+    #      difftime[wifiStart == start] = as.numeric(df1[end, "timestamp"]) - as.numeric(df1[start, "timestamp"])
+    #    }
+
+    # Find start and endpoint for each
+    # if there is no wifi end before next wifistart drop this??
+    # Also get the time spent at disabled
+
+    # For loop for each start, find next end for each start, get difference
+
+    # description: Type of connection CONNECTED_WIFI, Event: Disabled, enabled, name: Wifi Name
+    # currentstate: triple of connectiontype, state, wifi name and start timestamp of state
+
+    # how to get the duraction of state?
+    # delete all duplactes expect time stamp ->
+    # get start and endtimesstamp of each state
 
 def import_json():
     dfs = []  # an empty list to store the data frames

@@ -39,6 +39,7 @@ def extract_sessions(df_logs):
     while not timestamps_1.empty:
         timestamp_1 = timestamps_1.values[0]
 
+        # TODO check if there is no ts2 event before the next ts1 event
         # find ts2: OFF_LOCKED, OFF_UNLOCKED, TODO everything else that is not ON_USerpresent? und timestamp davon is later than tsi
         timestamps_2 = screen_logs[((screen_logs['event'].values == 'OFF_LOCKED') |
                                     (screen_logs['event'].values == 'OFF_UNLOCKED') |
