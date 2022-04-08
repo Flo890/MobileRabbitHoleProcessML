@@ -215,7 +215,37 @@ IMPORTANCE_HIGH: 4
 IMPORTANCE_MAX: 5
 IMPORTANCE_UNSPECIFIED: -10000
 
+SMSType{
+ 1 -> SmsEventType.INBOX
+ 2 -> SmsEventType.SENT
+ 3 -> SmsEventType.DRAFT
+ 4 -> SmsEventType.OUTBOX
+ else -> SmsEventType.UNKNOWN
+}
 
+PHONEEvent{
+RINGING
+ONHOLD
+  1 -> "INCOMING"
+  2 -> "OUTGOING"
+  3 -> "MISSED"
+  4 -> "VOICEMAIL"
+  5 -> "REJECTED"
+  6 -> "BLOCKED"
+  7 -> "ANSWERED_EXTERNALLY"
+   else -> "UNKNOWN: $type"
+   }
+
+Activity{
+ DetectedActivity.IN_VEHICLE
+                DetectedActivity.ON_BICYCLE
+                DetectedActivity.ON_FOOT
+                DetectedActivity.RUNNING
+                DetectedActivity.STILL
+                DetectedActivity.TILTING
+                DetectedActivity.WALKING
+                ActivityType.UNKNOWN.name
+}
 
 usage events:
 https://developer.android.com/reference/android/app/usage/UsageEvents.Event

@@ -3,7 +3,7 @@ import numpy as np
 import tldextract
 
 
-def get_features(df_logs, df_sessions):
+def get_features_for_session(df_logs, df_sessions):
     """
     Extract all features from logs for each user
     :param df_logs: the logs dataframe of one user
@@ -16,11 +16,6 @@ def get_features(df_logs, df_sessions):
 
     # index description event eventName id timestamp timezoneOffset name packageName studyID correct_timestamp weekday
     # dataKey infoText interaction priority subText mobile_BYTES_RECEIVED mobile_BYTES_TRANSMITTED wifi_BYTES_RECEIVED wifi_BYTES_TRANSMITTED category
-    # session_id
-
-    # assign to itertuipels df
-    # i = row[0] or row.Index
-    # df.loc[i, 'column_name'] = some value
 
     # Group the session with the previously assigened sessionids
     # df_logs.drop((df_logs['session_id'] == ''), inplace=True)
@@ -33,6 +28,8 @@ def get_features(df_logs, df_sessions):
     pd.to_datetime(df_sessions['timestamp_1'])
     pd.to_datetime(df_sessions['timestamp_2'])
 
+    df_sessions['f_sequences'] = np.empty((len(df_sessions.index), 0)).tolist()
+    df_sessions['f_sequences'] = df_sessions['f_sequences'].astype(object)
     df_sessions['f_hour_of_day'] = np.nan
     df_sessions['f_weekday'] = np.nan
     df_sessions['f_session_length'] = np.nan
@@ -42,7 +39,6 @@ def get_features(df_logs, df_sessions):
     df_sessions['f_internet_connected_mobile'] = pd.Timedelta(days=0)
     df_sessions['f_internet_disconnected'] = pd.Timedelta(days=0)
 
-    #  current_sequence_list = []
     currentInternetState = {'connectionType': 'UNKNOWN_first', 'wifiState': 'UNKNOWN_first', 'wifiName': '', 'timestamp': np.nan}
     currentApp = {"packageName": 'unknown_first', "timestamp": np.nan}
     current_sequence_list = []
@@ -123,12 +119,22 @@ def get_features(df_logs, df_sessions):
 
                 # ---------------  FEATURE SEQUENCE BrowserURL------------------ #
                 elif log.eventName == 'ACCESSIBILITY_BROWSER_URL':
-                    current_sequence_list.append(log)
+                    # eventName.ACCESSIBILITY_BROWSER_URL,
+                    # event = getEventType(event) (accesibility),
+                    # description = browserUrl,
+                    # name = "BrowserURL",
+                    # packageName = packageName
+                    seq = ('BROWSER_URL', get_domain_from_url(log.description))
+                    current_sequence_list.append(seq)
 
                 # ---------------  FEATURE NOTIFICATION ------------------ #
                 elif log.eventName == 'NOTIFICATION':
                     # TODO CLEANUP, meybe use usage stats for that as well
-                    current_sequence_list.append(log)
+
+                    #  MetaNotification(
+                    #  priority, category, infoText, subText, interaction = action.name)
+                    # LogEvent(LogEventName.NOTIFICATION, timestamp, event = title, description = text, packageName = packageName)
+                    current_sequence_list.append((log.eventName, log.packageName))
 
                 # ---------------  FEATURE INTERNET CONNECTION ------------------ #
                 elif log.eventName == 'INTERNET':
@@ -171,11 +177,22 @@ def get_features(df_logs, df_sessions):
 
                 # ---------------  FEATURE SEQUENCE PHONE ------------------ #
                 elif log.eventName == 'PHONE':
-                    current_sequence_list.append(log)
+                    # eventName = LogEventName.PHONE,
+                    # timestamp = timestamp,
+                    # event = event,
+                    # description = duration.toString()
+                    current_sequence_list.append((log.eventName, log.event))
 
                 # ---------------  FEATURE SEQUENCE SMS ------------------ #
                 elif log.eventName == 'SMS':
-                    current_sequence_list.append(log)
+                    # MetaSMS(
+                    # phoneNumber = numberHashed,
+                    # countryCode = countryCode,
+                    # length = messageLength,
+                    # messageHash = messageHash,
+                    # event = type.name,
+                    # description = smsID,
+                    current_sequence_list.append((log.eventName, log.event))
 
                 # ---------------  FEATURE PHSIKAL ACTIVITY ------------------ #
                 elif log.eventName == 'ACTIVITY':
@@ -189,18 +206,18 @@ def get_features(df_logs, df_sessions):
                     if (currentApp['packageName'] != log.packageName) & (log.event == 'ACTIVITY_RESUMED'):
                         # print("usage event resumed")
                         # print(type(currentInternetState['timestamp']))
-                        print("current", currentApp['packageName'])
-                        print("new", log.packageName, log.event)
+                        #  print("current", currentApp['packageName'])
+                        # print("new", log.packageName, log.event)
 
                         if currentApp['packageName'] == 'unknown_first':
                             currentApp = {"packageName": log.packageName, "timestamp": log.correct_timestamp}
-                            print("2 ", currentApp)
+                            # print("2 ", currentApp)
                             # break
                         else:
-                            print("3", currentApp)
+                            # print("3", currentApp)
                             # if log.event == 'ACTIVITY_RESUMED':
                             # Save the new app to sequence list
-                            current_sequence_list.append(log)
+                            current_sequence_list.append(('APP', log.packageName))
                             # ___________________________________________________________________________________________#
                             # Save current app count
                             packagename = currentApp['packageName']
@@ -246,7 +263,7 @@ def get_features(df_logs, df_sessions):
                             # ___________________________________________________________________________________________#
                             # save new app as current
                             currentApp = {"packageName": log.packageName, "timestamp": log.correct_timestamp}
-                            print("4", currentApp)
+                            # print("4", currentApp)
 
             # ---------------  save the last internet and app state with the last log ------------------ #
             last_log_time = df_group['correct_timestamp'].iloc[-1]
@@ -320,13 +337,32 @@ def get_features(df_logs, df_sessions):
                 # ___________________________________________________________________________________________#
                 currentApp = {"packageName": 'unknown_first', "timestamp": np.nan}
 
-                # ---------------- Save the seuquence list -------------------#
-                df_sessions['f_sequences'] = np.array(current_sequence_list)
+            # ---------------- Save the seuquence list -------------------#
+            if len(current_sequence_list) > 0:
+
+                # dt = np.dtype('str,str')
+                print("test", df_sessions['f_sequences'].head())
+                print("test2", current_sequence_list)
+                #array = np.array(current_sequence_list)
+                print(index_row)
+                df_sessions.loc[index_row, 'f_sequences'] = current_sequence_list
                 current_sequence_list = []
 
     df_sessions.to_csv(fr'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\featuretest.csv')
     print("finished extracting features")
     return df_sessions
+
+def get_features_before_session(df_logs, df_sessions):
+    print('test')
+
+# def cleanup_sequences(sequence_list):
+    # use a tuple with type and packagename?
+    # apps: Packagename
+    # website: URL
+    # Notifications: Packagname?
+    # Calls
+    # just use the strings or vector with 0 and 1 representig if app was used?
+
 
 
 def get_app_category(df_categories, packagename):
@@ -373,4 +409,4 @@ if __name__ == '__main__':
     test = df_all_logs[(df_all_logs['eventName'].values == "USAGE_EVENTS")]
     # print(test.head())
 
-    df_features = get_features(df_logs=df_all_logs, df_sessions=t)
+    df_features = get_features_for_session(df_logs=df_all_logs, df_sessions=t)

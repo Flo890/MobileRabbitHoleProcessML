@@ -50,9 +50,10 @@ def extract_logs(directory, end_directory, save_type, is_gzip):
         # for raw json
         pathlist = pathlib.Path(directory).glob('**/*.json')
 
-    logs_dic = {}
+    # logs_dic = {}
     for data_path in pathlist:
         # data_path = one day of logs
+        logs_dic = {}
 
         path_in_str = str(data_path)
         print(f"extract: {path_in_str}")
@@ -73,39 +74,69 @@ def extract_logs(directory, end_directory, save_type, is_gzip):
             try:
                 # Find the studyId
                 stud_id = getStudyID(json_data['users'][key]['account_email'])
-                temp_user = json_data['users'][key]['logs']
                 print(f"get logs from {stud_id}")
-
-                # create a dataframe form the json logs
-                df = pd.DataFrame.from_dict(temp_user, orient="index")
 
                 if stud_id not in logs_dic:
                     logs_dic[stud_id] = []
 
                 # save the logs of current file to user dic
-                logs_dic[stud_id].append(df)
+                logs_dic[stud_id].append(pd.DataFrame.from_dict(json_data['users'][key]['logs'], orient="index"))
 
             except(Exception,):
                 print(f"error extracting logs for {key}")
                 continue
 
-    temp_all_Logs = []
-    print("_________________________")
+        output_users_name_dic = fr"{end_directory}\logs_dic_{data_path.stem}.pickle"
+        with open(output_users_name_dic, 'wb') as f:
+            # Pickle the 'data' dictionary using the highest protocol available.
+            pickle.dump(logs_dic, f, pickle.HIGHEST_PROTOCOL)
+
+    print("finished extrating.")
+
+
+def merge_two_dicts(x, y):
+    z = x.copy()  # start with keys and values of x
+    z.update(y)  # modifies z with keys and values of y
+    return z
+
+
+def concat_user_logs(logs_dic_directory, end_directory):
+    print("_____ concatUser _____")
+    pathlist = pathlib.Path(logs_dic_directory).glob('**/*.pickle')
+
+    logs_dic = {}
+    for data_path in pathlist:
+        path_in_str = str(data_path)
+        print(f"read dic: {path_in_str}")
+        with open(path_in_str, 'rb') as file:
+            read_logs_dic = pickle.load(file)
+
+        # logs_dic = merge_two_dicts(logs_dic, read_logs_dic)
+        for key in read_logs_dic.keys():
+            if key not in logs_dic:
+                logs_dic[key] = []
+            logs_dic[key].append(read_logs_dic[key])
+
+
+    print('concat')
     for key in logs_dic.keys():
         try:
+            print(type(logs_dic[key]))
+            # print(logs_dic[key])
             df_concat = pd.concat(logs_dic[key], ignore_index=False)
             # add a colum with the studyId to each log
             df_concat["studyID"] = key
             logs_dic[key] = df_concat
+            print(key, len(df_concat))
 
-            if save_type == 1:
-                temp_all_Logs.append(df_concat)
-            elif save_type == 3:
-                # save all logs from one user to file
-                output_users_name_dic = fr"{end_directory}\{key}.pickle"
-                with open(output_users_name_dic, 'wb') as f:
-                    # Pickle the 'data' dictionary using the highest protocol available.
-                    pickle.dump(logs_dic[key], f, pickle.HIGHEST_PROTOCOL)
+            # if save_type == 1:
+            #     temp_all_Logs.append(df_concat)
+            # elif save_type == 3:
+            # save all logs from one user to file
+            output_users_name_dic = fr"{end_directory}\{key}.pickle"
+            with open(output_users_name_dic, 'wb') as f:
+                # Pickle the 'data' dictionary using the highest protocol available.
+                pickle.dump(logs_dic[key], f, pickle.HIGHEST_PROTOCOL)
 
             print(f"saved logs for {key}")
 
@@ -113,22 +144,20 @@ def extract_logs(directory, end_directory, save_type, is_gzip):
             print(f"error concat logs for {key}")
             continue
 
-    if save_type == 1:
-        # save all logs in one giant dataframe
-        all_logs = pd.concat(temp_all_Logs, ignore_index=False)
-        output_users_name_all = fr"{end_directory}\+_logs_all.pickle"
-        with open(output_users_name_all, 'wb') as f:
-            # Pickle the 'data' dictionary using the highest protocol available.
-            pickle.dump(all_logs, f, pickle.HIGHEST_PROTOCOL)
-
-    elif save_type == 2:
-        # save all logs sorted by user
-        output_users_name_dic = fr"{end_directory}\+_logs_dic.pickle"
-        with open(output_users_name_dic, 'wb') as f:
-            # Pickle the 'data' dictionary using the highest protocol available.
-            pickle.dump(logs_dic, f, pickle.HIGHEST_PROTOCOL)
-
-    print("finished extrating.")
+    # if save_type == 1:
+    #     # save all logs in one giant dataframe
+    #     all_logs = pd.concat(temp_all_Logs, ignore_index=False)
+    #     output_users_name_all = fr"{end_directory}\+_logs_all.pickle"
+    #     with open(output_users_name_all, 'wb') as f:
+    #         # Pickle the 'data' dictionary using the highest protocol available.
+    #         pickle.dump(all_logs, f, pickle.HIGHEST_PROTOCOL)
+    #
+    # elif save_type == 2:
+    #     # save all logs sorted by user
+    #     output_users_name_dic = fr"{end_directory}\+_logs_dic.pickle"
+    #     with open(output_users_name_dic, 'wb') as f:
+    #         # Pickle the 'data' dictionary using the highest protocol available.
+    #         pickle.dump(logs_dic, f, pickle.HIGHEST_PROTOCOL)
 
 
 def extractUsers(file_path, end_directory, is_gzip):

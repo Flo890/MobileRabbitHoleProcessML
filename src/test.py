@@ -5,7 +5,7 @@ import datetime
 import json
 import os
 import re
-
+import numpy as np
 import pandas as pd
 
 
@@ -178,7 +178,7 @@ def getStudyID(studyID_email):
 
 
 # cleanFiles()
-import_json()
+# import_json()
 
 
 # importFiles()
@@ -213,12 +213,12 @@ def import_json():
 
     # json_pattern = os.path.join(path_to_json, '*.json')
     # file_list = glob.glob(json_pattern)
-    data = pd.read_json(path_to_file)
+    # data = pd.read_json(path_to_file)
     # read compressed
     # df_gzip = pd.read_json('sample_file.gz', compression='infer')
 
     # data_n = pd.json_normalize(path_to_file)
-    print(data.head())
+    # print(data.head())
     # print(data_n.head())
 
     # for file in file_list:
@@ -297,7 +297,7 @@ def getStudyID(studyID_email):
     return study_id
 
 
-cleanFiles()
+# cleanFiles()
 # importFiles()
 
 # def test():
@@ -310,3 +310,62 @@ cleanFiles()
 # df[FIELDS]
 # Only recurse down to the second level
 # pd.json_normalize(results, record_path="issues", max_level =
+
+
+# df = pd.DataFrame(columns=['t'])
+# df['t'] = df['t'].astype(object)
+# # df['s'] = np.nan
+# # df['s'] = df['s'].astype(object)
+# df['f_sequences'] = np.empty((len(df.index), 1)).tolist()
+# df['f_sequences'] = df['f_sequences'].astype(object)
+# df.loc[1, 'f_sequences'] = np.array([5, 6])
+# df.loc[2, 'f_sequences'] = np.array([5, 6])
+# print(df)
+
+
+# timestamp= 1648145610258
+# timxonoffset=3600000
+# f = pd.to_datetime(timestamp + timxonoffset, yearfirst=True, unit='ms')
+# t = pd.to_datetime(timestamp + timxonoffset, yearfirst=True, unit='ns')
+# # s = pd.to_datetime(timestamp + timxonoffset, format="%Y-%m-%d %H:%M:%S:%f")
+#
+# # print(s)
+# print(f)
+# rpint('24/03/2022  19:13:30')
+# print(t)
+
+def merge_two_dicts(x, y):
+    z = x.copy()  # start with keys and values of x
+    z.update(y)  # modifies z with keys and values of y
+    return z
+
+dic = {}
+d = {'col1': [1, 2, 3], 'col2': ['test', 'acuhtest']}
+d2 = {'col1': [3, 5, 5], 'col2': ['test', 'acuhtest']}
+d3 = {'col1': [8, 11, 4], 'col2': ['test', 'acuhtest']}
+
+dic["t1"] = []
+dic["t1"].append(pd.DataFrame(d))
+dic["t1"].append(pd.DataFrame(d2))
+
+dic["t2"] = []
+dic["t2"].append(pd.DataFrame(d2))
+dic["t2"].append(pd.DataFrame(d3))
+
+dic2 = {}
+r = {'col1': [1, 2, 3], 'col2': ['test', 'acuhtest']}
+r2 = {'col1': [3, 4, 5], 'col2': ['test', 'acuhtest']}
+r3 = {'col1': [8, 11, 5], 'col2': ['test', 'acuhtest']}
+
+dic2["t1"] = []
+dic2["t1"].append(pd.DataFrame(r))
+dic2["t1"].append(pd.DataFrame(r2))
+
+dic2["t2"] = []
+dic2["t2"].append(pd.DataFrame(r3))
+dic2["t2"].append(pd.DataFrame(r))
+
+print(dic)
+print(dic2)
+test = merge_two_dicts(dic, dic2)
+print(test)
