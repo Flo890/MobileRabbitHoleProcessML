@@ -45,10 +45,6 @@ def cleanup(df_logs):
 
     # TODO clean notifications
 
-    # extract installed apps and dive info -> might add to user df
-    # DEVICE_INFO
-    # INSTALLED_APP
-
     return df_logs
 
 
@@ -68,6 +64,9 @@ def preprocessing():
     """
     path_list = pathlib.Path(dataframe_dir_live_logs_sorted).glob('**/*.pickle')
 
+    dic_device = {}
+    dic_installed_apps = {}
+
     user_sessions = {}
     for data_path in path_list:
         path_in_str = str(data_path)
@@ -79,6 +78,17 @@ def preprocessing():
         # extract Metadata
         df_logs = getFromJson.extractMetaData(df_logs)
 
+        # extract installed apps and dive info -> might add to user df
+        # DEVICE_INFO
+        device = df_logs[df_logs['event'] == 'DEVICE_INFO']
+        if not device.empty:
+            info = device[0]
+            dic_device[data_path.stem] = pd.DataFrame([{'model': info.event, 'releaseVersion': info.description, 'sdkVersion': info.name, 'manufacturer': info.packageName}])
+
+        # LogEventName.DEVICE_INFO, timestamp, event= model, description = releaseVersion, name = sdkVersion.toString(), packageName = manufacturer )
+        # INSTALLED_APP
+        dic_installed_apps[data_path.stem] = df_logs[df_logs['event'] == 'INSTALLED_APP']['packageName']
+
         extracted = extractSessions.extract_sessions(df_logs)
         user_sessions[data_path.stem] = extracted[1]
 
@@ -88,6 +98,14 @@ def preprocessing():
 
     with open(fr'{dataframe_dir_live}\user-sessions.pickle', 'wb') as f:
         pickle.dump(user_sessions, f, pickle.HIGHEST_PROTOCOL)
+
+    with open(fr'{dataframe_dir_live}\user-device_info.pickle', 'wb') as f:
+        pickle.dump(dic_device, f, pickle.HIGHEST_PROTOCOL)
+
+    with open(fr'{dataframe_dir_live}\user-installed_apps.pickle', 'wb') as f:
+        pickle.dump(dic_installed_apps, f, pickle.HIGHEST_PROTOCOL)
+
+
 
 
 def extract_features():
@@ -112,6 +130,7 @@ def extract_features():
     with open(fr'{dataframe_dir}\user-sessions_features.pickle', 'wb') as f:
         pickle.dump(df_all_sessions, f, pickle.HIGHEST_PROTOCOL)
 
+
 def print_test_df():
     print('print test')
     path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\live\SO23BA.pickle'
@@ -128,7 +147,6 @@ def print_test_df():
 
 
 if __name__ == '__main__':
-
     # extractData()
     # preprocessing()
     extract_features()

@@ -38,6 +38,11 @@ def get_features_for_session(df_logs, df_sessions):
     df_sessions['f_hour_of_day'] = np.nan
     df_sessions['f_weekday'] = np.nan
     df_sessions['f_session_length'] = np.nan
+    df_sessions['f_time_since_last_session'] = pd.Timedelta(days=0)
+    df_sessions['f_glances_since_last_session'] = 0
+    df_sessions['f_count_session_1h'] = 0
+    df_sessions['f_count_session_2h'] = 0
+    df_sessions['f_count_session_3h'] = 0
     df_sessions['f_clicks'] = 0
     df_sessions['f_scrolls'] = 0
     df_sessions['f_internet_connected_WIFI'] = pd.Timedelta(days=0)
@@ -57,6 +62,38 @@ def get_features_for_session(df_logs, df_sessions):
             # Get the df_session row of the current session to assign the values to
             df_row = df_sessions[(df_sessions['session_id'].values == name)]
             index_row = df_sessions[(df_sessions['session_id'].values == name)].index.item()
+
+
+            # ---------------  FEATURE TIME AND GLANCES SINCE LAST SESSION ------------------ #
+            index_last_session = index_row - 1
+            current_session_start = df_row['timestamp_1'].iloc[0]
+            if index_last_session > 0:
+                last_session_end = df_sessions['timestamp_2'].iloc[index_last_session]
+                df_sessions.loc[index_row, 'f_time_since_last_session'] = current_session_start - last_session_end
+
+                # GLances: get all screen ON_LOCKED events between last session ts and current session ts
+                glances_count = len(df_logs[(df_logs['event'].values == 'ON_LOCKED') &
+                              (df_logs['correct_timestamp'].values > last_session_end) &
+                              (df_logs['correct_timestamp'].values < current_session_start) ] )
+                df_sessions.loc[index_row, 'f_glances_since_last_session'] = df_sessions.loc[index_row, 'f_glances_since_last_session'] + glances_count
+
+            # ---------------  FEATURE COUNT SESSION IN LAST HOUR ------------------ #
+            # Calculate timestamp one hour ago
+            ts_one_hour = current_session_start - pd.Timedelta(hours=1)
+            # Get session that started within the last hour
+            df_sessions.loc[index_row, 'f_count_session_1h'] = len(df_sessions[(df_sessions['timestamp_1'].values > ts_one_hour) &
+                              (df_sessions['timestamp_2'].values < current_session_start)])
+
+            ts_two_hour = current_session_start - pd.Timedelta(hours=2)
+            # Get session that started within the last hour
+            df_sessions.loc[index_row, 'f_count_session_2h'] = len(df_sessions[(df_sessions['timestamp_1'].values > ts_two_hour) &
+                              (df_sessions['timestamp_2'].values < current_session_start) ] )
+
+            ts_three_hour = current_session_start - pd.Timedelta(hours=3)
+            # Get session that started within the last hour
+            df_sessions.loc[index_row, 'f_count_session_3h'] = len(df_sessions[(df_sessions['timestamp_1'].values > ts_three_hour) &
+                              (df_sessions['timestamp_2'].values < current_session_start) ] )
+
 
             # ---------------  FEATURE HOUR OF DAY ------------------ #
             # df_row['f_hour_of_day'] = df_row['timestamp_1'].hour
@@ -217,8 +254,6 @@ def get_features_for_session(df_logs, df_sessions):
 
                         if currentApp['packageName'] == 'unknown_first':
                             currentApp = {"packageName": log.packageName, "timestamp": log.correct_timestamp}
-                            # print("2 ", currentApp)
-                            # break
                         else:
                             # print("3", currentApp)
                             # if log.event == 'ACTIVITY_RESUMED':
@@ -352,6 +387,7 @@ def get_features_for_session(df_logs, df_sessions):
                 #array = np.array(current_sequence_list)
                 # print(index_row)
                 # df_sessions.loc[index_row, 'f_sequences'] = current_sequence_list
+                print(current_sequence_list)
                 current_sequence_list = []
 
     #df_sessions.to_csv(fr'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\featuretest.csv')
@@ -364,6 +400,8 @@ def get_features_before_session(df_logs, df_sessions):
     # get timestampt for each session
     # calculate 1h before
     # calculate
+
+    # FEATAURE TIME SINCE LAST SESSION
 
 # def cleanup_sequences(sequence_list):
     # use a tuple with type and packagename?
@@ -398,7 +436,7 @@ def get_domain_from_url(url):
 
 if __name__ == '__main__':
     path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions.pickle'
-    path_testfile_logs = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\testing\SO23BA.pickle'
+    path_testfile_logs = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\live\SO23BA.pickle'
 
     # Show all colums when printing head()
     pd.set_option('display.max_columns', None)
