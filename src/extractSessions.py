@@ -69,7 +69,7 @@ def extract_sessions(df_logs):
                      (df_logs['eventName'].values == 'ESM')), 'session_id'] = session_id
 
         # add a new row to sessiondf with sessionid, sessionlngth, first and last timestamp
-        sessions.append({'session_id': session_id, 'session_length': session_length, 'timestamp_1': timestamp_1,
+        sessions.append({'session_id': session_id, 'count': count, 'session_length': session_length, 'timestamp_1': timestamp_1,
                          'timestamp_2': timestamp_2})
         # increment count
         count += 1
@@ -80,7 +80,7 @@ def extract_sessions(df_logs):
         # print(f'new ts1 {timestamps_1.head()}')
 
     sessions_list = pd.DataFrame(sessions)
-    print("finished")
+    print("....extract sessions finished....")
     return df_logs, sessions_list
 
 

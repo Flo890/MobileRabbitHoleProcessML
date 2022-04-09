@@ -10,8 +10,7 @@ def get_features_for_session(df_logs, df_sessions):
     :param df_sessions: the extracted session dataframe of one user
     :return: the sessions and feature dataframe for one user
     """
-    study_id = df_sessions['session_id'][0]
-    print(f'Extract features for {study_id}')
+
     # Loop over session list  ,session_id, session_length, timestamp_1, timestamp_2
 
     # index description event eventName id timestamp timezoneOffset name packageName studyID correct_timestamp weekday
@@ -21,8 +20,14 @@ def get_features_for_session(df_logs, df_sessions):
     # df_logs.drop((df_logs['session_id'] == ''), inplace=True)
     # print(df_logs.head())
 
-    categories = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\categories\app_categories.csv'
-    df_categories = pd.read_csv(categories)
+    # old categories
+    # categories = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\categories\app_categories.csv'
+    # df_categories = pd.read_csv(categories)
+    # new categories with
+    # ['App_name' 'Perc_users' 'Training_Coding_1' 'Training_Coding_2' 'Training_Coding_all' 'Rater1' 'Rater2' 'Final_Rating']
+    categories = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\categories\app_categorisation_2020.csv'
+    df_categories = pd.read_csv(categories, sep=';')
+    df_categories.drop(columns=['Perc_users', 'Training_Coding_1', 'Training_Coding_all', 'Training_Coding_2', 'Rater1', 'Rater2'], inplace=True)
 
     # Prepare feature columns
     pd.to_datetime(df_sessions['timestamp_1'])
@@ -197,6 +202,7 @@ def get_features_for_session(df_logs, df_sessions):
                 # ---------------  FEATURE PHSIKAL ACTIVITY ------------------ #
                 elif log.eventName == 'ACTIVITY':
                     print("found acitvity")
+                    df_sessions['f_activity'] = 0
 
                 # ---------------  FEATURE USED APPS + SEQUENCE ------------------ #
                 elif log.eventName == 'USAGE_EVENTS':
@@ -339,21 +345,25 @@ def get_features_for_session(df_logs, df_sessions):
 
             # ---------------- Save the seuquence list -------------------#
             if len(current_sequence_list) > 0:
-
+                # TODO
                 # dt = np.dtype('str,str')
-                print("test", df_sessions['f_sequences'].head())
-                print("test2", current_sequence_list)
+                # print("test", df_sessions['f_sequences'].head())
+                # print("test2", current_sequence_list)
                 #array = np.array(current_sequence_list)
-                print(index_row)
-                df_sessions.loc[index_row, 'f_sequences'] = current_sequence_list
+                # print(index_row)
+                # df_sessions.loc[index_row, 'f_sequences'] = current_sequence_list
                 current_sequence_list = []
 
-    df_sessions.to_csv(fr'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\featuretest.csv')
+    #df_sessions.to_csv(fr'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\featuretest.csv')
     print("finished extracting features")
     return df_sessions
 
 def get_features_before_session(df_logs, df_sessions):
     print('test')
+    # iterrate over sessions
+    # get timestampt for each session
+    # calculate 1h before
+    # calculate
 
 # def cleanup_sequences(sequence_list):
     # use a tuple with type and packagename?
@@ -366,7 +376,7 @@ def get_features_before_session(df_logs, df_sessions):
 
 
 def get_app_category(df_categories, packagename):
-    category = df_categories[(df_categories['apps.packageName'].values == packagename)]['category.new']
+    category = df_categories[(df_categories['App_name'].values == packagename)]['Final_Rating']
     if not category.empty:
         return category.values[0]
     else:
@@ -404,9 +414,5 @@ if __name__ == '__main__':
     # df_sessions = pd.read_csv(path_testfile_sessions)
     df_all_sessions = pd.read_pickle(path_testfile_sessions)
     t = df_all_sessions['SO23BA']
-    # print(t.head())
-
-    test = df_all_logs[(df_all_logs['eventName'].values == "USAGE_EVENTS")]
-    # print(test.head())
 
     df_features = get_features_for_session(df_logs=df_all_logs, df_sessions=t)

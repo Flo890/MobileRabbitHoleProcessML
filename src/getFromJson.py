@@ -76,11 +76,11 @@ def extract_logs(directory, end_directory, save_type, is_gzip):
                 stud_id = getStudyID(json_data['users'][key]['account_email'])
                 print(f"get logs from {stud_id}")
 
-                if stud_id not in logs_dic:
-                    logs_dic[stud_id] = []
+                # if stud_id not in logs_dic:
+                #     logs_dic[stud_id] =
 
                 # save the logs of current file to user dic
-                logs_dic[stud_id].append(pd.DataFrame.from_dict(json_data['users'][key]['logs'], orient="index"))
+                logs_dic[stud_id] = pd.DataFrame.from_dict(json_data['users'][key]['logs'], orient="index")
 
             except(Exception,):
                 print(f"error extracting logs for {key}")
@@ -111,38 +111,43 @@ def concat_user_logs(logs_dic_directory, end_directory):
         with open(path_in_str, 'rb') as file:
             read_logs_dic = pickle.load(file)
 
+        print(read_logs_dic.keys())
+
         # logs_dic = merge_two_dicts(logs_dic, read_logs_dic)
         for key in read_logs_dic.keys():
             if key not in logs_dic:
-                logs_dic[key] = []
-            logs_dic[key].append(read_logs_dic[key])
-
+                logs_dic[key] = read_logs_dic[key]
+            else:
+                print('read ', type(read_logs_dic[key]))
+                logs_dic[key] = pd.concat([logs_dic[key], read_logs_dic[key]], ignore_index=False)
+                print(type(logs_dic[key]))
+                print(key, len(logs_dic[key]))
+            # df_concat = pd.concat(logs_dic[key], ignore_index=False)
+            # logs_dic[key] =
 
     print('concat')
     for key in logs_dic.keys():
-        try:
-            print(type(logs_dic[key]))
-            # print(logs_dic[key])
-            df_concat = pd.concat(logs_dic[key], ignore_index=False)
-            # add a colum with the studyId to each log
-            df_concat["studyID"] = key
-            logs_dic[key] = df_concat
-            print(key, len(df_concat))
+        #  try:
+        #print(type(logs_dic[key]))
+        # print(logs_dic[key])
+        #df_concat = pd.concat(logs_dic[key], ignore_index=False)
+        # add a colum with the studyId to each log
+        logs_dic[key]["studyID"] = key
 
-            # if save_type == 1:
-            #     temp_all_Logs.append(df_concat)
-            # elif save_type == 3:
-            # save all logs from one user to file
-            output_users_name_dic = fr"{end_directory}\{key}.pickle"
-            with open(output_users_name_dic, 'wb') as f:
-                # Pickle the 'data' dictionary using the highest protocol available.
-                pickle.dump(logs_dic[key], f, pickle.HIGHEST_PROTOCOL)
+        # if save_type == 1:
+        #     temp_all_Logs.append(df_concat)
+        # elif save_type == 3:
+        # save all logs from one user to file
+        output_users_name_dic = fr"{end_directory}\{key}.pickle"
+        with open(output_users_name_dic, 'wb') as f:
+            # Pickle the 'data' dictionary using the highest protocol available.
+            pickle.dump(logs_dic[key], f, pickle.HIGHEST_PROTOCOL)
 
-            print(f"saved logs for {key}")
+        print(f"saved logs for {key}")
 
-        except(Exception,):
-            print(f"error concat logs for {key}")
-            continue
+    # except(Exception,):
+    #    print(f"error concat logs for {key}")
+    #    continue
 
     # if save_type == 1:
     #     # save all logs in one giant dataframe
