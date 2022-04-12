@@ -16,6 +16,7 @@ def extract_sessions(df_logs):
     # Get dataframe with all Screen and boot events
     # Try without values?
     df_logs['session_id'] = ""
+    df_logs['session_count'] = ""
     study_id = df_logs['studyID'].iloc[0]
     last_ts = df_logs['correct_timestamp'].iloc[-1]
     last_id = df_logs['id'].iloc[-1]
@@ -28,15 +29,15 @@ def extract_sessions(df_logs):
     # screen_logs.drop(screen_logs.index[screen_logs['event'] == 'ON_UNLOCKED'], inplace=True)
 
     count = 1
-    sessions = []  # pd.DataFrame(columns=['session_id', 'session_length', 'timestamp_1', 'timestamp_2'])
+    sessions = []  # pd.DataFrame(columns=['session_id', 'count', 'session_length', 'timestamp_1', 'timestamp_2'])
 
     # get all timestamps 1: User ON_USERPRESENT  (SCREEN_ON_UNLOCKED?)
     timestamps_1 = screen_logs[screen_logs['event'].values == 'ON_USERPRESENT']['correct_timestamp']
 
     # len(df.index) == 0 - no rows
     # df.dropna().empty
-
     while not timestamps_1.empty:
+        print(len(timestamps_1))
         timestamp_1 = timestamps_1.values[0]
 
         # TODO check if there is no ts2 event before the next ts1 event
@@ -48,35 +49,47 @@ def extract_sessions(df_logs):
 
         # get last timestamp of log list if ts2 is empty
         timestamp_2 = timestamps_2['correct_timestamp'].values[0] if not timestamps_2.empty else last_ts
-        id_saved = timestamps_2['id'].values[0] if not timestamps_2.empty else last_id
-        # print(f'ts2 {timestamp_2}')
 
-        # calculate length of session in ms
-        session_length = (timestamp_2 - timestamp_1)  # / np.timedelta64(1, 'ms')
-        # print(f'sesionlength {session_length}')
+        ts_between = screen_logs[(screen_logs['event'].values == 'ON_USERPRESENT') &
+                                 (screen_logs['correct_timestamp'] > timestamp_1) &
+                                (screen_logs['correct_timestamp'] < timestamp_2)]
 
-        # assign sessionID: count and timestamp? #TODO only use count?
-        session_id = f'{count}-{study_id}'
-        # print(f'sessionId {session_id}')
+        if ts_between.empty:
+            id_saved = timestamps_2['id'].values[0] if not timestamps_2.empty else last_id
+            # print(f'ts2 {timestamp_2}')
 
-        # assign sessionID to all these rows within session timestamps
-        df_logs.loc[((df_logs['correct_timestamp'].values >= timestamp_1) & (
-                df_logs['correct_timestamp'].values <= timestamp_2)), 'session_id'] = session_id
+            # calculate length of session in ms
+            session_length = (timestamp_2 - timestamp_1)  # / np.timedelta64(1, 'ms')
+            # print(f'sesionlength {session_length}')
 
-        # also find the ESM Lock for that session and label it
-        df_logs.loc[((df_logs['correct_timestamp'].values >= timestamp_1) &
-                     (df_logs['id'].values == id_saved) &
-                     (df_logs['eventName'].values == 'ESM')), 'session_id'] = session_id
+            # assign sessionID: count and timestamp? #TODO only use count?
+            session_id = f'{count}-{study_id}'
+            # print(f'sessionId {session_id}')
 
-        # add a new row to sessiondf with sessionid, sessionlngth, first and last timestamp
-        sessions.append({'session_id': session_id, 'count': count, 'session_length': session_length, 'timestamp_1': timestamp_1,
-                         'timestamp_2': timestamp_2})
-        # increment count
-        count += 1
+            # assign sessionID to all these rows within session timestamps
+            df_logs.loc[((df_logs['correct_timestamp'].values >= timestamp_1) & (
+                    df_logs['correct_timestamp'].values <= timestamp_2)), 'session_id'] = count
 
-        # get the new ts1 where timestamp is larger than ts2
-        timestamps_1 = screen_logs[(screen_logs['event'].values == 'ON_USERPRESENT') & (
-                screen_logs['correct_timestamp'].values > timestamp_2)]['correct_timestamp']
+            # also find the ESM Lock for that session and label it
+            df_logs.loc[((df_logs['correct_timestamp'].values >= timestamp_1) &
+                         (df_logs['id'].values == id_saved) &
+                         (df_logs['eventName'].values == 'ESM')), 'session_id'] = count
+
+
+            # add a new row to sessiondf with sessionid, sessionlngth, first and last timestamp
+            sessions.append({'session_id': session_id, 'count': count, 'session_length': session_length, 'timestamp_1': timestamp_1,
+                             'timestamp_2': timestamp_2})
+            # increment count
+            count += 1
+
+            # get the new ts1 where timestamp is larger than ts2
+            timestamps_1 = screen_logs[(screen_logs['event'].values == 'ON_USERPRESENT') & (
+                           screen_logs['correct_timestamp'].values > timestamp_2)]['correct_timestamp']
+        else:
+            # get the new ts1 where timestamp is larger than ts2
+            timestamps_1 = screen_logs[(screen_logs['event'].values == 'ON_USERPRESENT') & (
+                           screen_logs['correct_timestamp'].values > timestamp_1)]['correct_timestamp']
+
         # print(f'new ts1 {timestamps_1.head()}')
 
     sessions_list = pd.DataFrame(sessions)

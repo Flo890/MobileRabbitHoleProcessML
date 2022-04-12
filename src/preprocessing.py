@@ -53,7 +53,7 @@ def extractData():
     # getFromJson.extractUsers(file_path=raw_data_live, end_directory=dataframe_dir_live, is_gzip=True)
 
     # extract logs for files
-    # getFromJson.extract_logs(directory=raw_data_dir_test, end_directory=dataframe_dir_test, save_type=3, is_gzip=True)
+    getFromJson.extract_logs(directory=raw_data_dir_test, end_directory=dataframe_dir_test, save_type=3, is_gzip=True)
     # concat all extracted logs
     getFromJson.concat_user_logs(logs_dic_directory=dataframe_dir_test, end_directory=dataframe_dir_live_logs_sorted)
 
@@ -106,8 +106,6 @@ def preprocessing():
         pickle.dump(dic_installed_apps, f, pickle.HIGHEST_PROTOCOL)
 
 
-
-
 def extract_features():
     path_list = pathlib.Path(dataframe_dir_live).glob('**/*.pickle')
     df_all_sessions = pd.read_pickle(path_testfile_sessions)
@@ -133,11 +131,10 @@ def extract_features():
 
 def print_test_df():
     print('print test')
-    path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\live\SO23BA.pickle'
+    path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted\SO23BA.pickle'
     t = pd.read_pickle(path_testfile)
     # time = t.correct_timestamp
-    print(t.correct_timestamp.head())
-    # t.to_csv(fr'{dataframe_dir_test}\SO23BA_logs_new.csv')
+    t.to_csv(fr'{dataframe_dir_test}\SO23BA_logs_new.csv')
 
     path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions.pickle'
     pickle_in = open(path_testfile_sessions, "rb")
@@ -151,4 +148,4 @@ if __name__ == '__main__':
     # preprocessing()
     extract_features()
 
-    # print_test_df()
+    print_test_df()

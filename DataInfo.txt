@@ -352,5 +352,25 @@ enum class BluetoothDeviceType(val constant: BluetoothClassType) {
     UNKNOWN(-1);
 			
 			
-			
+
+questionnaire
+demografie:
+
+1: Still in school
+2: Finished school with no qualifications
+6: Less than Highschool
+7: High school diploma (GED, Abtitur or equivalent)
+8: University Bacherlor`s degree
+10: University Master`s degree
+11: PHD or higher
+9: OtOther school-leaving qualification:
+
+
+
+gender:
+1: female
+2: male
+3: non-binary
+4: Prefer not to disclose
+5: Other
 			
