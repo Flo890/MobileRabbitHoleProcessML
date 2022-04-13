@@ -136,16 +136,16 @@ def print_test_df():
     # time = t.correct_timestamp
     t.to_csv(fr'{dataframe_dir_test}\SO23BA_logs_new.csv')
 
-    path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions.pickle'
+    path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions_features.pickle'
     pickle_in = open(path_testfile_sessions, "rb")
     sessions = pickle.load(pickle_in)
     test = sessions['SO23BA']
-    test.to_csv(fr'{dataframe_dir_test}\SO23BA_sessions_new.csv')
+    test.to_csv(fr'{dataframe_dir_test}\SO23BA_sessions.csv')
 
 
 if __name__ == '__main__':
     # extractData()
     # preprocessing()
-    extract_features()
+    # extract_features()
 
     print_test_df()

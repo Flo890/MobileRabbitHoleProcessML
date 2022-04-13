@@ -8,6 +8,7 @@ def get_features_for_session(df_logs, df_sessions):
     Extract all features from logs for each user
     :param df_logs: the logs dataframe of one user
     :param df_sessions: the extracted session dataframe of one user
+    :param df_MRH1 the questionnaire df to get the demographics
     :return: the sessions and feature dataframe for one user
     """
 
@@ -21,9 +22,21 @@ def get_features_for_session(df_logs, df_sessions):
     # df_categories = pd.read_csv(categories)
     # new categories with
     # ['App_name' 'Perc_users' 'Training_Coding_1' 'Training_Coding_2' 'Training_Coding_all' 'Rater1' 'Rater2' 'Final_Rating']
-    categories = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\categories\app_categorisation_2020.csv'
-    df_categories = pd.read_csv(categories, sep=';')
+    path_categories = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\categories\app_categorisation_2020.csv'
+    df_categories = pd.read_csv(path_categories, sep=';')
     df_categories.drop(columns=['Perc_users', 'Training_Coding_1', 'Training_Coding_all', 'Training_Coding_2', 'Rater1', 'Rater2'], inplace=True)
+
+    # Add demographics features
+    path_questionnaire_1 = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData'
+    df_MRH1 = pd.read_csv(f'{path_questionnaire_1}\MRH1.csv', sep=',')
+    studyID = df_logs['studyID'].values[0]
+    if not df_MRH1[df_MRH1['IM01_01'].values == studyID].empty:
+        df_qu_user = df_MRH1[df_MRH1['IM01_01'].values == studyID].index.item()
+        df_sessions['f_demographics_gender'] = df_MRH1.loc[df_qu_user, 'SD01'] # where 1: female, 2: male, 3: non-binary, 4: Prefer not to disclose, 5: Other
+        df_sessions['f_demographics_age'] = df_MRH1.loc[df_qu_user, 'SD02_01']
+    else:
+        df_sessions['f_demographics_gender'] = 0 # where 1: female, 2: male, 3: non-binary, 4: Prefer not to disclose, 5: Other
+        df_sessions['f_demographics_age'] = 0
 
     # Prepare feature columns
     pd.to_datetime(df_sessions['timestamp_1'])
@@ -39,7 +52,7 @@ def get_features_for_session(df_logs, df_sessions):
     df_sessions['f_esm_agency'] = ""
 
     df_sessions['f_sequences'] = np.nan
-    #df_sessions['f_sequences'] = df_sessions['f_sequences'].astype(object)
+    # df_sessions['f_sequences'] = df_sessions['f_sequences'].astype(object)
     df_sessions['f_hour_of_day'] = np.nan
     df_sessions['f_weekday'] = np.nan
     df_sessions['f_session_length'] = np.nan
@@ -53,6 +66,7 @@ def get_features_for_session(df_logs, df_sessions):
     df_sessions['f_internet_connected_WIFI'] = pd.Timedelta(days=0)
     df_sessions['f_internet_connected_mobile'] = pd.Timedelta(days=0)
     df_sessions['f_internet_disconnected'] = pd.Timedelta(days=0)
+    df_sessions['f_internet_else'] = pd.Timedelta(days=0)
     df_sessions['f_ringer_mode_silent'] = pd.Timedelta(days=0)
     df_sessions['f_ringer_mode_vibrate'] = pd.Timedelta(days=0)
     df_sessions['f_ringer_mode_normal'] = pd.Timedelta(days=0)
@@ -65,7 +79,6 @@ def get_features_for_session(df_logs, df_sessions):
 
     # grouped_logs = df_logs.groupby('session_id').agg({'count': sum})
     grouped_logs = df_logs.groupby(['studyID', 'session_id'])
-
 
     # Iterate over sessions
     for name, df_group in grouped_logs:
@@ -91,11 +104,11 @@ def get_features_for_session(df_logs, df_sessions):
                 # ---------------  FEATURE FEATURES LAST SESSION ------------------ #
                 # Get last session row, take every features execpt sessionid, ts1 and ts2
                 # df.loc[index_last_session, ~df.columns.isin(['col1', 'col2'])]
-                features_last_sessions = df_sessions.loc[
-                    index_last_session, (df_sessions.columns.values != 'timestamp_1') & (df_sessions.columns.values != 'timestamp_2') & (df_sessions.columns.values != 'session_id')]
-
-                features_last_sessions.add_prefix('last_session_')
-                df_sessions = df_sessions.join(features_last_sessions)
+                # features_last_sessions = df_sessions.loc[
+                #     index_last_session, (df_sessions.columns.values != 'timestamp_1') & (df_sessions.columns.values != 'timestamp_2') & (df_sessions.columns.values != 'session_id')]
+                #
+                # features_last_sessions.add_prefix('last_session_')
+                # df_sessions = df_sessions.join(features_last_sessions)
 
             # ---------------  FEATURE COUNT SESSION IN LAST HOUR ------------------ #
             # Calculate timestamp one hour ago
@@ -230,15 +243,17 @@ def get_features_for_session(df_logs, df_sessions):
                             elif currentInternetState['connectionType'] == 'UNKNOWN':
                                 df_sessions.loc[index_row, 'f_internet_disconnected'] += dif
 
-                            # TODO elif currentInternetState['connectionType'] == 'CONNECTED_ETHERNET':
-                            # TODO elif currentInternetState['connectionType'] == 'CONNECTED_VPN':
+                            else:
+                                df_sessions.loc[index_row, 'f_internet_else'] += dif
+                            # elif currentInternetState['connectionType'] == 'CONNECTED_ETHERNET':
+                            # elif currentInternetState['connectionType'] == 'CONNECTED_VPN':
 
                             # Save the new state as current state
                             currentInternetState = new_state
 
                 # ---------------  FEATURE RINGER MODE ------------------ #
                 elif log.eventName == 'RINGER_MODE':
-                    new_mode = {'mode': log.event, 'timestamp': log.correct_timestamp }
+                    new_mode = {'mode': log.event, 'timestamp': log.correct_timestamp}
 
                     if currentRingerMode['mode'] != new_mode['mode']:
                         # Calculate time difference between current and new state
@@ -377,7 +392,7 @@ def get_features_for_session(df_logs, df_sessions):
 
             # ____________________________ save last ringer mode state ___________________________________#
             if (currentRingerMode['mode'] != 'UNKNOWN_first') & (last_log_event != 'RINGER_MODE'):
-               #  print(last_log_time, currentRingerMode['timestamp'], current_session_start,  current_session_start > currentRingerMode['timestamp'])
+                #  print(last_log_time, currentRingerMode['timestamp'], current_session_start,  current_session_start > currentRingerMode['timestamp'])
                 # Check if cached ringer mode,i if yes take session start if not take chached timestamp
                 if current_session_start > currentRingerMode['timestamp']:
                     dif = last_log_time - current_session_start
