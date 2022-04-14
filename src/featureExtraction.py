@@ -32,10 +32,10 @@ def get_features_for_session(df_logs, df_sessions):
     studyID = df_logs['studyID'].values[0]
     if not df_MRH1[df_MRH1['IM01_01'].values == studyID].empty:
         df_qu_user = df_MRH1[df_MRH1['IM01_01'].values == studyID].index.item()
-        df_sessions['f_demographics_gender'] = df_MRH1.loc[df_qu_user, 'SD01'] # where 1: female, 2: male, 3: non-binary, 4: Prefer not to disclose, 5: Other
+        df_sessions['f_demographics_gender'] = df_MRH1.loc[df_qu_user, 'SD01']  # where 1: female, 2: male, 3: non-binary, 4: Prefer not to disclose, 5: Other
         df_sessions['f_demographics_age'] = df_MRH1.loc[df_qu_user, 'SD02_01']
     else:
-        df_sessions['f_demographics_gender'] = 0 # where 1: female, 2: male, 3: non-binary, 4: Prefer not to disclose, 5: Other
+        df_sessions['f_demographics_gender'] = 0  # where 1: female, 2: male, 3: non-binary, 4: Prefer not to disclose, 5: Other
         df_sessions['f_demographics_age'] = 0
 
     # Prepare feature columns
@@ -463,9 +463,12 @@ def get_features_for_session(df_logs, df_sessions):
                 df_sessions.loc[index_row, 'f_sequences'] = array
                 current_sequence_list = []
 
+    # ------------------- replace esm strings ----------------------- #
     # Transform esm to binary encoding
     # f_esm_intention?  map to Search for information, Messaging No concrete intention or else
-    # df_sessions = pd.get_dummies(df_sessions, columns=['f_esm_finished_intention', 'f_esm_more_than_intention', 'f_esm_emotion'])
+    df_sessions = pd.get_dummies(df_sessions, columns=['f_esm_finished_intention', 'f_esm_more_than_intention', 'f_esm_emotion'])
+    # Dont do it this way as it might gives more importance to higher values
+    # df_sessions = transform_esm_strings(df_sessions)
 
     # df_sessions.to_csv(fr'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\featuretest.csv')
     print("finished extracting features")
@@ -489,6 +492,35 @@ def get_domain_from_url(url):
     ext = tldextract.extract(url)
     # ExtractResult(subdomain='forums.news', domain='cnn', suffix='com')
     return f'{ext.subdomain}.{ext.domain}.{ext.suffix}'
+
+
+esm_emotion_list = {'sadness-melancholy': 1,
+                    'calm-contentment': 2,
+                    'anger-irritation': 3,
+                    'nostalgia-longing': 4,
+                    'anxiety-fear': 5,
+                    'love-tenderness': 6,
+                    'surprise-astonishment': 7,
+                    'shame-guilt': 8,
+                    'disgust-contempt': 9,
+                    'pleasure-enjoyment': 10,
+                    'boredom-indifference': 11,
+                    'interest-expectancy': 12,
+                    'other': 13,
+                    }
+
+yes_no = {'Yes': 1,
+          'No': 0
+          }
+
+
+def transform_esm_strings(df_sessions_features):
+    # Dont do it this way as it might gives more importance to higher values
+    df_sessions_features['f_esm_emotion'].replace(esm_emotion_list, inplace=True)
+    df_sessions_features['f_esm_finished_intention'].replace(yes_no, inplace=True)
+    df_sessions_features['f_esm_more_than_intention'].replace(yes_no, inplace=True)
+    return df_sessions_features
+    # df_logs[logs['event'] == 1].replace(event, inplace=True)
 
 
 if __name__ == '__main__':

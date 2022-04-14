@@ -129,6 +129,21 @@ def extract_features():
         pickle.dump(df_all_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
+def filter_sessions(df_session_features):
+    # Filter the relevant sessions
+    # Get all sessions that are over 45s and have a esm answers (f_esm_finished_intention not empty)
+    threshold = pd.Timedelta(seconds=45)
+    # print(len(df_session_features))
+    # print(len(df_session_features[(df_session_features['f_session_length'] > threshold) ]))
+    # print(len(df_session_features[(df_session_features['f_esm_finished_intention'] != '')]))
+
+    df_filtered_esm = df_session_features[(df_session_features['f_session_length'] > threshold) & (df_session_features['f_esm_finished_intention'] != '')]
+    # print(len(df_filtered_esm))
+    # print(df_filtered_esm[['f_esm_finished_intention', 'f_session_length']])
+
+    print(df_session_features['f_session_length'].mean(numeric_only=False))
+    # Count sessions? Mean session length
+
 def print_test_df():
     print('print test')
     path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted\SO23BA.pickle'
@@ -148,4 +163,15 @@ if __name__ == '__main__':
     # preprocessing()
     # extract_features()
 
-    print_test_df()
+    # path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\example_sessions_features.csv'
+
+    path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions_features.pickle'
+    pickle_in = open(path_testfile_sessions, "rb")
+    sessions = pickle.load(pickle_in)
+    test = sessions['SO23BA']
+    # test = pd.read_csv(path_testfile_sessions)
+    filter_sessions(test)
+
+    # print_test_df(test)
+
+
