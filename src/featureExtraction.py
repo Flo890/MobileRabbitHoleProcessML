@@ -34,9 +34,15 @@ def get_features_for_session(df_logs, df_sessions):
         df_qu_user = df_MRH1[df_MRH1['IM01_01'].values == studyID].index.item()
         df_sessions['f_demographics_gender'] = df_MRH1.loc[df_qu_user, 'SD01']  # where 1: female, 2: male, 3: non-binary, 4: Prefer not to disclose, 5: Other
         df_sessions['f_demographics_age'] = df_MRH1.loc[df_qu_user, 'SD02_01']
+
+        df_sessions['f_absentminded_use'] = df_MRH1.loc[df_qu_user, df_MRH1.columns.str.startswith('AB01')].mean()
+        df_sessions['f_general_use'] = df_MRH1.loc[df_qu_user, df_MRH1.columns.str.startswith('AB02')].mean()
     else:
         df_sessions['f_demographics_gender'] = 0  # where 1: female, 2: male, 3: non-binary, 4: Prefer not to disclose, 5: Other
         df_sessions['f_demographics_age'] = 0
+        df_sessions['f_absentminded_use'] = 0
+        df_sessions['f_general_use'] = 0
+
 
     # Prepare feature columns
     pd.to_datetime(df_sessions['timestamp_1'])

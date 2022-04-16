@@ -133,16 +133,20 @@ def filter_sessions(df_session_features):
     # Filter the relevant sessions
     # Get all sessions that are over 45s and have a esm answers (f_esm_finished_intention not empty)
     threshold = pd.Timedelta(seconds=45)
-    # print(len(df_session_features))
-    # print(len(df_session_features[(df_session_features['f_session_length'] > threshold) ]))
-    # print(len(df_session_features[(df_session_features['f_esm_finished_intention'] != '')]))
+    feature_path = fr'{dataframe_dir}\user-sessions_features.pickle'
+    df_all_sessions = pd.read_pickle(feature_path)
 
-    df_filtered_esm = df_session_features[(df_session_features['f_session_length'] > threshold) & (df_session_features['f_esm_finished_intention'] != '')]
-    # print(len(df_filtered_esm))
-    # print(df_filtered_esm[['f_esm_finished_intention', 'f_session_length']])
+    for studyID in df_all_sessions:
+        df_filtered_esm = df_session_features[(df_session_features['f_session_length'] > threshold) & (df_session_features['f_esm_finished_intention'] != '')]
+        # print(len(df_filtered_esm))
+        # print(df_filtered_esm[['f_esm_finished_intention', 'f_session_length']])
 
     print(df_session_features['f_session_length'].mean(numeric_only=False))
-    # Count sessions? Mean session length
+
+
+    # Calculate mean session count
+    # Calculate mean session lenght (for each user?, all)
+    # Calculate mean rabbit hole sessions
 
 def print_test_df():
     print('print test')
