@@ -146,9 +146,94 @@ def general_absentminded_use():
 
     df_MRH2.to_csv(f'{path_raw}\MRH2_new.csv')
 
-
     # As the p-value comes out to be less than 0.05 hence we reject the null hypothesis.
     # So, we have enough proof to claim that the true mean test score is different for cars before and after applying the different engine oil.
+
+
+def influence():
+    df_MRH2 = pd.read_csv(f'{path_raw}\MRH2.csv', sep=',')
+    # TI01_01  influence: The Rabbit hole tracker application influenced my usual mobile phone interactions.
+    # TI01_02 influence: Because of the rabbit hole tracker, I used my phone more than I usually do.
+    # TI01_03 influence: Because of the rabbit hole tracker, I was more aware of my phone usage.
+    # TI01_04 influence: Because of the rabbit hole tracker, I reduced my mobile phone usage time.
+    # TI01_05 influence: The experience samplings / short questionnaires were shown to frequently.
+    #
+    # TI04_01: esm: I answered the experience samplings / short questionnaires correctly.
+    # TI04_02: esm: The expereince sampling / short questionnaires annoyed me so much so that I just speeded through.
+
+    df_list1 = [(df_MRH2.TI04_01, 'I answered the experience samplings correctly.'),
+                (df_MRH2.TI04_02, 'The experience sampling annoyed me so much so that I just speeded through.'),
+                (df_MRH2.TI01_05, 'The experience samplings were shown too frequently.')]
+
+    df_list2 = [(df_MRH2.TI01_01, 'The Rabbit hole tracker application influenced my usual mobile phone interactions.'),
+                (df_MRH2.TI01_02, 'Because of the rabbit hole tracker, I used my phone more than I usually do.'),
+                (df_MRH2.TI01_03, ' Because of the rabbit hole tracker, I was more aware of my phone usage.'),
+                (df_MRH2.TI01_05, ' Because of the rabbit hole tracker, I reduced my mobile phone usage time.')]
+
+    nrow = 2
+    ncol = 2
+
+    bars = (1, 2, 3, 4, 5, 6, 7)
+    bars_labels = ('1', '2', '3', ' 4', '5', '6', '7')
+    bars_labels_alt = ('1 Strongly disagree', '2', '3', ' 4', '5', '6', '7 Strongly agree')
+    bars_labels_all = ('Strongly disagree', 'Disagree', 'Somewhat disagree', ' Neutral', 'Somewhat agree', 'Agree', 'Strongly agree')
+    fig, axes = plt.subplots(nrow, ncol)
+
+    plot_bar(df_MRH2.TI01_01, bars=bars, labels=bars_labels, axes=axes[0, 0], title='The Rabbit hole tracker application influenced my usual mobile phone interactions.')
+
+    plot_bar(df_MRH2.TI01_02, bars=bars, labels=bars_labels, axes=axes[0, 1], title='Because of the rabbit hole tracker, I used my phone more than I usually do.')
+
+    plot_bar(df_MRH2.TI01_03, bars=bars, labels=bars_labels, axes=axes[1, 0], title='Because of the rabbit hole tracker, I was more aware of my phone usage.')
+
+    plot_bar(df_MRH2.TI01_04, bars=bars, labels=bars_labels, axes=axes[1, 1], title='Because of the rabbit hole tracker, I reduced my mobile phone usage time.')
+
+    plt.subplots_adjust(left=0.1,
+                        bottom=0.1,
+                        right=0.9,
+                        top=0.9,
+                        wspace=0.4,
+                        hspace=0.4)
+    plt.show()
+
+    nrow = 3
+    fig, axes = plt.subplots(nrow)
+    plot_bar(df_MRH2.TI01_05, bars=bars, labels=bars_labels, axes=axes[0], title='The experience samplings  were shown to frequently.')
+    plot_bar(df_MRH2.TI04_01, bars=bars, labels=bars_labels, axes=axes[1], title='I answered the experience samplings correctly.')
+    plot_bar(df_MRH2.TI04_02, bars=bars, labels=bars_labels, axes=axes[2], title='The experience sampling  annoyed me so much so that I just speeded through.')
+    plt.subplots_adjust(left=0.1,
+                        bottom=0.1,
+                        right=0.9,
+                        top=0.9,
+                        wspace=0.4,
+                        hspace=0.6)
+    plt.show()
+
+    # # plt.figure()
+    # p = df_MRH2.TI04_01.value_counts(ascending=True).sort_index(axis=0).plot(kind="bar")
+    # # plt.gca().set_xbound(-1, 7)
+    # plt.title('I answered the experience samplings correctly.')
+    # plt.xlabel('Likert Scale')
+    # plt.ylabel('Counts')
+    # plt.show()
+
+
+def plot_bar(df, bars, labels, title, axes):
+    p = df.value_counts().reindex(bars, fill_value=0).sort_index(axis=0).plot(kind="bar", ax=axes, ylabel='Counts', xlabel='Likert Scale (1=Strongly Disagree, 7=Strongly Agree)', title=title)
+    p.set_xticklabels(labels, rotation=0)
+    return p
+
+
+def plot_subplots_bar(df_list, ncol, nrow):
+    bars = (1, 2, 3, 4, 5, 6, 7)
+    fig, axes = plt.subplots(nrow, ncol)
+    count = 0
+    for r in range(nrow):
+        for c in range(ncol):
+            print(df_list[count][1])
+            df_list[count][0].value_counts().reindex(bars, fill_value=0).sort_index(axis=0).plot(kind="bar", ylabel='Counts', xlabel='Likert Scale (1=Strongly Disagree, 7=Strongly Agree)', title=df_list[count][1])
+            count += 1
+
+    plt.show()
 
 
 def seperate():
@@ -162,6 +247,8 @@ def seperate():
 
 if __name__ == '__main__':
     # seperate()
-    #MRH_questionnaire_1()
+    # MRH_questionnaire_1()
 
-    general_absentminded_use()
+    # general_absentminded_use()
+
+    influence()

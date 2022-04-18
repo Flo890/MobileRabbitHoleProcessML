@@ -37,11 +37,14 @@ def get_features_for_session(df_logs, df_sessions):
 
         df_sessions['f_absentminded_use'] = df_MRH1.loc[df_qu_user, df_MRH1.columns.str.startswith('AB01')].mean()
         df_sessions['f_general_use'] = df_MRH1.loc[df_qu_user, df_MRH1.columns.str.startswith('AB02')].mean()
+        # WLAN name IM06_01
+        wlan_name = df_MRH1.loc[df_qu_user, 'IM06_01']
     else:
         df_sessions['f_demographics_gender'] = 0  # where 1: female, 2: male, 3: non-binary, 4: Prefer not to disclose, 5: Other
         df_sessions['f_demographics_age'] = 0
         df_sessions['f_absentminded_use'] = 0
         df_sessions['f_general_use'] = 0
+        wlan_name = ''
 
 
     # Prepare feature columns
@@ -472,7 +475,7 @@ def get_features_for_session(df_logs, df_sessions):
     # ------------------- replace esm strings ----------------------- #
     # Transform esm to binary encoding
     # f_esm_intention?  map to Search for information, Messaging No concrete intention or else
-    df_sessions = pd.get_dummies(df_sessions, columns=['f_esm_finished_intention', 'f_esm_more_than_intention', 'f_esm_emotion'])
+    # df_sessions = pd.get_dummies(df_sessions, columns=['f_esm_finished_intention', 'f_esm_more_than_intention', 'f_esm_emotion'])
     # Dont do it this way as it might gives more importance to higher values
     # df_sessions = transform_esm_strings(df_sessions)
 

@@ -354,19 +354,8 @@ enum class BluetoothDeviceType(val constant: BluetoothClassType) {
 
  name="esm_emotionList">
         <item>happiness-elation</item>
-        <item>sadness-melancholy</item>
-        <item>calm-contentment</item>
-        <item>anger-irritation</item>
-        <item>nostalgia-longing</item>
-        <item>anxiety-fear</item>
-        <item>love-tenderness</item>
-        <item>surprise-astonishment</item>
-        <item>shame-guilt</item>
-        <item>disgust-contempt</item>
-        <item>pleasure-enjoyment</item>
-        <item>boredom-indifference</item>
-        <item>interest-expectancy</item>
-        <item>other</item>
+
+
 
 
 questionnaire
