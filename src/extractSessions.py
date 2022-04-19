@@ -36,8 +36,9 @@ def extract_sessions(df_logs):
 
     # len(df.index) == 0 - no rows
     # df.dropna().empty
+    print(len(timestamps_1))
     while not timestamps_1.empty:
-        print(len(timestamps_1))
+        # print(len(timestamps_1))
         timestamp_1 = timestamps_1.values[0]
 
         # TODO check if there is no ts2 event before the next ts1 event

@@ -17,16 +17,43 @@ import seaborn as sns
 # add events that were not in sessions? like sms, calls or notifications?
 
 raw_data_dir_test = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\t'
-raw_data_user = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live\recent_2022-03-26T23 31 00Z_absentmindedtrack-default-rtdb_data.json.gz'
+raw_data_user = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live\recent2022-04-17T21 44 59Z_absentmindedtrack-default-rtdb_data.json.gz'
 raw_data_live = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live'
 logs_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\logFiles'
 user_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\cleanedUsers'
 dataframe_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes'
 dataframe_dir_test = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\testing'
 dataframe_dir_live = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\live'
+dataframe_dir_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions'
 dataframe_dir_live_logs_sorted = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted'
 path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions.pickle'
 path_testfile_sessions_all = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user_sessions_all.pickle'
+clean_users_dir_path = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users'
+clean_users_path = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users\cleaned_users.pickle'
+
+
+def extractData():
+    # only run once
+    # getFromJson.extractUsers(file_path=raw_data_live, end_directory=dataframe_dir_live, is_gzip=True)
+
+    # extract logs for files
+    # getFromJson.extract_logs(directory=raw_data_live, end_directory=dataframe_dir_live, save_type=3, is_gzip=True)
+
+    # concat all extracted logs
+    # getFromJson.concat_user_logs(logs_dic_directory=dataframe_dir_live, end_directory=dataframe_dir_live_logs_sorted)
+    # user_list = getFromJson.getStudIDlist(clean_users_path)
+    # user_list = ['IN24RA', 'so30vo', 'NI23HE', 'vi03th', 'AN23GE', 'BI21FR', 'ju05ab', 'EW11FR', 'KE18ZA', 'ZA23PA', 'TH28RU', 'ha07fl', 'MO22GO', 'NA07WE', 'AN09BI', 'PI02MA', 'EL28LO', 'BR04WO', 'IR03JO', 'PA29BU', 'SHTUSI', 'IM12WE', 'AY1221', 'ta22ar', 'CR11AI', 'MA06DR', 'AN06PE', 'SA23BR', 'CO07FA', 'IR18RA', 'BA10SC', 'SO23BA', 'LE13FO']
+    user_list = [('LE13FO', 'vi03th'), ('AN23GE', 'BI21FR'), ('ju05ab', 'EW11FR'), ('KE18ZA', 'ZA23PA'), ('TH28RU', 'ha07fl'), ('MO22GO', 'NA07WE'), ('AN09BI', 'PI02MA'), ('EL28LO', 'BR04WO'), ('IR03JO', 'PA29BU'), ('SHTUSI', 'IM12WE'), ('AY1221', 'ta22ar'), ('CR11AI', 'MA06DR'), ('AN06PE', 'SA23BR'), ('CO07FA', 'IR18RA'), ('BA10SC', 'SO23BA')]
+    user_list = [('LE13FO', 'vi03th', 'AN23GE', 'BI21FR'), ('ju05ab', 'EW11FR','KE18ZA', 'ZA23PA'), ('TH28RU', 'ha07fl','MO22GO', 'NA07WE'), ('AN09BI', 'PI02MA','EL28LO', 'BR04WO'), ('IR03JO', 'PA29BU','SHTUSI', 'IM12WE'), ('AY1221', 'ta22ar','CR11AI', 'MA06DR'), ('AN06PE', 'SA23BR','CO07FA', 'IR18RA'), ('BA10SC', 'SO23BA', 'tt', 'zz')]
+
+    for item in user_list:
+        print(item)
+        getFromJson.concat_logs_one_user(logs_dic_directory=dataframe_dir_live, end_directory=dataframe_dir_live_logs_sorted, studyID=item)
+
+
+
+def extractUser():
+    getFromJson.extractUsers(file_path=raw_data_user, end_directory=clean_users_dir_path, is_gzip=True)
 
 
 def cleanup(df_logs):
@@ -50,17 +77,6 @@ def cleanup(df_logs):
 
     return df_logs
 
-
-def extractData():
-    # only run once
-    # getFromJson.extractUsers(file_path=raw_data_live, end_directory=dataframe_dir_live, is_gzip=True)
-
-    # extract logs for files
-    getFromJson.extract_logs(directory=raw_data_dir_test, end_directory=dataframe_dir_test, save_type=3, is_gzip=True)
-    # concat all extracted logs
-    getFromJson.concat_user_logs(logs_dic_directory=dataframe_dir_test, end_directory=dataframe_dir_live_logs_sorted)
-
-
 def preprocessing():
     """
     Run all necessary preprocessing steps,
@@ -71,8 +87,8 @@ def preprocessing():
     dic_device = {}
     dic_installed_apps = {}
 
-    user_sessions = {}
-    list_user_sessions_all = []
+    # user_sessions = {}
+    # list_user_sessions_all = []
 
     for data_path in path_list:
         path_in_str = str(data_path)
@@ -96,25 +112,25 @@ def preprocessing():
         dic_installed_apps[data_path.stem] = df_logs[df_logs['event'] == 'INSTALLED_APP']['packageName']
 
         extracted = extractSessions.extract_sessions(df_logs)
-        user_sessions[data_path.stem] = extracted[1]
-        list_user_sessions_all.append(extracted[1])
+        # user_sessions[data_path.stem] = extracted[1]
+        # list_user_sessions_all.append(extracted[1])
 
-        with open(fr'{dataframe_dir_live}\{data_path.stem}.pickle', 'wb') as f:
+        with open(fr'{dataframe_dir_live_logs_sorted}\{data_path.stem}.pickle', 'wb') as f:
             pickle.dump(extracted[0], f, pickle.HIGHEST_PROTOCOL)
             f.close()
 
-    with open(fr'{dataframe_dir_live}\user-sessions.pickle', 'wb') as f:
-        pickle.dump(user_sessions, f, pickle.HIGHEST_PROTOCOL)
+        with open(fr'{dataframe_dir_sessions}\{data_path.stem}-sessions.pickle', 'wb') as f:
+            pickle.dump(extracted[1], f, pickle.HIGHEST_PROTOCOL)
 
     # user_sessions_all = pd.concat(list_user_sessions_all, ignore_index=False)
     # user_sessions_all.to_csv(fr'{dataframe_dir_live}\user_sessions_all.csv')
     # with open(fr'{dataframe_dir_live}\user_sessions_all.pickle', 'wb') as f:
     #     pickle.dump(user_sessions, f, pickle.HIGHEST_PROTOCOL)
 
-    with open(fr'{dataframe_dir_live}\user-device_info.pickle', 'wb') as f:
+    with open(fr'{clean_users_dir_path}\user-device_info.pickle', 'wb') as f:
         pickle.dump(dic_device, f, pickle.HIGHEST_PROTOCOL)
 
-    with open(fr'{dataframe_dir_live}\user-installed_apps.pickle', 'wb') as f:
+    with open(fr'{clean_users_dir_path}\user-installed_apps.pickle', 'wb') as f:
         pickle.dump(dic_installed_apps, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -141,8 +157,20 @@ def extract_features():
 
     test = df_all_sessions['SO23BA']
     test.to_csv(fr'{dataframe_dir_test}\SO23BA_sessions_features.csv')
-    with open(fr'{dataframe_dir}\user-sessions_features.pickle', 'wb') as f:
+    with open(fr'{clean_users_dir_path}\user-sessions_features.pickle', 'wb') as f:
         pickle.dump(df_all_sessions, f, pickle.HIGHEST_PROTOCOL)
+
+def check_for_activity():
+    path_list = pathlib.Path(dataframe_dir_live_logs_sorted).glob('**/*.pickle')
+    for data_path in path_list:
+        path_in_str = str(data_path)
+        # df_all_logs = pd.read_pickle(path_in_str)
+
+        print(data_path.stem)
+        # session_for_id = df_all_sessions[data_path.stem]
+        result = featureExtraction.checkforactivity(pd.read_pickle(path_in_str))
+        print(result)
+
 
 
 def filter_sessions_user_based():
@@ -291,32 +319,34 @@ def concat_features():
 
 def print_test_df():
     print('print test')
-    path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted\SO23BA.pickle'
+    path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted\BR22NO.pickle'
     t = pd.read_pickle(path_testfile)
     # time = t.correct_timestamp
-    t.to_csv(fr'{dataframe_dir_test}\SO23BA_logs_new.csv')
+    t.to_csv(fr'{dataframe_dir_test}\BR22NO_logs_new.csv')
 
-    path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions_features.pickle'
-    pickle_in = open(path_testfile_sessions, "rb")
-    sessions = pickle.load(pickle_in)
-    test = sessions['SO23BA']
-    test.to_csv(fr'{dataframe_dir_test}\SO23BA_sessions.csv')
+    # path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions_features.pickle'
+    # pickle_in = open(path_testfile_sessions, "rb")
+    # sessions = pickle.load(pickle_in)
+    # test = sessions['SO23BA']
+    # test.to_csv(fr'{dataframe_dir_test}\SO23BA_sessions.csv')
 
 
 if __name__ == '__main__':
     # extractData()
-    # preprocessing()
-    #extract_features()
+    # extractUser()
+    # check_for_activity()
+    preprocessing()
+    # extract_features()
     #concat_features()
 
     # path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\example_sessions_features.csv'
 
-    path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions_features.pickle'
-    pickle_in = open(path_testfile_sessions, "rb")
-    sessions = pickle.load(pickle_in)
-    test = sessions['SO23BA']
-    # test = pd.read_csv(path_testfile_sessions)
-    # filter_sessions()
-    filter_sessions_all()
+    # path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions_features.pickle'
+    # pickle_in = open(path_testfile_sessions, "rb")
+    # sessions = pickle.load(pickle_in)
+    # test = sessions['SO23BA']
+    # # test = pd.read_csv(path_testfile_sessions)
+    # # filter_sessions()
+    # filter_sessions_all()
 
-    # print_test_df(test)
+    # print_test_df()

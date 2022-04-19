@@ -183,6 +183,27 @@ enum class ActivityType {
     UNKNOWN
 }
 
+LogEvent(eventName=LogEventName.ACTIVITY, timestamp=timestamp, event=activity, description=transition, name=elapasedTime.toString())
+
+//7 for walking and 8 for running
+event.getActivityType());
+
+// 0 for enter, 1 for exit
+event.getTransitionType());
+    private fun userFacingTransition(type: Int): String {
+        return when (type) {
+            ActivityTransition.ACTIVITY_TRANSITION_ENTER -> {
+                ActivityTransitionType.ACTIVITY_TRANSITION_ENTER.name
+            }
+            ActivityTransition.ACTIVITY_TRANSITION_EXIT -> {
+                ActivityTransitionType.ACTIVITY_TRANSITION_EXIT.name
+            }
+            else -> {
+                ActivityTransitionType.ACTIVITY_TRANSITION_UNKNOWN.name
+            }
+        }
+    }
+
 enum class ActivityTransitionType {
     ACTIVITY_TRANSITION_ENTER,
     ACTIVITY_TRANSITION_EXIT,

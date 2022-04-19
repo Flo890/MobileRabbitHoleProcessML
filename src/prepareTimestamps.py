@@ -16,7 +16,6 @@ def process_timestamps(df_logs):
     #  df_logs["correct_timestamp"] = df_logs["timestamp"] + df_logs["timezoneOffset"]
 
     # Add timezoneOffset to timestamps and convert milliseconds to date format
-    # TODO CHECK IF CORRECT TIMESTAMP INCLUDES MILLISECONDS???
     df_logs['correct_timestamp'] = pd.to_datetime(df_logs["timestamp"] + df_logs["timezoneOffset"], yearfirst=True, unit='ms')
 
     # TODO Drop the old timestamp and timezone offset?

@@ -100,6 +100,47 @@ def merge_two_dicts(x, y):
     return z
 
 
+def concat_logs_one_user(logs_dic_directory, end_directory, studyID):
+    print("_____ concatUser _____")
+    pathlist = pathlib.Path(logs_dic_directory).glob('**/*.pickle')
+
+    # logs_dic = pd.DataFrame()
+    logs_dic_0 = {}
+    for id in studyID:
+        logs_dic_0[id] = []
+
+    for data_path in pathlist:
+        path_in_str = str(data_path)
+        print(f"read dic: {path_in_str}")
+        with open(path_in_str, 'rb') as file:
+            read_logs_dic = pickle.load(file)
+
+        for id in studyID:
+            index = studyID.index(id)
+            if studyID[index] in read_logs_dic:
+                print(studyID[index], 'append')
+                # logs_dic = pd.concat([logs_dic, read_logs_dic[studyID]], ignore_index=False)
+                logs_dic_0[id].append(read_logs_dic[studyID[index]])
+            else:
+                print(studyID[index], 'not append')
+
+    try:
+        for id in studyID:
+            index = studyID.index(id)
+            if logs_dic_0[id]:
+                print('save', studyID[index])
+                df = pd.concat(logs_dic_0[id])
+                df["studyID"] = studyID[index]
+                output_users_name_dic = fr"{end_directory}\{studyID[index]}.pickle"
+                with open(output_users_name_dic, 'wb') as f:
+                    # Pickle the 'data' dictionary using the highest protocol available.
+                    pickle.dump(df, f, pickle.HIGHEST_PROTOCOL)
+    except:
+        print('no concat')
+
+    print(f"saved logs for {studyID}")
+
+
 def concat_user_logs(logs_dic_directory, end_directory):
     print("_____ concatUser _____")
     pathlist = pathlib.Path(logs_dic_directory).glob('**/*.pickle')
@@ -128,9 +169,9 @@ def concat_user_logs(logs_dic_directory, end_directory):
     print('concat')
     for key in logs_dic.keys():
         #  try:
-        #print(type(logs_dic[key]))
+        # print(type(logs_dic[key]))
         # print(logs_dic[key])
-        #df_concat = pd.concat(logs_dic[key], ignore_index=False)
+        # df_concat = pd.concat(logs_dic[key], ignore_index=False)
         # add a colum with the studyId to each log
         logs_dic[key]["studyID"] = key
 
@@ -201,7 +242,7 @@ def extractUsers(file_path, end_directory, is_gzip):
 
     users_final.to_csv(fr'{end_directory}\cleand_users.csv')
 
-    output_users_name = fr"{end_directory}\cleaned_users.json"
+    output_users_name = fr"{end_directory}\cleaned_users.pickle"
     with open(output_users_name, "wb") as f:
         pickle.dump(users_final, f, pickle.HIGHEST_PROTOCOL)
 
@@ -212,12 +253,21 @@ def getStudyID(studyID_email):
     study_id = re.sub('@email\.com$', '', str(studyID_email))
     return study_id
 
-# if __name__ == '__main__':
-#     raw_data_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live'
-#     raw_data_user = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live\2022-03-25T00 44 32Z_1Uhr46absentmindedtrack-default-rtdb_data.json.gz'
-#     logs_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\logFiles'
-#     user_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\cleanedUsers'
-#     dataframe_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes'
+
+def getStudIDlist(path_cleaned_users):
+    cleand_users = pd.read_pickle(path_cleaned_users)
+    return cleand_users['account_email'].apply(getStudyID).tolist()
+
+
+if __name__ == '__main__':
+    #     raw_data_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live'
+    #     raw_data_user = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live\2022-03-25T00 44 32Z_1Uhr46absentmindedtrack-default-rtdb_data.json.gz'
+    #     logs_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\logFiles'
+    #     user_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\cleanedUsers'
+    #     dataframe_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes'
+    clean_users_path = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users\cleaned_users.pickle'
+    r = getStudIDlist(clean_users_path)
+    print(r)
 #
 #     # extractUsers(raw_data_user)
 #     extract_logs(directory=raw_data_dir, end_directory=logs_dir,  save_type=3)

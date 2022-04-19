@@ -2,6 +2,10 @@ import pandas as pd
 import numpy as np
 import tldextract
 
+def checkforactivity(df_logs):
+    activity_logs = df_logs[(df_logs['eventName'].values == 'ACTIVITY')]
+    print('logs empty activty', activity_logs.empty)
+    return not activity_logs.empty
 
 def get_features_for_session(df_logs, df_sessions):
     """
@@ -85,6 +89,7 @@ def get_features_for_session(df_logs, df_sessions):
     currentApp = {"packageName": 'UNKNOWN_first', "timestamp": np.nan}
     current_sequence_list = []
     currentRingerMode = {'mode': 'UNKNOWN_first', 'timestamp': np.nan}
+    currentActivity = {'activity': 'UNKNOWN_first', 'transition': 'UNKNOWN_first', 'timestamp': np.nan}
 
     # grouped_logs = df_logs.groupby('session_id').agg({'count': sum})
     grouped_logs = df_logs.groupby(['studyID', 'session_id'])
@@ -147,9 +152,6 @@ def get_features_for_session(df_logs, df_sessions):
             # ---------------  FEATURE SESSION LENGTH------------------ #
             # df_row['f_session_length'] = df_row['timestamp_2'] - df_row['timestamp_1']
             df_sessions.loc[index_row, 'f_session_length'] = df_row['timestamp_2'].iloc[0] - df_row['timestamp_1'].iloc[0]
-
-            # ---------------  FEATURE SESSION COUNTS ------------------ #
-            # TODO session counts?
 
             # Iterate over all logs of the current session group
             for log in df_group.itertuples():
@@ -316,6 +318,11 @@ def get_features_for_session(df_logs, df_sessions):
                 elif log.eventName == 'ACTIVITY':
                     print("!!!!!!!!!!!!!!!!!!!!found acitvity!!!!!!!!!!!!!!!!!!!!!!!!")
                     df_sessions['f_activity'] = 0
+                    # # LogEvent(eventName=LogEventName.ACTIVITY, timestamp=timestamp, event=activity, description=transition, name=elapasedTime.toString())
+                    # # currentActivity = {'activity': 'UNKNOWN_first', 'transition': 'UNKNOWN_first', 'timestamp': np.nan}
+                    # if currentActivity['activity'] == 'UNKNOWN_first':
+                    #         currentActivity = {'activity': log.event, 'transition': log.description, 'timestamp': np.nan}
+                    # #  else:
 
                 # ---------------  FEATURE USED APPS + SEQUENCE ------------------ #
                 elif log.eventName == 'USAGE_EVENTS':
