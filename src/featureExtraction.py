@@ -2,10 +2,12 @@ import pandas as pd
 import numpy as np
 import tldextract
 
+
 def checkforactivity(df_logs):
     activity_logs = df_logs[(df_logs['eventName'].values == 'ACTIVITY')]
     print('logs empty activty', activity_logs.empty)
     return not activity_logs.empty
+
 
 def get_features_for_session(df_logs, df_sessions):
     """
@@ -42,14 +44,12 @@ def get_features_for_session(df_logs, df_sessions):
         df_sessions['f_absentminded_use'] = df_MRH1.loc[df_qu_user, df_MRH1.columns.str.startswith('AB01')].mean()
         df_sessions['f_general_use'] = df_MRH1.loc[df_qu_user, df_MRH1.columns.str.startswith('AB02')].mean()
         # WLAN name IM06_01
-        wlan_name = df_MRH1.loc[df_qu_user, 'IM06_01']
     else:
         df_sessions['f_demographics_gender'] = 0  # where 1: female, 2: male, 3: non-binary, 4: Prefer not to disclose, 5: Other
         df_sessions['f_demographics_age'] = 0
         df_sessions['f_absentminded_use'] = 0
         df_sessions['f_general_use'] = 0
         wlan_name = ''
-
 
     # Prepare feature columns
     pd.to_datetime(df_sessions['timestamp_1'])
@@ -69,27 +69,30 @@ def get_features_for_session(df_logs, df_sessions):
     df_sessions['f_hour_of_day'] = np.nan
     df_sessions['f_weekday'] = np.nan
     df_sessions['f_session_length'] = np.nan
-    df_sessions['f_time_since_last_session'] = pd.Timedelta(days=0)
+    df_sessions['f_time_since_last_session'] = 0 # pd.Timedelta(days=0)
     df_sessions['f_glances_since_last_session'] = 0
     df_sessions['f_count_session_1h'] = 0
     df_sessions['f_count_session_2h'] = 0
     df_sessions['f_count_session_3h'] = 0
     df_sessions['f_clicks'] = 0
     df_sessions['f_scrolls'] = 0
-    df_sessions['f_internet_connected_WIFI'] = pd.Timedelta(days=0)
-    df_sessions['f_internet_connected_mobile'] = pd.Timedelta(days=0)
-    df_sessions['f_internet_disconnected'] = pd.Timedelta(days=0)
-    df_sessions['f_internet_else'] = pd.Timedelta(days=0)
-    df_sessions['f_ringer_mode_silent'] = pd.Timedelta(days=0)
-    df_sessions['f_ringer_mode_vibrate'] = pd.Timedelta(days=0)
-    df_sessions['f_ringer_mode_normal'] = pd.Timedelta(days=0)
-    df_sessions['f_ringer_mode_unknown'] = pd.Timedelta(days=0)
+    df_sessions['f_internet_connected_WIFI'] = 0 #pd.Timedelta(days=0)
+    df_sessions['f_internet_connected_mobile'] = 0 # pd.Timedelta(days=0)
+    df_sessions['f_internet_disconnected'] = 0 # pd.Timedelta(days=0)
+    df_sessions['f_internet_else'] = 0 # pd.Timedelta(days=0)
+    df_sessions['f_ringer_mode_silent'] = 0 # pd.Timedelta(days=0)
+    df_sessions['f_ringer_mode_vibrate'] = 0 # pd.Timedelta(days=0)
+    df_sessions['f_ringer_mode_normal'] = 0 # pd.Timedelta(days=0)
+    df_sessions['f_ringer_mode_unknown'] = 0 # pd.Timedelta(days=0)
 
     currentInternetState = {'connectionType': 'UNKNOWN_first', 'wifiState': 'UNKNOWN_first', 'wifiName': '', 'timestamp': np.nan}
     currentApp = {"packageName": 'UNKNOWN_first', "timestamp": np.nan}
     current_sequence_list = []
+    current_app_sequence_list = []
     currentRingerMode = {'mode': 'UNKNOWN_first', 'timestamp': np.nan}
     currentActivity = {'activity': 'UNKNOWN_first', 'transition': 'UNKNOWN_first', 'timestamp': np.nan}
+
+    bag_of_apps_vocab = []
 
     # grouped_logs = df_logs.groupby('session_id').agg({'count': sum})
     grouped_logs = df_logs.groupby(['studyID', 'session_id'])
@@ -97,7 +100,6 @@ def get_features_for_session(df_logs, df_sessions):
     # Iterate over sessions
     for name, df_group in grouped_logs:
         if name[1]:  # | (not pd.isna(name):# if name is not empty
-            print("group ", name)
             # Get the df_session row of the current session to assign the values to
             df_row = df_sessions[(df_sessions['count'].values == name[1])]
             index_row = df_sessions[(df_sessions['count'].values == name[1])].index.item()
@@ -107,7 +109,7 @@ def get_features_for_session(df_logs, df_sessions):
             index_last_session = index_row - 1
             if index_last_session > 0:
                 last_session_end = df_sessions['timestamp_2'].iloc[index_last_session]
-                df_sessions.loc[index_row, 'f_time_since_last_session'] = current_session_start - last_session_end
+                df_sessions.loc[index_row, 'f_time_since_last_session'] = round((current_session_start - last_session_end).total_seconds() * 1000)
 
                 # GLances: get all screen ON_LOCKED events between last session ts and current session ts
                 glances_count = len(df_logs[(df_logs['event'].values == 'ON_LOCKED') &
@@ -186,6 +188,7 @@ def get_features_for_session(df_logs, df_sessions):
 
                 # ---------------  FEATURE SCROLL AND CLICK COUNT ------------------ #
                 elif (log.eventName == 'ACCESSIBILITY') | (log.event == 'ACCESSIBILITY_KEYBOARD_INPUT'):
+
                     if log.event == 'TYPE_VIEW_CLICKED':  # TODO also include context clicked, long clicks?
                         df_sessions.loc[index_row, 'f_clicks'] += 1
                         if f'f_clicks_{log.packageName}' not in df_sessions.columns:
@@ -194,6 +197,14 @@ def get_features_for_session(df_logs, df_sessions):
                         pre = df_sessions.loc[index_row, f'f_clicks_{log.packageName}'] + 1
                         df_sessions.loc[index_row, f'f_clicks_{log.packageName}'] = pre
 
+                        # ----- save clicks per app category ------#
+                        app_category = get_app_category(df_categories, log.packageName)
+                        if f'f_clicks_app_category_{app_category}' not in df_sessions.columns:
+                            df_sessions[f'f_clicks_app_category_{app_category}'] = 0
+
+                        pre_count_cat = df_sessions.loc[index_row, f'f_clicks_app_category_{app_category}'] + 1
+                        df_sessions.loc[index_row, f'f_clicks_app_category_{app_category}'] = pre_count_cat
+
                     elif log.event == 'TYPE_VIEW_SCROLLED':
                         df_sessions.loc[index_row, 'f_scrolls'] += 1
                         if f'f_scrolls_{log.packageName}' not in df_sessions.columns:
@@ -201,6 +212,14 @@ def get_features_for_session(df_logs, df_sessions):
 
                         pre = df_sessions.loc[index_row, f'f_scrolls_{log.packageName}'] + 1
                         df_sessions.loc[index_row, f'f_scrolls_{log.packageName}'] = pre
+
+                        # ----- save scrolls per app category ------ #
+                        app_category = get_app_category(df_categories, log.packageName)
+                        if f'f_scrolls_app_category_{app_category}' not in df_sessions.columns:
+                            df_sessions[f'f_scrolls_app_category_{app_category}'] = 0
+
+                        pre_count_cat = df_sessions.loc[index_row, f'f_scrolls_app_category_{app_category}'] + 1
+                        df_sessions.loc[index_row, f'f_scrolls_app_category_{app_category}'] = pre_count_cat
 
                 # ---------------  FEATURE SEQUENCE BrowserURL------------------ #
                 elif log.eventName == 'ACCESSIBILITY_BROWSER_URL':
@@ -212,14 +231,22 @@ def get_features_for_session(df_logs, df_sessions):
                     seq = ('BROWSER_URL', get_domain_from_url(log.description))
                     current_sequence_list.append(seq)
 
+                    if 'f_browser_url' not in df_sessions.columns:
+                        df_sessions['f_browser_url'] = 0
+
+                    pre = df_sessions.loc[index_row, 'f_browser_url'] + 1
+                    df_sessions.loc[index_row, 'f_browser_url'] = pre
+
                 # ---------------  FEATURE NOTIFICATION ------------------ #
                 elif log.eventName == 'NOTIFICATION':
                     # TODO CLEANUP, meybe use usage stats for that as well
+                    # ONLY Add notification posted not removed?
 
                     #  MetaNotification(
                     #  priority, category, infoText, subText, interaction = action.name)
                     # LogEvent(LogEventName.NOTIFICATION, timestamp, event = title, description = text, packageName = packageName)
-                    current_sequence_list.append((log.eventName, log.packageName))
+                    current_sequence_list.append((log.interaction, log.packageName))
+
 
                 # ---------------  FEATURE INTERNET CONNECTION ------------------ #
                 elif log.eventName == 'INTERNET':
@@ -236,6 +263,7 @@ def get_features_for_session(df_logs, df_sessions):
 
                         else:
                             dif = new_state['timestamp'] - currentInternetState['timestamp']
+                            dif = round(dif.total_seconds() * 1000)
                             # add old state to feature table
                             if currentInternetState['connectionType'] == 'CONNECTED_WIFI':
                                 df_sessions.loc[index_row, 'f_internet_connected_WIFI'] += dif
@@ -243,7 +271,7 @@ def get_features_for_session(df_logs, df_sessions):
                                 #  Also add the tme spent in specific wifi network
                                 wifi = currentInternetState['wifiName']
                                 if f'f_internet_connected_WIFI_{wifi}' not in df_sessions.columns:
-                                    df_sessions[f'f_internet_connected_WIFI_{wifi}'] = pd.Timedelta(days=0)
+                                    df_sessions[f'f_internet_connected_WIFI_{wifi}'] = 0 # pd.Timedelta(days=0)
 
                                 pre = df_sessions.loc[index_row, f'f_internet_connected_WIFI_{wifi}'] + dif
                                 df_sessions.loc[index_row, f'f_internet_connected_WIFI_{wifi}'] = pre
@@ -275,9 +303,9 @@ def get_features_for_session(df_logs, df_sessions):
                             # Check if cached ringer mode,i if yes take session start if not take chached timestamp
                             # print(new_mode['timestamp'], currentRingerMode['timestamp'], current_session_start)
                             if current_session_start > currentRingerMode['timestamp']:
-                                dif = new_mode['timestamp'] - current_session_start
+                                dif = round((new_mode['timestamp'] - current_session_start).total_seconds() * 1000)
                             else:
-                                dif = new_mode['timestamp'] - currentRingerMode['timestamp']
+                                dif = round((new_mode['timestamp'] - currentRingerMode['timestamp']).total_seconds() * 1000)
 
                             # add old state to feature table
                             if currentRingerMode['mode'] == 'NORMAL_MODE':
@@ -331,11 +359,18 @@ def get_features_for_session(df_logs, df_sessions):
                     # Check if it is activity resumed (ignore stopped and paused) when package name different and take this as endpoint for previous
                     if (currentApp['packageName'] != log.packageName) & (log.event == 'ACTIVITY_RESUMED'):
 
+                        # Save the new app to sequence lists
+                        current_sequence_list.append(('APP', log.packageName))
+                        current_app_sequence_list.append(log.packageName)
+
+                        if log.packageName not in bag_of_apps_vocab:
+                            bag_of_apps_vocab.append(log.packageName)
+
                         if currentApp['packageName'] == 'UNKNOWN_first':
                             currentApp = {"packageName": log.packageName, "timestamp": log.correct_timestamp}
                         else:
                             # Save the new app to sequence list
-                            current_sequence_list.append(('APP', log.packageName))
+                            # current_sequence_list.append(('APP', log.packageName))
                             # ___________________________________________________________________________________________#
                             # Save current app count
                             packagename = currentApp['packageName']
@@ -348,10 +383,10 @@ def get_features_for_session(df_logs, df_sessions):
 
                             # ___________________________________________________________________________________________#
                             # Save time spent on app
-                            time_spent = log.correct_timestamp - currentApp['timestamp']
+                            time_spent = round((log.correct_timestamp - currentApp['timestamp']).total_seconds() * 1000)
 
                             if f'f_app_time_{packagename}' not in df_sessions.columns:
-                                df_sessions[f'f_app_time_{packagename}'] = pd.Timedelta(days=0)
+                                df_sessions[f'f_app_time_{packagename}'] = 0 # pd.Timedelta(days=0)
 
                             pre_time = df_sessions.loc[index_row, f'f_app_time_{packagename}'] + time_spent
                             df_sessions.loc[index_row, f'f_app_time_{packagename}'] = pre_time
@@ -369,7 +404,7 @@ def get_features_for_session(df_logs, df_sessions):
                             # ___________________________________________________________________________________________#
                             # save time spent on category
                             if f'f_app_category_time_{app_category}' not in df_sessions.columns:
-                                df_sessions[f'f_app_category_time_{app_category}'] = pd.Timedelta(days=0)
+                                df_sessions[f'f_app_category_time_{app_category}'] = 0 # pd.Timedelta(days=0)
 
                             pre_time_cat = df_sessions.loc[
                                                index_row, f'f_app_category_time_{app_category}'] + time_spent
@@ -385,7 +420,7 @@ def get_features_for_session(df_logs, df_sessions):
 
             # ____________________________ save last internet sate ___________________________________#
             if (currentInternetState['connectionType'] != 'UNKNOWN_first') & (last_log_event != 'INTERNET'):
-                dif = last_log_time - currentInternetState['timestamp']
+                dif = round((last_log_time - currentInternetState['timestamp']).total_seconds() * 1000)
 
                 # add old state to feature table
                 if currentInternetState['connectionType'] == 'CONNECTED_WIFI':
@@ -394,7 +429,7 @@ def get_features_for_session(df_logs, df_sessions):
                     #  Also add the tme spent in specific wifi network
                     wifi = currentInternetState['wifiName']
                     if f'f_internet_connected_WIFI_{wifi}' not in df_sessions.columns:
-                        df_sessions[f'f_internet_connected_WIFI_{wifi}'] = pd.Timedelta(days=0)
+                        df_sessions[f'f_internet_connected_WIFI_{wifi}'] = 0 # pd.Timedelta(days=0)
 
                     pre = df_sessions.loc[index_row, f'f_internet_connected_WIFI_{wifi}'] + dif
                     df_sessions.loc[index_row, f'f_internet_connected_WIFI_{wifi}'] = pre
@@ -411,9 +446,9 @@ def get_features_for_session(df_logs, df_sessions):
                 #  print(last_log_time, currentRingerMode['timestamp'], current_session_start,  current_session_start > currentRingerMode['timestamp'])
                 # Check if cached ringer mode,i if yes take session start if not take chached timestamp
                 if current_session_start > currentRingerMode['timestamp']:
-                    dif = last_log_time - current_session_start
+                    dif = round((last_log_time - current_session_start).total_seconds() * 1000)
                 else:
-                    dif = last_log_time - currentRingerMode['timestamp']
+                    dif = round((last_log_time - currentRingerMode['timestamp']).total_seconds() * 1000)
                 # add old state to feature table
                 if currentRingerMode['mode'] == 'NORMAL_MODE':
                     df_sessions.loc[index_row, 'f_ringer_mode_normal'] += dif
@@ -441,10 +476,10 @@ def get_features_for_session(df_logs, df_sessions):
 
                 # ___________________________________________________________________________________________#
                 # Save time spent on app
-                time_spent = last_log_time - currentApp['timestamp']
+                time_spent = round((last_log_time - currentApp['timestamp']).total_seconds() * 1000)
 
                 if f'f_app_time_{packagename}' not in df_sessions.columns:
-                    df_sessions[f'f_app_time_{packagename}'] = pd.Timedelta(days=0)
+                    df_sessions[f'f_app_time_{packagename}'] = 0 # pd.Timedelta(days=0)
 
                 pre_time = df_sessions.loc[index_row, f'f_app_time_{packagename}'] + time_spent
                 df_sessions.loc[index_row, f'f_app_time_{packagename}'] = pre_time
@@ -462,7 +497,7 @@ def get_features_for_session(df_logs, df_sessions):
                 # ___________________________________________________________________________________________#
                 # save time spent on category
                 if f'f_app_category_time_{app_category}' not in df_sessions.columns:
-                    df_sessions[f'f_app_category_time_{app_category}'] = pd.Timedelta(days=0)
+                    df_sessions[f'f_app_category_time_{app_category}'] = 0 # pd.Timedelta(days=0)
 
                 pre_time_cat = df_sessions.loc[
                                    index_row, f'f_app_category_time_{app_category}'] + time_spent
@@ -479,6 +514,13 @@ def get_features_for_session(df_logs, df_sessions):
                 df_sessions.loc[index_row, 'f_sequences'] = array
                 current_sequence_list = []
 
+            if len(current_app_sequence_list) > 0:
+                array = np.array([object])
+                array[0] = current_app_sequence_list
+                # print(current_sequence_list)
+                df_sessions.loc[index_row, 'f_sequences_apps'] = array
+                current_app_sequence_list = []
+
     # ------------------- replace esm strings ----------------------- #
     # Transform esm to binary encoding
     # f_esm_intention?  map to Search for information, Messaging No concrete intention or else
@@ -488,7 +530,7 @@ def get_features_for_session(df_logs, df_sessions):
 
     # df_sessions.to_csv(fr'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\featuretest.csv')
     print("finished extracting features")
-    return df_sessions
+    return df_sessions, bag_of_apps_vocab
 
 
 def get_app_category(df_categories, packagename):
@@ -508,35 +550,6 @@ def get_domain_from_url(url):
     ext = tldextract.extract(url)
     # ExtractResult(subdomain='forums.news', domain='cnn', suffix='com')
     return f'{ext.subdomain}.{ext.domain}.{ext.suffix}'
-
-
-esm_emotion_list = {'sadness-melancholy': 1,
-                    'calm-contentment': 2,
-                    'anger-irritation': 3,
-                    'nostalgia-longing': 4,
-                    'anxiety-fear': 5,
-                    'love-tenderness': 6,
-                    'surprise-astonishment': 7,
-                    'shame-guilt': 8,
-                    'disgust-contempt': 9,
-                    'pleasure-enjoyment': 10,
-                    'boredom-indifference': 11,
-                    'interest-expectancy': 12,
-                    'other': 13,
-                    }
-
-yes_no = {'Yes': 1,
-          'No': 0
-          }
-
-
-def transform_esm_strings(df_sessions_features):
-    # Dont do it this way as it might gives more importance to higher values
-    df_sessions_features['f_esm_emotion'].replace(esm_emotion_list, inplace=True)
-    df_sessions_features['f_esm_finished_intention'].replace(yes_no, inplace=True)
-    df_sessions_features['f_esm_more_than_intention'].replace(yes_no, inplace=True)
-    return df_sessions_features
-    # df_logs[logs['event'] == 1].replace(event, inplace=True)
 
 
 if __name__ == '__main__':

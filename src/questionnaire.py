@@ -236,6 +236,7 @@ def plot_subplots_bar(df_list, ncol, nrow):
     plt.show()
 
 
+
 def seperate():
     df_qu = pd.read_csv(path_questionnaire, sep=',')
     df_MRH1 = df_qu[df_qu['QUESTNNR'] == 'MRH1']
