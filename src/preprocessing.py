@@ -1,3 +1,5 @@
+import math
+
 import pandas as pd
 import numpy as np
 import pathlib
@@ -8,7 +10,8 @@ import extractSessions
 import featureExtraction
 import matplotlib.pyplot as plt
 import seaborn as sns
-import datetime
+from scipy import stats
+from sklearn.preprocessing import OneHotEncoder
 
 # Get rid of duplicated
 # Remove overhead logs aka TYPE_WINDOW_CONTENT_CHANGED
@@ -171,7 +174,7 @@ def extract_features():
             df_session_features = featureExtraction.get_features_for_session(df_logs=pd.read_pickle(path_in_str), df_sessions=df_all_sessions)
             df_all_sessions = df_session_features[0]
 
-            with open(fr'{dataframe_dir_bagofapps_vocab}\{data_path.stem}-vocab', 'wb') as f:
+            with open(fr'{dataframe_dir_bagofapps_vocab}\{data_path.stem}-vocab.pickle', 'wb') as f:
                 pickle.dump(df_session_features[1], f, pickle.HIGHEST_PROTOCOL)
 
         with open(fr'{dataframe_dir_sessions_features}\{data_path.stem}.pickle', 'wb') as f:
@@ -276,50 +279,117 @@ def filter_sessions_esm_user_based():
 def filter_sessions_outliners_all():
     # Filter the relevant sessions
     # Get all sessions that are over 45s and have a esm answers (f_esm_finished_intention not empty)
-    threshold = pd.Timedelta(seconds=45)
-    threshold_max_cap = pd.Timedelta(seconds=25200)  # 7 stunden
-    feature_path = fr'{dataframe_dir}\user-sessions_features_all.pickle'
-    df_all_sessions = pd.read_pickle(feature_path)
 
-    session_stats = []
-    df_sessions_filtered = {}
+    feature_path = fr'{dataframe_dir_users}\user-sessions_features_labeled.pickle'
+    df_all_sessions = pd.read_pickle(feature_path)
 
     # sns.distplot(df_session_features['f_session_length'] / pd.Timedelta(milliseconds=1))
     # plt.show()
-    sns.boxplot(df_all_sessions['f_session_length'] / pd.Timedelta(milliseconds=1))
+    sns.boxplot(df_all_sessions['f_session_length'])
     plt.show()
 
+    # quantile LIMIT --------------------------------------
     upper_limit = df_all_sessions['f_session_length'].quantile(0.996)  # bis 5.5h bei 0.995 bis 3.5h
     lower_limit = df_all_sessions['f_session_length'].quantile(0.01)
 
-    new_df = df_all_sessions[(df_all_sessions['f_session_length'] <= upper_limit) & (df_all_sessions['f_session_length'] >= lower_limit)]
-    print(type(new_df))
-    sns.boxplot(new_df['f_session_length'] / pd.Timedelta(milliseconds=1))
+    df_sessions_filtered = df_all_sessions[(df_all_sessions['f_session_length'] <= upper_limit) & (df_all_sessions['f_session_length'] >= lower_limit)]
+    print(type(df_sessions_filtered))
+    sns.boxplot(df_sessions_filtered['f_session_length'] )
     plt.show()
 
     print(upper_limit)
     print(lower_limit)
 
-    # # drop sessions
-    # # df_session_features = df_session_features.drop(df_session_features['f_session_length'] > threshold_max_cap)
-    # df_filtered_esm = df_all_sessions[(df_all_sessions['f_session_length'] > threshold) & (df_all_sessions['f_esm_finished_intention'] != '')]
+    with open(fr'{dataframe_dir_users}\user-sessions_features_labeled.pickle', 'wb') as f:
+        pickle.dump(df_sessions_filtered, f, pickle.HIGHEST_PROTOCOL)
+
+    # Z Score -------------------------------
+    # sns.boxplot(df_all_sessions['f_session_length'])
+    # plt.show()
     #
-    # # TODO Change yes to and colums?
-    # df_esm_rabbithole_finished = df_filtered_esm[(df_filtered_esm['f_esm_finished_intention'] == 'No')]
-    # df_esm_rabbithole_more = df_filtered_esm[(df_filtered_esm['f_esm_more_than_intention'] == 'Yes')]
-    # df_esm_rabbithole_finished_more = df_filtered_esm[(df_filtered_esm['f_esm_finished_intention'] == 'No') & (df_filtered_esm['f_esm_more_than_intention'] != 'Yes')]
+    # z = np.abs(stats.zscore(df_all_sessions['f_session_length']))
+    # print(z, type(z))
+    # threshold = 3
     #
-    # session_length_mean = pd.to_timedelta(df_all_sessions['f_session_length']).mean()
-    # # print('sessionlength mean', session_length_mean)
+    # # Position of the outlier
+    # print(np.where(z > threshold))
+    # # filtered_entries = (z < threshold).all()
+    #
+    # # new = df_all_sessions[filtered_entries]
+    # new = df_all_sessions[(np.abs(stats.zscore(df_all_sessions['f_session_length'])) < 3).all()]
+    # df_new = df[(df.zscore>-3) & (df.zscore<3)]
+    #
+    # sns.boxplot(new['f_session_length'])
+    # plt.show()
 
-    return df_sessions_filtered
+    # # IQR ----------------------------
+    # Q1 = np.percentile(df_all_sessions['f_session_length'], 25,
+    #                interpolation = 'midpoint')
+    #
+    # Q3 = np.percentile(df_all_sessions['f_session_length'], 75,
+    #                    interpolation = 'midpoint')
+    # IQR = Q3 - Q1
+    # print(IQR)
+    #
+    # # Above Upper bound
+    # upper = df_all_sessions['f_session_length'] >= (Q3+1.5*IQR)
+    #
+    # print("Upper bound:",upper)
+    # print(np.where(upper))
+    #
+    # # Below Lower bound
+    # lower = df_all_sessions['f_session_length'] <= (Q1-1.5*IQR)
+    # print("Lower bound:", lower)
+    # print(np.where(lower))
+    #
+    # df_new = df_all_sessions.drop(upper[0]).drop(lower[0])
+    # # df_new = df_all_sessions.drop(lower[0])
+    #
+    # sns.boxplot(df_all_sessions['f_session_length'])
+    # plt.show()
+    #
+    # sns.boxplot(df_new['f_session_length'])
+    # plt.show()
 
 
 
-def one_hot_encoding():
-    print('on hot encoding')
+def create_labels():
+    print('creat label')
+    #  finished yes more no is not a rabbit hole (an averything without ems?)
+    # alles andere is unintentional use or rabbit hole (boredom vs rabbit hole?)
+    # zeit mir aufnehmen?? Alles länger als und label is rabbit hole?
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_all.pickle')
+    rh = 'rabbit_hole'
+    no_rh = 'no_rabbithole'
+
+    # df_sessions['f_bag_of_apps'] = pd.Series(dtype='string')
+    df_sessions.insert(6, 'target_label', '')
+
+    for index, session in enumerate(df_sessions.itertuples(index=False)):
+        # if df_sessions.f_esm_finished_intention f_esm_more_than_intention f_session_length 45,000
+        # f_esm_finished_intention_Yes 1  f_esm_more_than_intention_No 0
+        # what when not finished intention and did not more than intention?
+        # rabbit hole finished intetion but did more, or not finished intention and did more?
+
+        # if ((df_sessions.f_esm_finished_intention_Yes == 1 & df_sessions.f_esm_more_than_intention_No == 0) |
+        #   (df_sessions.f_esm_finished_intention_nan == 1 & df_sessions.f_esm_more_than_intention_nan == 1)):
+        if df_sessions.loc[index, 'f_esm_more_than_intention_Yes'] == 1:
+            df_sessions.at[index, 'target_label'] = rh
+        else:
+            df_sessions.at[index, 'target_label'] = no_rh
+
+    df_sessions.to_csv(fr'{dataframe_dir_users}\user-sessions_features_labeled.csv')
+    df_sessions.drop(columns=['f_esm_more_than_intention_Yes', 'f_esm_more_than_intention_No', 'f_esm_more_than_intention_nan'], inplace=True)
+
+    with open(fr'{dataframe_dir_users}\user-sessions_features_labeled.pickle', 'wb') as f:
+        pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
+
+
+def one_hot_encoding_dummies():
+    print('on hot encoding dummies')
     df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_all.pickle')
     # df_sessions.to_csv(fr'{dataframe_dir_users}\user-sessions_features_all.csv')
+    # replace empty cells
     df_sessions = df_sessions.replace(r'^\s*$', np.nan, regex=True)
     to_encode = ['f_demographics_gender', 'f_esm_finished_intention', 'f_esm_more_than_intention', 'f_esm_emotion', 'f_esm_track_of_time', 'f_esm_track_of_space', 'f_esm_regret', 'f_esm_agency',
                  'f_hour_of_day', 'f_weekday']
@@ -333,6 +403,31 @@ def one_hot_encoding():
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
+def on_hot_encoding_scilearn():
+    print('on hot encoding scilearn')
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_all.pickle')
+    df_sessions = df_sessions.replace(r'^\s*$', np.nan, regex=True)
+    enc = OneHotEncoder(handle_unknown='ignore')
+
+    to_encode = ['f_demographics_gender', 'f_esm_finished_intention', 'f_esm_more_than_intention', 'f_esm_emotion', 'f_esm_track_of_time', 'f_esm_track_of_space', 'f_esm_regret', 'f_esm_agency',
+                 'f_hour_of_day', 'f_weekday']
+
+    for column in to_encode:
+        # passing bridge-types-cat column (label encoded values of bridge_types)
+        end = enc.fit_transform(df_sessions[[column]]).toarray()
+        column_name = enc.get_feature_names_out([column])
+        enc_df = pd.DataFrame(end, columns=column_name)
+
+        # merge with main df bridge_df on key values
+        # df_sessions = df_sessions.join(enc_df)
+        df_sessions = pd.concat([df_sessions, enc_df], axis=1).drop(columns=[column])
+
+    # df_sessions.to_csv(fr'{dataframe_dir_users}\user-sessions_features_encoded_sci.csv')
+
+    with open(fr'{dataframe_dir_users}\user-sessions_features_all.pickle', 'wb') as f:
+        pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
+
+
 def bag_of_apps_create_vocab():
     print('create bag of apps vocabulary')
     # get the vocabulary, which is every application package used by every user?
@@ -341,11 +436,13 @@ def bag_of_apps_create_vocab():
     vocab = []
     for data_path in path_list:
         path_in_str = str(data_path)
+        print(path_in_str)
         user_vocab = pd.read_pickle(path_in_str)
         vocab = list(set(vocab + user_vocab))
-        print(vocab)
 
-    with open(fr'{dataframe_dir_bagofapps_vocab}\bag_of_apps_vocab', 'wb') as f:
+    print(len(vocab))
+    print(vocab)
+    with open(fr'{dataframe_dir_users}\bag_of_apps_vocab.pickle', 'wb') as f:
         pickle.dump(vocab, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -356,44 +453,63 @@ def bag_of_apps_create_bags():
     """
     print('create bag of apps')
     # go over every session and create vector of app count
-    vocab = pd.read_pickle(fr'{dataframe_dir_bagofapps_vocab}\bag_of_apps_vocab')
+    vocab = pd.read_pickle(fr'{dataframe_dir_users}\bag_of_apps_vocab.pickle')
     df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_all.pickle')
-    df_sessions['f_bag_of_apps'] = np.zeros(len(vocab))
 
-    for session in df_sessions.itertuples():
-        # sessions['f_sequences_apps']
-        print(session.index)
+    df_sessions['f_bag_of_apps'] = pd.Series(dtype='object')
+    df_sessions['f_sequences_apps'].fillna(" ", inplace=True)
 
-        app_list = session.f_sequences_apps[0][0]
-        bag_vector = np.zeros(len(vocab))
+    for index, session in enumerate(df_sessions.itertuples(index=False)):
+        bag_vector = [0] * len(vocab)
+
+        app_list = session.f_sequences_apps[0]
         for a in app_list:
             for i, app in enumerate(vocab):
                 if app == a:
                     bag_vector[i] += 1
 
-        df_sessions.loc[session.index, 'f_bag_of_apps'] = bag_vector
+        array = np.array([object])
+        array[0] = bag_vector
+        df_sessions.at[index, 'f_bag_of_apps'] = bag_vector
 
     with open(fr'{dataframe_dir_users}\user-sessions_features_all.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
+
 def convert_timedeletas():
     print('convert timedeltas')
-    timestamp_1 = datetime.datetime(2019, 6, 3, 8, 12, 16, 104000)
-    timestamp_2 = datetime.datetime(2019, 6, 3, 8, 12, 25, 249000)
-    # # Get different between two datetime as timedelta object.
-    diff = (timestamp_2 - timestamp_1)
-    print(diff)
-    print(diff.total_seconds() * 1000)
-    return round(diff.total_seconds() * 1000)
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_all.pickle')
+
+    df_sessions.dropna(subset=['f_session_length'], inplace=True)
+    df_sessions.reset_index(drop=True, inplace=True)
+
+    df_sessions['f_session_length'] = df_sessions['f_session_length'].apply(lambda x: round(x.total_seconds() * 1000))
+
+    with open(fr'{dataframe_dir_users}\user-sessions_features_all.pickle', 'wb') as f:
+        pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
+
+
+def convert_timedeletass(value):
     # Round of the Milliseconds value
-    #diff_in_milliseconds = round(diff_in_milliseconds)
+    return round(value.total_seconds() * 1000)
+    # Round of the Milliseconds value
 
 
 def filter_users():
     print('filter users')
     # TODO
 
+
+def drop_sequences():
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_all_with_seq.pickle')
+    df_sessions.drop(columns=['f_sequences'], inplace=True)
+    # df_sessions.to_csv(fr'{dataframe_dir_users}\user-sessions_features_all_noseq.csv')
+    with open(fr'{dataframe_dir_users}\user-sessions_features_all.pickle', 'wb') as f:
+        pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
+
+
 def concat_sessions():
+    print('concat sessions')
     path_list = pathlib.Path(dataframe_dir_sessions_features).glob('**/*.pickle')
     sessions = []
 
@@ -402,8 +518,9 @@ def concat_sessions():
         sessions.append(pd.read_pickle(path_in_str))
 
     df_concat = pd.concat(sessions, ignore_index=False)
+    df_concat.reset_index(drop=True, inplace=True)
 
-    pd.concat(sessions, axis=0, ignore_index=True)
+    df_concat.to_csv(fr'{dataframe_dir_users}\user-sessions_features_all.csv')
     with open(fr'{dataframe_dir_users}\user-sessions_features_all.pickle', 'wb') as f:
         pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
 
@@ -419,20 +536,23 @@ def concat_features_dic():
 
     df_concat = pd.concat(all, ignore_index=False)
 
-    df_concat.to_csv(fr'{dataframe_dir}\all_session_features.csv')
+    df_concat.to_csv(fr'{dataframe_dir}\user-sessions_features_all.csv')
     with open(fr'{dataframe_dir}\user-sessions_features_all.pickle', 'wb') as f:
         pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
 
 
 def print_test_df():
     print('print test')
-    # path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs_preprocessed\BR04WO.pickle'
-    # t = pd.read_pickle(path_testfile)
-    # # time = t.correct_timestamp
-    # t.to_csv(fr'{user_dir}\BR04WO_logs_preprocesses.csv')
-
-    path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions_features\CO07Fa-sessions_features.pickle'
+    path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs_preprocessed\AN23GE.pickle'
     t = pd.read_pickle(path_testfile)
+    ## time = t.correct_timestamp
+    r= t[(t['event'].values == 'ON_USERPRESENT') |
+         ((t['event'].values == 'OFF_LOCKED') | (t['event'].values == 'OFF_UNLOCKED')) |
+        (t['eventName'].values == 'ESM')]
+    r.to_csv(fr'{dataframe_dir_users}\AN23GE_logs_preprocesses.csv')
+
+    # path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions_features\CO07Fa-sessions_features.pickle'
+    # t = pd.read_pickle(path_testfile)
     # time = t.correct_timestamp
     # get sequencelsit: t.f_sequences[0][0]
 
@@ -443,11 +563,10 @@ def print_test_df():
     # # time = t.correct_timestamp
     # t.to_csv(fr'{dataframe_dir_users}\CO07Fa_sessions-filtered.csv')
 
-    # path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions_features.pickle'
+    # path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users\user-sessions_features_all.pickle'
     # pickle_in = open(path_testfile_sessions, "rb")
     # sessions = pickle.load(pickle_in)
-    # test = sessions['SO23BA']
-    # test.to_csv(fr'{dataframe_dir_test}\SO23BA_sessions.csv')
+    # sessions.to_csv(fr'{dataframe_dir_users}\user-sessions_features_all.csv')
 
     # path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users\user-device_info.pickle'
     # device = pd.read_pickle(path_testfile)
@@ -468,29 +587,47 @@ def test():
 
 if __name__ == '__main__':
     pd.set_option('display.max_columns', None)
-    # extractData()
-    # extractUser()
-    # check_for_activity()
-    # preprocessing()
-    # extract_features()
-    # concat_features_dic() #old
-    concat_sessions()
 
+    # Extract the logs from the raw database files
+    # extractData()
+
+    # Extract the users without logs from raw database files
+    # extractUser()
+
+    # Check if one log for activity tracking exists
+    # check_for_activity()
+
+    # Run the preprocessing steps like transform timestams and extract sessions usw
+    # preprocessing()
+
+    # Extract the features from the logs and saves it to the sessions df
+    # extract_features()
+
+    # concat all session and features df from each user to one
+    # concat_features_dic() #old
+    # concat_sessions()
+
+    # Create the bag of apps for each sessions (using all session df)
+    # bag_of_apps_create_vocab()
+    # bag_of_apps_create_bags()
+
+    # Convert timedeltas to milliseconds and drop unused colums
+    # drop_sequences()
+    # convert_timedeletas()
+
+    # Filter the session to give an overview over sessions with esm
     # filter_sessions_esm_user_based()
 
-    #one_hot_encoding()
-    #result = convert_timedeletas()
-    #print(result)
+    # On hot encode colums like esm
+    # one_hot_encoding_dummies()
+    # on_hot_encoding_scilearn()
 
-    # path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\example_sessions_features.csv'
+    # Filter outliners
+    filter_sessions_outliners_all()
 
-    # path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions_features.pickle'
-    # pickle_in = open(path_testfile_sessions, "rb")
-    # sessions = pickle.load(pickle_in)
-    # test = sessions['SO23BA']
-    # # test = pd.read_csv(path_testfile_sessions)
-    # # filter_sessions()
-    # filter_sessions_all()
+    # create labels as targets
+    # create_labels()
 
+    # Testing
     # print_test_df()
     # test()
