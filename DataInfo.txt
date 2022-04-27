@@ -411,3 +411,14 @@ SD02_01 alter
 SD10 bildung
 SD10_09 bildung extra
 SD14 beschaeftigung
+
+
+
+    <color name="DarkBlackishGray">#444653</color>
+    <color name="LightBlackishGray">#6E707C</color>
+    <color name="greenGrayDark">#475751</color>
+    <color name="greenGray">#91b3a6</color>
+    <color name="milkGreenDark">#267355</color>#
+    <color name="milkGreen">#0BCB85</color>
+    <color name="blueish">#0378C5</color>
+    <color name="darkblue">#002F43</color>

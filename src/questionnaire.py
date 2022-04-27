@@ -1,15 +1,21 @@
 import pandas as pd
 import scipy.stats as stats
-
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
+import matplotlib
+matplotlib.rcParams['figure.dpi'] = 100
 
 path_questionnaire = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\data_MobileRabbitHole.csv'
 path_raw = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData'
 
 que_MRH1 = ['SD01', 'SD02_01', 'SD10', 'SD10_09', 'SD14']
 
+milkGreen= '#0BCB85'
+milkGreenDark= '#267355'
+blueish= '#0378C5'
+LightBlackishGray= '#6E707C'
+DarkBlackishGray= '#6E707C'
 
 def MRH_questionnaire_1():
     df_MRH1_raw = pd.read_csv(f'{path_raw}\MRH1.csv', sep=',')
@@ -218,7 +224,7 @@ def influence():
 
 
 def plot_bar(df, bars, labels, title, axes):
-    p = df.value_counts().reindex(bars, fill_value=0).sort_index(axis=0).plot(kind="bar", ax=axes, ylabel='Counts', xlabel='Likert Scale (1=Strongly Disagree, 7=Strongly Agree)', title=title)
+    p = df.value_counts().reindex(bars, fill_value=0).sort_index(axis=0).plot(kind="bar", ax=axes, ylabel='Counts', xlabel='Likert Scale (1=Strongly Disagree, 7=Strongly Agree)', color=milkGreen, title=title)
     p.set_xticklabels(labels, rotation=0)
     return p
 
@@ -230,7 +236,7 @@ def plot_subplots_bar(df_list, ncol, nrow):
     for r in range(nrow):
         for c in range(ncol):
             print(df_list[count][1])
-            df_list[count][0].value_counts().reindex(bars, fill_value=0).sort_index(axis=0).plot(kind="bar", ylabel='Counts', xlabel='Likert Scale (1=Strongly Disagree, 7=Strongly Agree)', title=df_list[count][1])
+            df_list[count][0].value_counts().reindex(bars, fill_value=0).sort_index(axis=0).plot(kind="bar", ylabel='Counts', xlabel='Likert Scale (1=Strongly Disagree, 7=Strongly Agree)', color=milkGreen, title=df_list[count][1])
             count += 1
 
     plt.show()
@@ -245,10 +251,21 @@ def seperate():
     df_MRH1.dropna(axis=1, how='all').to_csv(fr'{path_raw}\MRH1.csv')
     df_MRH2.dropna(axis=1, how='all').to_csv(fr'{path_raw}\MRH2.csv')
 
+def reindex():
+    df_MRH1 = pd.read_csv(f'{path_raw}\MRH1.csv', sep=',')
+    df_MRH2 = pd.read_csv(f'{path_raw}\MRH2.csv', sep=',')
+
+    df_MRH1.reset_index(drop=True, inplace=True)
+    df_MRH2.reset_index(drop=True, inplace=True)
+
+    df_MRH1.to_csv(f'{path_raw}\MRH1.csv')
+    df_MRH2.to_csv(f'{path_raw}\MRH2.csv')
+
 
 if __name__ == '__main__':
     # seperate()
-    # MRH_questionnaire_1()
+    # reindex()
+    MRH_questionnaire_1()
 
     # general_absentminded_use()
 

@@ -141,6 +141,8 @@ def concat_logs_one_user(logs_dic_directory, end_directory, studyID):
     print(f"saved logs for {studyID}")
 
 
+
+
 def concat_user_logs(logs_dic_directory, end_directory):
     print("_____ concatUser _____")
     pathlist = pathlib.Path(logs_dic_directory).glob('**/*.pickle')
@@ -260,9 +262,9 @@ def getStudIDlist(path_cleaned_users):
 
 
 if __name__ == '__main__':
-    #     raw_data_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live'
+    raw_data_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live'
     #     raw_data_user = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live\2022-03-25T00 44 32Z_1Uhr46absentmindedtrack-default-rtdb_data.json.gz'
-    #     logs_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\logFiles'
+    logs_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\logFiles'
     #     user_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\cleanedUsers'
     #     dataframe_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes'
     clean_users_path = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users\cleaned_users.pickle'
@@ -270,4 +272,4 @@ if __name__ == '__main__':
     print(r)
 #
 #     # extractUsers(raw_data_user)
-#     extract_logs(directory=raw_data_dir, end_directory=logs_dir,  save_type=3)
+    extract_logs(directory=raw_data_dir, end_directory=logs_dir, save_type=3)

@@ -22,7 +22,7 @@ from sklearn.preprocessing import OneHotEncoder
 # add events that were not in sessions? like sms, calls or notifications?
 
 raw_data_dir_test = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\t'
-raw_data_user = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live\recent2022-04-17T21 44 59Z_absentmindedtrack-default-rtdb_data.json.gz'
+raw_data_user = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live\2022-04-27T20 20 31Z_absentmindedtrack-default-rtdb_data.json.gz'
 raw_data_live = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live'
 logs_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\logFiles'
 user_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\cleanedUsers'
@@ -31,13 +31,17 @@ dataframe_dir_test = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\data
 dataframe_dir_live = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\live'
 
 dataframe_dir_users = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users'
+dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
 dataframe_dir_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions'
 dataframe_dir_sessions_features = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions_features'
 dataframe_dir_sessions_filtered = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions_filtered'
 dataframe_dir_bagofapps_vocab = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\bag_of_apps_vocabs'
 
 dataframe_dir_live_logs_sorted = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs'
+dataframe_dir_live_logs_sorted2 = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs_old'
 dataframe_dir_live_logs_sorted_preprocessed = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs_preprocessed'
+
+questionnaires_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData'
 
 path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions.pickle'
 path_testfile_sessions_all = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user_sessions_all.pickle'
@@ -47,7 +51,7 @@ clean_users_path = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\datafr
 
 def extractData():
     # only run once
-    # getFromJson.extractUsers(file_path=raw_data_live, end_directory=dataframe_dir_live, is_gzip=True)
+    # getFromJson.extractUsers(file_path=raw_data_live, end_directory=dataframe_dir_users, is_gzip=True)
 
     # extract logs for files
     # getFromJson.extract_logs(directory=raw_data_live, end_directory=dataframe_dir_live, save_type=3, is_gzip=True)
@@ -55,15 +59,58 @@ def extractData():
     # concat all extracted logs
     # getFromJson.concat_user_logs(logs_dic_directory=dataframe_dir_live, end_directory=dataframe_dir_live_logs_sorted)
     # user_list = getFromJson.getStudIDlist(clean_users_path)
+    user_list = [('BR22NO', 'fr29ka', 'BI21FR'), ('RE28RU', 'IN24RA', 'so30vo'), ('NI23HE', 'vi03th', 'AN23GE', 'BI21FR'), ('ju05ab', 'EW11FR', 'KE18ZA', 'ZA23PA'), ('TH28RU', 'ha07fl', 'MO22GO', 'NA07WE'), ('AN09BI', 'NI23HE', 'PI02MA', 'EL28LO'), ('BR04WO', 'IR03JO', 'PA29BU', 'SHTUSI'), ('IM12WE', 'AY1221', 'ta22ar', 'CR11AI'), ('MA06DR', 'AN06PE', 'SA23BR', 'CO07FA'), ('IR18RA', 'BA10SC', 'SO23BA', 'LE13FO')]
     # user_list = ['IN24RA', 'so30vo', 'NI23HE', 'vi03th', 'AN23GE', 'BI21FR', 'ju05ab', 'EW11FR', 'KE18ZA', 'ZA23PA', 'TH28RU', 'ha07fl', 'MO22GO', 'NA07WE', 'AN09BI', 'PI02MA', 'EL28LO', 'BR04WO', 'IR03JO', 'PA29BU', 'SHTUSI', 'IM12WE', 'AY1221', 'ta22ar', 'CR11AI', 'MA06DR', 'AN06PE', 'SA23BR', 'CO07FA', 'IR18RA', 'BA10SC', 'SO23BA', 'LE13FO']
-    user_list = [('LE13FO', 'vi03th'), ('AN23GE', 'BI21FR'), ('ju05ab', 'EW11FR'), ('KE18ZA', 'ZA23PA'), ('TH28RU', 'ha07fl'), ('MO22GO', 'NA07WE'), ('AN09BI', 'PI02MA'), ('EL28LO', 'BR04WO'),
-                 ('IR03JO', 'PA29BU'), ('SHTUSI', 'IM12WE'), ('AY1221', 'ta22ar'), ('CR11AI', 'MA06DR'), ('AN06PE', 'SA23BR'), ('CO07FA', 'IR18RA'), ('BA10SC', 'SO23BA')]
-    user_list = [('LE13FO', 'vi03th', 'AN23GE', 'BI21FR'), ('ju05ab', 'EW11FR', 'KE18ZA', 'ZA23PA'), ('TH28RU', 'ha07fl', 'MO22GO', 'NA07WE'), ('AN09BI', 'PI02MA', 'EL28LO', 'BR04WO'),
-                 ('IR03JO', 'PA29BU', 'SHTUSI', 'IM12WE'), ('AY1221', 'ta22ar', 'CR11AI', 'MA06DR'), ('AN06PE', 'SA23BR', 'CO07FA', 'IR18RA'), ('BA10SC', 'SO23BA', 'tt', 'zz')]
-
+    # user_list = [('LE13FO', 'vi03th'), ('AN23GE', 'BI21FR'), ('ju05ab', 'EW11FR'), ('KE18ZA', 'ZA23PA'), ('TH28RU', 'ha07fl'), ('MO22GO', 'NA07WE'), ('AN09BI', 'PI02MA'), ('EL28LO', 'BR04WO'),
+    #              ('IR03JO', 'PA29BU'), ('SHTUSI', 'IM12WE'), ('AY1221', 'ta22ar'), ('CR11AI', 'MA06DR'), ('AN06PE', 'SA23BR'), ('CO07FA', 'IR18RA'), ('BA10SC', 'SO23BA')]
+    # user_list = [('LE13FO', 'vi03th', 'AN23GE', 'BI21FR'), ('ju05ab', 'EW11FR', 'KE18ZA', 'ZA23PA'), ('TH28RU', 'ha07fl', 'MO22GO', 'NA07WE'), ('AN09BI', 'PI02MA', 'EL28LO', 'BR04WO'),
+    #              ('IR03JO', 'PA29BU', 'SHTUSI', 'IM12WE'), ('AY1221', 'ta22ar', 'CR11AI', 'MA06DR'), ('AN06PE', 'SA23BR', 'CO07FA', 'IR18RA'), ('BA10SC', 'SO23BA', 'tt', 'zz')]
+    #
     for item in user_list:
         print(item)
         getFromJson.concat_logs_one_user(logs_dic_directory=dataframe_dir_live, end_directory=dataframe_dir_live_logs_sorted, studyID=item)
+
+#concat additional user logs
+def concat_additional_logs():
+    print("çoncat logs")
+    pathlist = pathlib.Path(dataframe_dir_live_logs_sorted).glob('**/*.pickle')
+    pathlist_old = pathlib.Path(dataframe_dir_live_logs_sorted2).glob('**/*.pickle')
+
+    path = fr'{dataframe_dir_live_logs_sorted}\MA06DR.pickle'
+    pathold = fr'{dataframe_dir_live_logs_sorted2}\MA06DR.pickle'
+
+    df_logs = pd.read_pickle(path)
+    df_logs_old = pd.read_pickle(pathold)
+    df_concat = pd.concat([df_logs_old, df_logs], ignore_index=False)
+    with open(fr'{dataframe_dir_live_logs_sorted}\MA06DR.pickle', 'wb') as f:
+        pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
+
+    # for data_path in pathlist:
+    #     path_in_str = str(data_path)
+    #     print(f"read dic: {path_in_str}")
+    #     df_logs = pd.read_pickle(path_in_str)
+    #
+    #     for data_path_old in pathlist_old:
+    #         print(str(data_path_old))
+    #         print(data_path.stem, data_path_old.stem)
+    #         if data_path.stem == data_path_old.stem:
+    #             print('same')
+    #             df_logs_old = pd.read_pickle(str(data_path_old))
+    #             print(df_logs.columns.values.size)
+    #             print(df_logs_old.columns.values.size)
+    #             df_concat = pd.concat([df_logs_old, df_logs], ignore_index=False)
+    #             with open(fr'{dataframe_dir_live_logs_sorted}\{data_path.stem}.pickle', 'wb') as f:
+    #                 pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
+
+    #     df_logs = pd.read_pickle(path_in_str)
+    #     df_logs = cleanup(df_logs)
+    #     df_logs = prepareTimestamps.process_timestamps(df_logs)
+    #     # extract Metadata
+    #     df_logs = getFromJson.extractMetaData(df_logs)
+    #
+    #     with open(fr'{dataframe_dir_live_logs_sorted}\{data_path.stem}.pickle', 'wb') as f:
+    #         pickle.dump(df_logs, f, pickle.HIGHEST_PROTOCOL)
+
 
 
 def extractUser():
@@ -280,7 +327,7 @@ def filter_sessions_outliners_all():
     # Filter the relevant sessions
     # Get all sessions that are over 45s and have a esm answers (f_esm_finished_intention not empty)
 
-    feature_path = fr'{dataframe_dir_users}\user-sessions_features_labeled.pickle'
+    feature_path = fr'{dataframe_dir_ml}\user-sessions_features_all.pickle'
     df_all_sessions = pd.read_pickle(feature_path)
 
     # sns.distplot(df_session_features['f_session_length'] / pd.Timedelta(milliseconds=1))
@@ -294,13 +341,13 @@ def filter_sessions_outliners_all():
 
     df_sessions_filtered = df_all_sessions[(df_all_sessions['f_session_length'] <= upper_limit) & (df_all_sessions['f_session_length'] >= lower_limit)]
     print(type(df_sessions_filtered))
-    sns.boxplot(df_sessions_filtered['f_session_length'] )
+    sns.boxplot(df_sessions_filtered['f_session_length'])
     plt.show()
 
     print(upper_limit)
     print(lower_limit)
 
-    with open(fr'{dataframe_dir_users}\user-sessions_features_labeled.pickle', 'wb') as f:
+    with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
         pickle.dump(df_sessions_filtered, f, pickle.HIGHEST_PROTOCOL)
 
     # Z Score -------------------------------
@@ -352,13 +399,14 @@ def filter_sessions_outliners_all():
     # plt.show()
 
 
-
 def create_labels():
-    print('creat label')
+    print('create label')
     #  finished yes more no is not a rabbit hole (an averything without ems?)
     # alles andere is unintentional use or rabbit hole (boredom vs rabbit hole?)
     # zeit mir aufnehmen?? Alles länger als und label is rabbit hole?
-    df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_all.pickle')
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
+    df_sessions.reset_index(drop=True, inplace=True)
+    # df_sessions.to_csv(fr'{dataframe_dir_ml}\user-sessions_features_all.csv')
     rh = 'rabbit_hole'
     no_rh = 'no_rabbithole'
 
@@ -378,10 +426,10 @@ def create_labels():
         else:
             df_sessions.at[index, 'target_label'] = no_rh
 
-    df_sessions.to_csv(fr'{dataframe_dir_users}\user-sessions_features_labeled.csv')
+    df_sessions.to_csv(fr'{dataframe_dir_ml}\user-sessions_features_labeled.csv')
     df_sessions.drop(columns=['f_esm_more_than_intention_Yes', 'f_esm_more_than_intention_No', 'f_esm_more_than_intention_nan'], inplace=True)
 
-    with open(fr'{dataframe_dir_users}\user-sessions_features_labeled.pickle', 'wb') as f:
+    with open(fr'{dataframe_dir_ml}\user-sessions_features_labeled.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -405,7 +453,7 @@ def one_hot_encoding_dummies():
 
 def on_hot_encoding_scilearn():
     print('on hot encoding scilearn')
-    df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_all.pickle')
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
     df_sessions = df_sessions.replace(r'^\s*$', np.nan, regex=True)
     enc = OneHotEncoder(handle_unknown='ignore')
 
@@ -424,7 +472,7 @@ def on_hot_encoding_scilearn():
 
     # df_sessions.to_csv(fr'{dataframe_dir_users}\user-sessions_features_encoded_sci.csv')
 
-    with open(fr'{dataframe_dir_users}\user-sessions_features_all.pickle', 'wb') as f:
+    with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -454,7 +502,7 @@ def bag_of_apps_create_bags():
     print('create bag of apps')
     # go over every session and create vector of app count
     vocab = pd.read_pickle(fr'{dataframe_dir_users}\bag_of_apps_vocab.pickle')
-    df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_all.pickle')
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
 
     df_sessions['f_bag_of_apps'] = pd.Series(dtype='object')
     df_sessions['f_sequences_apps'].fillna(" ", inplace=True)
@@ -472,24 +520,25 @@ def bag_of_apps_create_bags():
         array[0] = bag_vector
         df_sessions.at[index, 'f_bag_of_apps'] = bag_vector
 
-    with open(fr'{dataframe_dir_users}\user-sessions_features_all.pickle', 'wb') as f:
+    with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
 def convert_timedeletas():
     print('convert timedeltas')
-    df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_all.pickle')
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
 
     df_sessions.dropna(subset=['f_session_length'], inplace=True)
     df_sessions.reset_index(drop=True, inplace=True)
 
     df_sessions['f_session_length'] = df_sessions['f_session_length'].apply(lambda x: round(x.total_seconds() * 1000))
 
-    with open(fr'{dataframe_dir_users}\user-sessions_features_all.pickle', 'wb') as f:
+    with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
 def convert_timedeletass(value):
+    print('convert timedeltas')
     # Round of the Milliseconds value
     return round(value.total_seconds() * 1000)
     # Round of the Milliseconds value
@@ -497,14 +546,35 @@ def convert_timedeletass(value):
 
 def filter_users():
     print('filter users')
-    # TODO
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
+    df_MRH1_raw = pd.read_csv(f'{questionnaires_dir}\MRH1.csv', sep=',')
+    df_MRH2 = pd.read_csv(f'{questionnaires_dir}\MRH2.csv', sep=',')
+
+    studIDs_mrh2 = df_MRH2['IM01_01'].apply(lambda x: x.upper())
+
+    to_drop = []
+    grouped_logs = df_sessions.groupby(['studyID'])
+    # Iterate over sessions
+    for name, df_group in grouped_logs:
+        print(name)
+        if name.upper() not in studIDs_mrh2.values:
+            to_drop.append(name)
+
+    print(to_drop)
+    for study_id in to_drop:
+        df_sessions.drop(df_sessions.index[df_sessions['studyID'] == study_id], inplace=True)
+
+    # df_sessions.to_csv(fr'{dataframe_dir_ml}\sessions_filtered_users.csv')
+    with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
+        pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
 def drop_sequences():
-    df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_all_with_seq.pickle')
+    print('drop sequences')
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
     df_sessions.drop(columns=['f_sequences'], inplace=True)
     # df_sessions.to_csv(fr'{dataframe_dir_users}\user-sessions_features_all_noseq.csv')
-    with open(fr'{dataframe_dir_users}\user-sessions_features_all.pickle', 'wb') as f:
+    with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -520,8 +590,8 @@ def concat_sessions():
     df_concat = pd.concat(sessions, ignore_index=False)
     df_concat.reset_index(drop=True, inplace=True)
 
-    df_concat.to_csv(fr'{dataframe_dir_users}\user-sessions_features_all.csv')
-    with open(fr'{dataframe_dir_users}\user-sessions_features_all.pickle', 'wb') as f:
+    df_concat.to_csv(fr'{dataframe_dir_ml}\user-sessions_features_all.csv')
+    with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
         pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -543,13 +613,13 @@ def concat_features_dic():
 
 def print_test_df():
     print('print test')
-    path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs_preprocessed\AN23GE.pickle'
+    path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs_preprocessed\MA06DR.pickle'
     t = pd.read_pickle(path_testfile)
     ## time = t.correct_timestamp
-    r= t[(t['event'].values == 'ON_USERPRESENT') |
-         ((t['event'].values == 'OFF_LOCKED') | (t['event'].values == 'OFF_UNLOCKED')) |
-        (t['eventName'].values == 'ESM')]
-    r.to_csv(fr'{dataframe_dir_users}\AN23GE_logs_preprocesses.csv')
+    r = t[(t['event'].values == 'ON_USERPRESENT') |
+          ((t['event'].values == 'OFF_LOCKED') | (t['event'].values == 'OFF_UNLOCKED')) |
+          (t['eventName'].values == 'ESM')]
+    r.to_csv(fr'{dataframe_dir_users}\MA06DR_logs_preprocesses.csv')
 
     # path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions_features\CO07Fa-sessions_features.pickle'
     # t = pd.read_pickle(path_testfile)
@@ -611,7 +681,7 @@ if __name__ == '__main__':
     # bag_of_apps_create_vocab()
     # bag_of_apps_create_bags()
 
-    # Convert timedeltas to milliseconds and drop unused colums
+    # Convert timedeltas to milliseconds and drop unused columns
     # drop_sequences()
     # convert_timedeletas()
 
@@ -623,7 +693,10 @@ if __name__ == '__main__':
     # on_hot_encoding_scilearn()
 
     # Filter outliners
-    filter_sessions_outliners_all()
+    # filter_sessions_outliners_all()
+
+    # Only use users that completed the second questionnaire
+    #filter_users()
 
     # create labels as targets
     # create_labels()
@@ -631,3 +704,4 @@ if __name__ == '__main__':
     # Testing
     # print_test_df()
     # test()
+    concat_additional_logs()
