@@ -1,5 +1,6 @@
 from collections import Counter
 
+import pathlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -14,6 +15,8 @@ from sklearn import metrics
 import ML_helpers
 
 dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
+dataframe_dir_ml_labeled = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled'
+dataframe_dir_ml_labeled_m = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_first_more'
 
 # df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_labeled.pickle')
 
@@ -38,7 +41,7 @@ def svm_classifier(x, y):
     print(score)
     print("-----report----------")
     # print(metrics.confusion_matrix(y_test,y_predict))
-    print(metrics.classification_report(y_test,y_predict))
+    print(metrics.classification_report(y_test,y_predict)) # output_dict=True))
 
 
 
@@ -58,7 +61,7 @@ def kNeighbors_classifier(x, y):
     score = metrics.accuracy_score(y_test, y_predict)
     print(score)
     print("-----report----------")
-    print(metrics.classification_report(y_test, y_predict))
+    print(metrics.classification_report(y_test, y_predict)) #output_dict=True))
 
 
 def random_forest_classifier(x, y):
@@ -85,7 +88,7 @@ def random_forest_classifier(x, y):
     print(score)
 
     print("-----report----------")
-    print(metrics.classification_report(y_test_labels, y_predict))
+    print(metrics.classification_report(y_test_labels, y_predict)) #  output_dict=True))
 
     print("-------importance--------")
     importance = pd.DataFrame({'feature': feature_list, 'importance': np.round(forest.feature_importances_, 3)})
@@ -102,8 +105,6 @@ def random_forest_classifier(x, y):
 
 def decision_tree_classifier(x, y):
     print('***Decision tree***')
-    feature_names = x.columns
-    labels = y.unique()
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
 
     clf_model = DecisionTreeClassifier(criterion="gini", max_depth=5, random_state=42, min_samples_leaf=5)
@@ -114,16 +115,17 @@ def decision_tree_classifier(x, y):
 
     y_predict = clf_model.predict(x_test)
 
-    print("-----score----------")
-    score = metrics.accuracy_score(y_test, y_predict)
-    print(score)
-    print("-----report----------")
-    print(metrics.classification_report(y_test, y_predict))
+    with open(f'{dataframe_dir_ml_labeled}\outout_noOversampling.txt', 'w') as f:
+        print("-----score----------", file=f)
+        score = metrics.accuracy_score(y_test, y_predict)
+        print(score)
+        print("-----report----------", file=f)
+        print(metrics.classification_report(y_test, y_predict)) #output_dict=True), file=f)
 
-    print("-------importance--------")
-    importance = pd.DataFrame({'feature': x_train.columns, 'importance': np.round(clf_model.feature_importances_, 3)})
-    importance.sort_values('importance', ascending=False, inplace=True)
-    print(importance)
+        print("-------importance--------", file=f)
+        importance = pd.DataFrame({'feature': x_train.columns, 'importance': np.round(clf_model.feature_importances_, 3)})
+        importance.sort_values('importance', ascending=False, inplace=True)
+        print(importance, file=f)
 
     # print('--------Precision-------')
     # precision = metrics.precision_score(y_test, y_predict, average=None)
@@ -140,13 +142,31 @@ def decision_tree_classifier(x, y):
 if __name__ == '__main__':
     pd.set_option('display.max_columns', None)
 
-    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_labeled.pickle')
-    x, y = ML_helpers.prepare_df_no_oversampling(df_sessions)
+    #df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_labeled.pickle')
+    #x, y = ML_helpers.prepare_df_no_oversampling(df_sessions)
 
-    decision_tree_classifier(x, y)
-    random_forest_classifier(x, y)
-    kNeighbors_classifier(x, y)
+    pathlist = pathlib.Path(dataframe_dir_ml_labeled_m).glob('**/*.pickle')
 
-    # x, y = ML_helpers.prepare_df_no_oversampling(df_sessions)
-    svm_classifier(x, y)
+    for data_path in pathlist:
+        path_in_str = str(data_path)
+
+        #with open(f'{dataframe_dir_ml_labeled}\outout_noOversampling.txt', 'w') as f:
+        print(f'###################  target: {data_path.stem}   #############################') #, file=f)
+
+        df_sessions = pd.read_pickle(path_in_str)
+        x, y = ML_helpers.prepare_df(df_sessions)
+
+        decision_tree_classifier(x, y)
+
+        # with open(f'{dataframe_dir_ml_labeled}\outout_noOversampling.txt', 'w') as f:
+        #     print(f'########################################', file=f)
+        random_forest_classifier(x, y)
+        # with open(f'{dataframe_dir_ml_labeled}\outout_noOversampling.txt', 'w') as f:
+        #     print(f'########################################', file=f)
+        kNeighbors_classifier(x, y)
+        # with open(f'{dataframe_dir_ml_labeled}\outout_noOversampling.txt', 'w') as f:
+        #     print(f'########################################', file=f)
+
+        # x, y = ML_helpers.prepare_df_no_oversampling(df_sessions)
+        svm_classifier(x, y)
 

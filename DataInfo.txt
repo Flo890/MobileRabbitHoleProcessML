@@ -422,3 +422,12 @@ SD14 beschaeftigung
     <color name="milkGreen">#0BCB85</color>
     <color name="blueish">#0378C5</color>
     <color name="darkblue">#002F43</color>
+
+
+<string name="esm_lock_intention_question_intention_finished">Did you <b>finish</b> your intention?</string>
+    <string name="esm_lock_intention_question_intention_more">Did you do <b>more</b> than your intention?</string>
+    <string name="esm_lock_intention_question_regret">I feel <b>regret</b> for part of my phone use.</string>
+    <string name="esm_lock_intention_question_agency">I had a strong sense of <b>agency</b>.</string>
+    <string name="esm_lock_intention_question_track_of_time">I have <b>lost track of time</b> while using my phone.</string>
+    <string name="esm_lock_intention_question_track_of_space">I had a <b>good sense of my surroundings</b> while using my phone.</string>
+    <string name="esm_lock_intention_question_emotion">Which pair of <b>emotion</b> corresponds best to how you felt this usage session?</string>

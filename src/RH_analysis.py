@@ -30,7 +30,40 @@ df_rh = df_sessions_a[df_sessions_a['f_esm_more_than_intention'] == 'Yes']
 def df_analyze_apps():
     list = [('APP', 'com.instagram.android'), ('APP', 'com.google.android.apps.nexuslauncher'), ('APP', 'com.android.chrome'), ('APP', 'com.google.android.apps.nexuslauncher')]
 
-    # for item in list:
+    df_new = df_rh.copy()
+    df_new['f_app_count_rh'] = 0
+    df_new_seq = df_new.dropna(subset=['f_sequences']) #fillna('[]')
+    for i, row in df_new_seq.iterrows():
+        print('row', i)
+        seq = row['f_sequences']
+        if seq:
+            list = seq[0]
+            count = 0
+            for item in list:
+                if item[0] == 'APP':
+                    count += 1
+            print('count', count)
+            df_new.at[i, 'f_app_count_rh'] = count
+
+    sns.countplot(df_new['f_app_count_rh'], color=milkGreen)
+    plt.xlabel('App count in rabbit hole sessions')
+    plt.show()
+
+    # f_app_time
+    # f_app_count
+    #
+    # f_app_category_count_
+    # f_app_category_time
+    # f_clicks f_scrolls
+
+    # df_rh.columns.str.startswith('f_app_time')
+
+def df_analyze_intentions():
+    print(df_rh['f_esm_intention'].value_counts())
+
+    counts = df_rh['f_esm_intention'].value_counts()#.sort_values(by=['sessions_count'], ascending=True)
+    p = counts.plot(kind='barh', color=milkGreen)
+    plt.show()
 
 
 def esm_per_user():
@@ -61,6 +94,30 @@ def esm_per_user():
         # plt.title(name)
         # plt.show()
 
+
+def esm():
+    colums_esm = [x for x in df_sessions_a.columns.values if x.startswith('f_esm')]
+    print(colums_esm)
+    df_esm = df_sessions_a.loc[:, df_sessions_a.columns.str.startswith('f_esm')]
+    print(df_esm.columns)
+
+    for esm_item in colums_esm:
+        # df_esm = df_sessions_a[esm_item]
+        ax = sns.countplot(x=df_sessions_a[esm_item], order=df_sessions_a[esm_item].value_counts(ascending=False).index, color=milkGreen)
+        #ax = sns.countplot(x=df['feature_name'], order=df['feature_name'].value_counts(ascending=False).index, color=milkGreen)
+        abs_values = df_sessions_a[esm_item].value_counts(ascending=False).values
+        plt.bar_label(container=ax.containers[0], labels=abs_values)
+        plt.xlabel(esm_item)
+        # plt.xticks(rotation=90)
+        plt.show()
+
+
+
+
+def test():
+    s = df_rh[df_rh['f_session_length'] >= 600000]
+    print(df_rh.size) #1214784
+    print(s.size) #356976 -> ca 30%
 
 def df_analyze_rh_sessions_time():
     print('analyze rabbithole')
@@ -126,7 +183,11 @@ def analyze_esm():
 
 
 if __name__ == '__main__':
-    pd.set_option('display.max_columns', None)
+    # pd.set_option('display.max_columns', None)
     # analyze_esm()
     # df_analyze_rh_sessions_time()
-    esm_per_user()
+    # esm_per_user()
+    esm()
+    # df_analyze_apps()
+
+    # test()

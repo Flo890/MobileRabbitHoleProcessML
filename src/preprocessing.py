@@ -58,7 +58,9 @@ def extractData():
     # concat all extracted logs
     # getFromJson.concat_user_logs(logs_dic_directory=dataframe_dir_live, end_directory=dataframe_dir_live_logs_sorted)
     # user_list = getFromJson.getStudIDlist(clean_users_path)
-    user_list = [('BR22NO', 'fr29ka', 'BI21FR'), ('RE28RU', 'IN24RA', 'so30vo'), ('NI23HE', 'vi03th', 'AN23GE', 'BI21FR'), ('ju05ab', 'EW11FR', 'KE18ZA', 'ZA23PA'), ('TH28RU', 'ha07fl', 'MO22GO', 'NA07WE'), ('AN09BI', 'NI23HE', 'PI02MA', 'EL28LO'), ('BR04WO', 'IR03JO', 'PA29BU', 'SHTUSI'), ('IM12WE', 'AY1221', 'ta22ar', 'CR11AI'), ('MA06DR', 'AN06PE', 'SA23BR', 'CO07FA'), ('IR18RA', 'BA10SC', 'SO23BA', 'LE13FO')]
+    user_list = [('BR22NO', 'fr29ka', 'BI21FR'), ('RE28RU', 'IN24RA', 'so30vo'), ('NI23HE', 'vi03th', 'AN23GE', 'BI21FR'), ('ju05ab', 'EW11FR', 'KE18ZA', 'ZA23PA'),
+                 ('TH28RU', 'ha07fl', 'MO22GO', 'NA07WE'), ('AN09BI', 'NI23HE', 'PI02MA', 'EL28LO'), ('BR04WO', 'IR03JO', 'PA29BU', 'SHTUSI'), ('IM12WE', 'AY1221', 'ta22ar', 'CR11AI'),
+                 ('MA06DR', 'AN06PE', 'SA23BR', 'CO07FA'), ('IR18RA', 'BA10SC', 'SO23BA', 'LE13FO')]
     # user_list = ['IN24RA', 'so30vo', 'NI23HE', 'vi03th', 'AN23GE', 'BI21FR', 'ju05ab', 'EW11FR', 'KE18ZA', 'ZA23PA', 'TH28RU', 'ha07fl', 'MO22GO', 'NA07WE', 'AN09BI', 'PI02MA', 'EL28LO', 'BR04WO', 'IR03JO', 'PA29BU', 'SHTUSI', 'IM12WE', 'AY1221', 'ta22ar', 'CR11AI', 'MA06DR', 'AN06PE', 'SA23BR', 'CO07FA', 'IR18RA', 'BA10SC', 'SO23BA', 'LE13FO']
     # user_list = [('LE13FO', 'vi03th'), ('AN23GE', 'BI21FR'), ('ju05ab', 'EW11FR'), ('KE18ZA', 'ZA23PA'), ('TH28RU', 'ha07fl'), ('MO22GO', 'NA07WE'), ('AN09BI', 'PI02MA'), ('EL28LO', 'BR04WO'),
     #              ('IR03JO', 'PA29BU'), ('SHTUSI', 'IM12WE'), ('AY1221', 'ta22ar'), ('CR11AI', 'MA06DR'), ('AN06PE', 'SA23BR'), ('CO07FA', 'IR18RA'), ('BA10SC', 'SO23BA')]
@@ -69,7 +71,8 @@ def extractData():
         print(item)
         getFromJson.concat_logs_one_user(logs_dic_directory=dataframe_dir_live, end_directory=dataframe_dir_live_logs_sorted, studyID=item)
 
-#concat additional user logs
+
+# concat additional user logs
 def concat_additional_logs():
     print("çoncat logs")
     pathlist = pathlib.Path(dataframe_dir_live_logs_sorted).glob('**/*.pickle')
@@ -111,7 +114,6 @@ def concat_additional_logs():
 
         with open(fr'{dataframe_dir_live_logs_sorted}\{data_path.stem}.pickle', 'wb') as f:
             pickle.dump(df_logs, f, pickle.HIGHEST_PROTOCOL)
-
 
 
 def extractUser():
@@ -422,15 +424,20 @@ def create_labels():
 
         # if ((df_sessions.f_esm_finished_intention_Yes == 1 & df_sessions.f_esm_more_than_intention_No == 0) |
         #   (df_sessions.f_esm_finished_intention_nan == 1 & df_sessions.f_esm_more_than_intention_nan == 1)):
-        if df_sessions.loc[index, 'f_esm_more_than_intention_Yes'] == 1:
+
+        # ['f_esm_intention', 'f_esm_finished_intention', 'f_esm_more_than_intention', 'f_esm_track_of_time', 'f_esm_track_of_space', 'f_esm_emotion', 'f_esm_regret', 'f_esm_agency']
+        if df_sessions.loc[index, 'f_esm_emotion_anger-irritation'] == 1:
             df_sessions.at[index, 'target_label'] = rh
         else:
             df_sessions.at[index, 'target_label'] = no_rh
 
-    df_sessions.to_csv(fr'{dataframe_dir_ml}\user-sessions_features_labeled.csv')
-    df_sessions.drop(columns=['f_esm_more_than_intention_Yes', 'f_esm_more_than_intention_No', 'f_esm_more_than_intention_nan'], inplace=True)
+    # df_sessions.to_csv(fr'{dataframe_dir_ml}\user-sessions_features_labeled.csv')
+    # df_MRH1.columns.str.startswith('AB01')
+    colums_esm = [x for x in df_sessions.columns.values if x.startswith('f_esm')]
+    df_sessions.drop(columns=colums_esm, inplace=True)
+    # df_sessions.drop(columns=['f_esm_more_than_intention_Yes', 'f_esm_more_than_intention_No', 'f_esm_more_than_intention_nan'], inplace=True)
 
-    with open(fr'{dataframe_dir_ml}\user-sessions_features_labeled.pickle', 'wb') as f:
+    with open(fr'{dataframe_dir_ml}\user-sessions_features_labeled_emotion_anger.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -617,13 +624,13 @@ def concat_features_dic():
 
 def print_test_df():
     print('print test')
-    path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs_preprocessed\MA06DR.pickle'
+    path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs_preprocessed\AY1221.pickle'
     t = pd.read_pickle(path_testfile)
     ## time = t.correct_timestamp
     r = t[(t['event'].values == 'ON_USERPRESENT') |
           ((t['event'].values == 'OFF_LOCKED') | (t['event'].values == 'OFF_UNLOCKED')) |
           (t['eventName'].values == 'ESM')]
-    r.to_csv(fr'{dataframe_dir_users}\MA06DR_logs_preprocesses.csv')
+    r.to_csv(fr'{dataframe_dir_users}\AY1221_logs_preprocesses.csv')
 
     # path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions_features\CO07Fa-sessions_features.pickle'
     # t = pd.read_pickle(path_testfile)
@@ -655,7 +662,6 @@ def test():
     path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\analyze-no1hot-withseq-nolabels\user-sessions_features_all.pickle'
     df = pd.read_pickle(path_testfile)
     df.to_csv(fr'{dataframe_dir_ml}\analyze-no1hot-withseq-nolabels\user-sessions_features_all.csv')
-
 
 
 if __name__ == '__main__':
@@ -702,9 +708,9 @@ if __name__ == '__main__':
     # filter_users()
 
     # 12. create labels as targets (only works with onhot encoded data)
-    # create_labels()
+    create_labels()
 
     # Testing
     # print_test_df()
-    test()
+    # test()
     # concat_additional_logs()
