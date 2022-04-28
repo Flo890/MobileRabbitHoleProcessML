@@ -13,9 +13,9 @@ from sklearn.tree import export_text
 from sklearn import metrics
 import ML_helpers
 
-dataframe_dir_users = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users'
+dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
 
-df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_labeled.pickle')
+# df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_labeled.pickle')
 
 def svm_classifier(x, y):
     print("***SVM***")
@@ -140,13 +140,13 @@ def decision_tree_classifier(x, y):
 if __name__ == '__main__':
     pd.set_option('display.max_columns', None)
 
-    df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_labeled.pickle')
-    x, y = ML_helpers.prepare_df(df_sessions)
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_labeled.pickle')
+    x, y = ML_helpers.prepare_df_no_oversampling(df_sessions)
 
     decision_tree_classifier(x, y)
     random_forest_classifier(x, y)
     kNeighbors_classifier(x, y)
 
-    # x, y = prepare_df_no_oversampling(df_sessions)
-    # svm_classifier(x, y)
+    # x, y = ML_helpers.prepare_df_no_oversampling(df_sessions)
+    svm_classifier(x, y)
 

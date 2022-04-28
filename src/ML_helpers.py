@@ -7,16 +7,16 @@ from imblearn.under_sampling import RandomUnderSampler
 from imblearn.over_sampling import RandomOverSampler
 from imblearn.over_sampling import SMOTE
 
-dataframe_dir_users = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users'
-
+dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
+milkGreen= '#0BCB85'
 
 def check_labels():
-    df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_labeled.pickle')
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_labeled.pickle')
     df_sessions = clean_df(df_sessions)
     # df_sessions.to_csv(fr'{dataframe_dir_users}\user-sessions_features_labeled_cleand.csv')
-    sns.countplot(df_sessions['target_label'])
-    print(len(df_sessions[df_sessions['target_label'] == 'rabbit_hole']))  # 430
-    print(len(df_sessions[df_sessions['target_label'] == 'no_rabbithole']))  # 15408
+    sns.countplot(df_sessions['target_label'], color=milkGreen)
+    print(len(df_sessions[df_sessions['target_label'] == 'rabbit_hole']))  # 456
+    print(len(df_sessions[df_sessions['target_label'] == 'no_rabbithole']))  # 16305
     plt.show()
 
 

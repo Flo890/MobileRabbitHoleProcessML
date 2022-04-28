@@ -34,7 +34,6 @@ dataframe_dir_users = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dat
 dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
 dataframe_dir_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions'
 dataframe_dir_sessions_features = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions_features'
-dataframe_dir_sessions_filtered = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions_filtered'
 dataframe_dir_bagofapps_vocab = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\bag_of_apps_vocabs'
 
 dataframe_dir_live_logs_sorted = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs'
@@ -54,7 +53,7 @@ def extractData():
     # getFromJson.extractUsers(file_path=raw_data_live, end_directory=dataframe_dir_users, is_gzip=True)
 
     # extract logs for files
-    # getFromJson.extract_logs(directory=raw_data_live, end_directory=dataframe_dir_live, save_type=3, is_gzip=True)
+    getFromJson.extract_logs(directory=raw_data_live, end_directory=dataframe_dir_live, save_type=3, is_gzip=True)
 
     # concat all extracted logs
     # getFromJson.concat_user_logs(logs_dic_directory=dataframe_dir_live, end_directory=dataframe_dir_live_logs_sorted)
@@ -76,40 +75,42 @@ def concat_additional_logs():
     pathlist = pathlib.Path(dataframe_dir_live_logs_sorted).glob('**/*.pickle')
     pathlist_old = pathlib.Path(dataframe_dir_live_logs_sorted2).glob('**/*.pickle')
 
-    path = fr'{dataframe_dir_live_logs_sorted}\MA06DR.pickle'
-    pathold = fr'{dataframe_dir_live_logs_sorted2}\MA06DR.pickle'
-
-    df_logs = pd.read_pickle(path)
-    df_logs_old = pd.read_pickle(pathold)
-    df_concat = pd.concat([df_logs_old, df_logs], ignore_index=False)
-    with open(fr'{dataframe_dir_live_logs_sorted}\MA06DR.pickle', 'wb') as f:
-        pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
-
-    # for data_path in pathlist:
-    #     path_in_str = str(data_path)
-    #     print(f"read dic: {path_in_str}")
-    #     df_logs = pd.read_pickle(path_in_str)
+    # path = fr'{dataframe_dir_live_logs_sorted}\MA06DR.pickle'
+    # pathold = fr'{dataframe_dir_live_logs_sorted2}\MA06DR.pickle'
     #
-    #     for data_path_old in pathlist_old:
-    #         print(str(data_path_old))
-    #         print(data_path.stem, data_path_old.stem)
-    #         if data_path.stem == data_path_old.stem:
-    #             print('same')
-    #             df_logs_old = pd.read_pickle(str(data_path_old))
-    #             print(df_logs.columns.values.size)
-    #             print(df_logs_old.columns.values.size)
-    #             df_concat = pd.concat([df_logs_old, df_logs], ignore_index=False)
-    #             with open(fr'{dataframe_dir_live_logs_sorted}\{data_path.stem}.pickle', 'wb') as f:
-    #                 pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
+    # df_logs = pd.read_pickle(path)
+    # df_logs_old = pd.read_pickle(pathold)
+    # df_concat = pd.concat([df_logs_old, df_logs], ignore_index=False)
+    # with open(fr'{dataframe_dir_live_logs_sorted}\MA06DR.pickle', 'wb') as f:
+    #     pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
 
-    #     df_logs = pd.read_pickle(path_in_str)
-    #     df_logs = cleanup(df_logs)
-    #     df_logs = prepareTimestamps.process_timestamps(df_logs)
-    #     # extract Metadata
-    #     df_logs = getFromJson.extractMetaData(df_logs)
-    #
-    #     with open(fr'{dataframe_dir_live_logs_sorted}\{data_path.stem}.pickle', 'wb') as f:
-    #         pickle.dump(df_logs, f, pickle.HIGHEST_PROTOCOL)
+    for data_path in pathlist:
+        path_in_str = str(data_path)
+        print(f"read dic: {path_in_str}")
+        df_logs = pd.read_pickle(path_in_str)
+
+        df_logs.sort_values(by=['correct_timestamp'], ascending=True, inplace=True)
+
+        # for data_path_old in pathlist_old:
+        #     print(str(data_path_old))
+        #     print(data_path.stem, data_path_old.stem)
+        #     if data_path.stem == data_path_old.stem:
+        #         print('same')
+        #         df_logs_old = pd.read_pickle(str(data_path_old))
+        #         print(df_logs.columns.values.size)
+        #         print(df_logs_old.columns.values.size)
+        #         df_concat = pd.concat([df_logs_old, df_logs], ignore_index=False)
+        #         with open(fr'{dataframe_dir_live_logs_sorted}\{data_path.stem}.pickle', 'wb') as f:
+        #             pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
+        #
+        # df_logs = pd.read_pickle(path_in_str)
+        # df_logs = cleanup(df_logs)
+        # df_logs = prepareTimestamps.process_timestamps(df_logs)
+        # # extract Metadata
+        # df_logs = getFromJson.extractMetaData(df_logs)
+
+        with open(fr'{dataframe_dir_live_logs_sorted}\{data_path.stem}.pickle', 'wb') as f:
+            pickle.dump(df_logs, f, pickle.HIGHEST_PROTOCOL)
 
 
 
@@ -203,7 +204,7 @@ def extract_features():
     Extract the features for each user from the log file and add it to the sessions and feature dataframe
     :return: saves the session list to file
     """
-    path_list = pathlib.Path(dataframe_dir_live_logs_sorted_preprocessed).glob('**/*.pickle')
+    path_list = pathlib.Path(dataframe_dir_live_logs_sorted).glob('**/*.pickle')
     # df_all_sessions = pd.read_pickle(path_testfile_sessions)
     # print(df_all_sessions)
 
@@ -294,7 +295,7 @@ def filter_sessions_esm_user_based():
             # df_session_features = df_session_features.drop(df_session_features['f_session_length'] > threshold_max_cap)
             df_filtered_esm = df_session_features[(df_session_features['f_session_length'] > threshold) & (df_session_features['f_esm_finished_intention'] != '')]
 
-            with open(fr'{dataframe_dir_sessions_filtered}\{data_path.stem}-sessions_filtered.pickle', 'wb') as f:
+            with open(fr'{dataframe_dir_sessions}\{data_path.stem}-sessions_filtered.pickle', 'wb') as f:
                 pickle.dump(df_filtered_esm, f, pickle.HIGHEST_PROTOCOL)
 
             # TODO Change yes to and colums?
@@ -490,7 +491,7 @@ def bag_of_apps_create_vocab():
 
     print(len(vocab))
     print(vocab)
-    with open(fr'{dataframe_dir_users}\bag_of_apps_vocab.pickle', 'wb') as f:
+    with open(fr'{dataframe_dir_ml}\bag_of_apps_vocab.pickle', 'wb') as f:
         pickle.dump(vocab, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -501,7 +502,7 @@ def bag_of_apps_create_bags():
     """
     print('create bag of apps')
     # go over every session and create vector of app count
-    vocab = pd.read_pickle(fr'{dataframe_dir_users}\bag_of_apps_vocab.pickle')
+    vocab = pd.read_pickle(fr'{dataframe_dir_ml}\bag_of_apps_vocab.pickle')
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
 
     df_sessions['f_bag_of_apps'] = pd.Series(dtype='object')
@@ -552,13 +553,16 @@ def filter_users():
 
     studIDs_mrh2 = df_MRH2['IM01_01'].apply(lambda x: x.upper())
 
-    to_drop = []
-    grouped_logs = df_sessions.groupby(['studyID'])
-    # Iterate over sessions
-    for name, df_group in grouped_logs:
-        print(name)
-        if name.upper() not in studIDs_mrh2.values:
-            to_drop.append(name)
+    # Find the users to drop
+    # to_drop = []
+    # grouped_logs = df_sessions.groupby(['studyID'])
+    # # Iterate over sessions
+    # for name, df_group in grouped_logs:
+    #     print(name)
+    #     if name.upper() not in studIDs_mrh2.values:
+    #         to_drop.append(name)
+
+    to_drop = ['AN09BI', 'NI23HE', 'PI02MA']
 
     print(to_drop)
     for study_id in to_drop:
@@ -648,60 +652,59 @@ def print_test_df():
 
 
 def test():
-    path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs_preprocessed\CO07Fa.pickle'
-    t = pd.read_pickle(path_testfile)
-    df = t[(t['eventName'].values == 'ESM')]
-    df.to_csv(fr'{dataframe_dir_users}\CO07Fatest.csv')
-    print(df[['eventName', 'event']])
+    path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\analyze-no1hot-withseq-nolabels\user-sessions_features_all.pickle'
+    df = pd.read_pickle(path_testfile)
+    df.to_csv(fr'{dataframe_dir_ml}\analyze-no1hot-withseq-nolabels\user-sessions_features_all.csv')
+
 
 
 if __name__ == '__main__':
     pd.set_option('display.max_columns', None)
 
-    # Extract the logs from the raw database files
+    # 1. Extract the logs from the raw database files
     # extractData()
 
-    # Extract the users without logs from raw database files
+    # 2. Extract the users without logs from raw database files
     # extractUser()
 
     # Check if one log for activity tracking exists
     # check_for_activity()
 
-    # Run the preprocessing steps like transform timestams and extract sessions usw
+    # 3. Run the preprocessing steps like transform timestams and extract sessions usw
     # preprocessing()
 
-    # Extract the features from the logs and saves it to the sessions df
+    # 4. Extract the features from the logs and saves it to the sessions df
     # extract_features()
 
-    # concat all session and features df from each user to one
+    # 5. concat all session and features df from each user to one
     # concat_features_dic() #old
     # concat_sessions()
 
-    # Create the bag of apps for each sessions (using all session df)
+    # 6. Create the bag of apps for each sessions (using all session df)
     # bag_of_apps_create_vocab()
     # bag_of_apps_create_bags()
 
-    # Convert timedeltas to milliseconds and drop unused columns
+    # 7. Convert timedeltas to milliseconds and drop unused columns
     # drop_sequences()
     # convert_timedeletas()
 
-    # Filter the session to give an overview over sessions with esm
+    # 8.  Filter the session to give an overview over sessions with esm
     # filter_sessions_esm_user_based()
 
-    # On hot encode colums like esm
+    # 9. On hot encode colums like esm
     # one_hot_encoding_dummies()
     # on_hot_encoding_scilearn()
 
-    # Filter outliners
+    # 10. Filter outliners
     # filter_sessions_outliners_all()
 
-    # Only use users that completed the second questionnaire
-    #filter_users()
+    # 11. Only use users that completed the second questionnaire
+    # filter_users()
 
-    # create labels as targets
+    # 12. create labels as targets (only works with onhot encoded data)
     # create_labels()
 
     # Testing
     # print_test_df()
-    # test()
-    concat_additional_logs()
+    test()
+    # concat_additional_logs()

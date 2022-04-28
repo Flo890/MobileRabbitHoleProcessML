@@ -76,7 +76,7 @@ def sessions_hist_all():
     :return:
     """
     print('plot session Hist')
-    path = fr'{dataframe_dir_ml}\user-sessions_features_all-analyze.pickle'
+    path = fr'{dataframe_dir_ml}\analyze-no1hot-withseq-nolabels\user-sessions_features_all.pickle'
 
     df = pd.read_pickle(path)
 

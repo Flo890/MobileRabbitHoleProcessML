@@ -23,15 +23,50 @@ DarkBlackishGray= '#6E707C'
 #
 dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
 df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
-df_sessions_a = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all-analyze.pickle')
+df_sessions_a = pd.read_pickle(fr'{dataframe_dir_ml}\analyze-no1hot-withseq-nolabels\user-sessions_features_all.pickle')
 df_rh = df_sessions_a[df_sessions_a['f_esm_more_than_intention'] == 'Yes']
 
 
-def df_analyese_rh_sessions_time():
-    print('analze rabbithole')
+def df_analyze_apps():
+    list = [('APP', 'com.instagram.android'), ('APP', 'com.google.android.apps.nexuslauncher'), ('APP', 'com.android.chrome'), ('APP', 'com.google.android.apps.nexuslauncher')]
+
+    # for item in list:
+
+
+def esm_per_user():
+    grouped_logs = df_sessions.groupby(['studyID'])
+
+    # Iterate over sessions
+    for name, df_group in grouped_logs:
+        more_no = np.array(df_group[df_group['f_esm_more_than_intention_No'] == 1.0]['f_session_length'])
+        more_yes = np.array(df_group[df_group['f_esm_more_than_intention_Yes'] == 1.0]['f_session_length'])
+        more_nan = np.array(df_group[df_group['f_esm_more_than_intention_nan'] == 1.0]['f_session_length'])
+
+        type = ["Not more than intention", "More than intention", "nan"]
+        count = [more_no.size, more_yes.size, more_nan.size]
+
+        plt.bar(type, count, color=milkGreen)
+        plt.title(name)
+        plt.show()
+
+        print()
+        print(more_no.size, more_yes.size, more_nan.size)
+
+        # print(more_no, more_yes, more_nan)
+        #
+        # plt.plot(more_no, np.zeros_like(more_no) + 0, 'x', color=milkGreenDark, label="Not more than intention")
+        # plt.plot(more_yes, np.zeros_like(more_yes) + 1, 'x', color=milkGreen, label="More than intention")
+        # plt.plot(more_nan, np.zeros_like(more_nan) + 2, 'x', color=blueish, label="Nan")
+        # plt.legend()
+        # plt.title(name)
+        # plt.show()
+
+
+def df_analyze_rh_sessions_time():
+    print('analyze rabbithole')
     # df_sessions_a.to_csv(fr'{dataframe_dir_ml}\user-sessions_features_all-analyze.csv')
 
-    session_length_mean = df_rh['f_session_length'].mean() #707627.1720930233
+    session_length_mean = df_rh['f_session_length'].mean() #735253.0153508772 12.2542167min
     print(session_length_mean)
 
     # context zeit ort?
@@ -73,7 +108,7 @@ def analyze_esm():
     type = ["Not more than intention", "More than intention", "nan"]
     count = [more_no.size, more_yes.size, more_nan.size]
 
-    plt.bar(type, count)
+    plt.bar(type, count, color=milkGreen)
     plt.show()
 
     print()
@@ -81,9 +116,9 @@ def analyze_esm():
 
     print(more_no, more_yes, more_nan)
 
-    plt.plot(more_no, np.zeros_like(more_no) + 0, 'x', color='red', label="Not more than intention")
-    plt.plot(more_yes, np.zeros_like(more_yes) + 1, 'x', color='blue', label="More than intention")
-    plt.plot(more_nan, np.zeros_like(more_nan) + 2, 'x', color='green', label="Nan")
+    plt.plot(more_no, np.zeros_like(more_no) + 0, 'x', color=milkGreenDark, label="Not more than intention")
+    plt.plot(more_yes, np.zeros_like(more_yes) + 1, 'x', color=milkGreen, label="More than intention")
+    plt.plot(more_nan, np.zeros_like(more_nan) + 2, 'x', color=blueish, label="Nan")
     plt.legend()
     plt.show()
 
@@ -93,4 +128,5 @@ def analyze_esm():
 if __name__ == '__main__':
     pd.set_option('display.max_columns', None)
     # analyze_esm()
-    df_analyese_rh_sessions_time()
+    # df_analyze_rh_sessions_time()
+    esm_per_user()
