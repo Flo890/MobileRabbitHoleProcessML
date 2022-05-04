@@ -402,7 +402,7 @@ def filter_sessions_outliners_all():
     # plt.show()
 
 
-def create_labels():
+def create_labels_single():
     print('create label')
     #  finished yes more no is not a rabbit hole (an averything without ems?)
     # alles andere is unintentional use or rabbit hole (boredom vs rabbit hole?)
@@ -426,7 +426,7 @@ def create_labels():
         #   (df_sessions.f_esm_finished_intention_nan == 1 & df_sessions.f_esm_more_than_intention_nan == 1)):
 
         # ['f_esm_intention', 'f_esm_finished_intention', 'f_esm_more_than_intention', 'f_esm_track_of_time', 'f_esm_track_of_space', 'f_esm_emotion', 'f_esm_regret', 'f_esm_agency']
-        if df_sessions.loc[index, 'f_esm_emotion_anger-irritation'] == 1:
+        if df_sessions.loc[index, 'f_esm_more_than_intention_Yes'] == 1:
             df_sessions.at[index, 'target_label'] = rh
         else:
             df_sessions.at[index, 'target_label'] = no_rh
@@ -437,7 +437,74 @@ def create_labels():
     df_sessions.drop(columns=colums_esm, inplace=True)
     # df_sessions.drop(columns=['f_esm_more_than_intention_Yes', 'f_esm_more_than_intention_No', 'f_esm_more_than_intention_nan'], inplace=True)
 
-    with open(fr'{dataframe_dir_ml}\user-sessions_features_labeled_emotion_anger.pickle', 'wb') as f:
+    with open(fr'{dataframe_dir_ml}\labled\user-sessions_features_labeled_more_than_intention.pickle', 'wb') as f:
+        pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
+
+
+def labeling_combined():
+    labelist = [('f_esm_more_than_intention_Yes', 'f_esm_emotion_interest-expectancy'), ('f_esm_more_than_intention_Yes', 'f_esm_emotion_happiness-elation'),
+                ('f_esm_more_than_intention_Yes', 'f_esm_emotion_calm-contentment'), ('f_esm_more_than_intention_Yes', 'f_esm_emotion_boredom-indifference'),
+                ('f_esm_more_than_intention_Yes', 'f_esm_emotion_anxiety-fear')]
+    labelListScale = [('f_esm_more_than_intention_Yes', 'f_esm_regret_7.0', 'f_esm_regret_6.0', 'f_esm_regret_5.0'),
+                      ('f_esm_more_than_intention_Yes', 'f_esm_agency_0.0', 'f_esm_agency_1.0', 'f_esm_agency_2.0'),
+                      ('f_esm_more_than_intention_Yes', 'f_esm_track_of_time_6.0', 'f_esm_track_of_time_7.0', 'f_esm_track_of_time_5.0'),
+                      ('f_esm_more_than_intention_Yes', 'f_esm_track_of_space_0.0', 'f_esm_track_of_space_1.0', 'f_esm_track_of_space_2.0')]
+
+    for item in labelist:
+        create_labels_combines(item[0], item[1])
+
+    for item in labelListScale:
+        create_labels_combines_scale(item[0], item[1], item[2], item[3])
+
+
+def create_labels_combines(label1, label2):
+    print('create label')
+
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
+    df_sessions.reset_index(drop=True, inplace=True)
+    # df_sessions.to_csv(fr'{dataframe_dir_ml}\user-sessions_features_all_t.pickle')
+    rh = 'rabbit_hole'
+    no_rh = 'no_rabbithole'
+
+    # df_sessions['f_bag_of_apps'] = pd.Series(dtype='string')
+    df_sessions.insert(6, 'target_label', '')
+
+    for index, session in enumerate(df_sessions.itertuples(index=False)):
+        if (df_sessions.loc[index, label1] == 1) & (df_sessions.loc[index, label2] == 1):
+            df_sessions.at[index, 'target_label'] = rh
+        else:
+            df_sessions.at[index, 'target_label'] = no_rh
+
+    colums_esm = [x for x in df_sessions.columns.values if x.startswith('f_esm')]
+    df_sessions.drop(columns=colums_esm, inplace=True)
+    # df_sessions.drop(columns=['f_esm_more_than_intention_Yes', 'f_esm_more_than_intention_No', 'f_esm_more_than_intention_nan'], inplace=True)
+
+    with open(fr'{dataframe_dir_ml}\labled\user-sessions_features_labeled_{label1}_{label2}.pickle', 'wb') as f:
+        pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
+
+
+def create_labels_combines_scale(label1, label2_1, label2_2, label2_3):
+    print('create label')
+
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
+    df_sessions.reset_index(drop=True, inplace=True)
+    rh = 'rabbit_hole'
+    no_rh = 'no_rabbithole'
+
+    # df_sessions['f_bag_of_apps'] = pd.Series(dtype='string')
+    df_sessions.insert(6, 'target_label', '')
+
+    for index, session in enumerate(df_sessions.itertuples(index=False)):
+        if (df_sessions.loc[index, label1] == 1) & ((df_sessions.loc[index, label2_1] == 1) | (df_sessions.loc[index, label2_2] == 1) | (df_sessions.loc[index, label2_3] == 1)):
+            df_sessions.at[index, 'target_label'] = rh
+        else:
+            df_sessions.at[index, 'target_label'] = no_rh
+
+    colums_esm = [x for x in df_sessions.columns.values if x.startswith('f_esm')]
+    df_sessions.drop(columns=colums_esm, inplace=True)
+    # df_sessions.drop(columns=['f_esm_more_than_intention_Yes', 'f_esm_more_than_intention_No', 'f_esm_more_than_intention_nan'], inplace=True)
+
+    with open(fr'{dataframe_dir_ml}\labled\user-sessions_features_labeled_{label1}_{label2_1}.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -589,6 +656,93 @@ def drop_sequences():
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
+def reduce_feature_dimension():
+    print("reduce_feature_dimension")
+    # Create colum with other for each type
+    # Get all columns starting with feature id
+    # Count occurences of 1
+    # if under threshhold (5?) add to other categorie
+
+    # f_clicks_app_category
+    # f_scrolls_app_category_
+    # f_scrolls_ package
+    # f_clicks__packge
+    # f_app_count
+    # f_app_time
+    # f_app_category_count_
+    # f_app_category_time
+
+    # repeat for all types
+    threshold = 5
+    feature_to_reduce = ['f_clicks_app_category', 'f_scrolls_app_category', 'f_scrolls', 'f_clicks', 'f_app_count', 'f_app_time', 'f_app_category_count', 'f_app_category_time']
+
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
+    df_sessions.reset_index(drop=True, inplace=True)
+    # df_sessions.fillna(0.0, inplace=True)
+    # df_sessions.drop(columns = ['session_length', 'timestamp_1', 'timestamp_2', 'f_sequences_apps'])
+
+    for item in feature_to_reduce:
+
+        colums_f = [x for x in df_sessions.columns.values if x.startswith(item)]
+        other_colum_name = f'{item}_other'
+        print(other_colum_name)
+        df_sessions[other_colum_name] = 0
+
+        for column_name in colums_f:
+            # print(column_name)
+            # print(column)
+            # df_colum = df_sessions.loc[:, column]
+            # if 1 in df_sessions[column].values:
+
+            df_sessions[column_name] = df_sessions[column_name].fillna(0)
+
+            count = (df_sessions[column_name] > 0).sum()
+            # print(count)
+            # count = df_sessions[column].value_counts()[1]
+
+            if count <= threshold:
+                # print("start")
+                # print(df_sessions[other_colum_name].head(7))
+                # print(print(df_sessions[column_name].head(7)))
+                # print(df_sessions[df_sessions[column_name] > 0][column_name].head(7))
+                # print(df_sessions[df_sessions[column_name] > 0][other_colum_name].head(7))
+
+                df_sessions[other_colum_name] = df_sessions[other_colum_name] + df_sessions[column_name]
+                # print(df_sessions[other_colum_name].head(7))
+                # print(df_sessions[df_sessions[column_name] > 0][other_colum_name].head(7))
+                # print("end")
+
+                df_sessions.drop(columns=[column_name], inplace=True)
+
+                # old = df_sessions.loc[df_sessions[column] > 0, other_colum_name]
+                # print(df_sessions[df_sessions[column] > 0, other_colum_name])
+                # print(old)
+                # dfs = df_sessions[df_sessions[column_name] > 0]
+                # for index, row in enumerate(df_sessions[df_sessions[column_name] > 0].itertuples()):
+                #     #print(row, type(row))
+                #     #print(row[column_name][0], row.other_colum_name)
+                #     #print( type(row[column]), row[column])
+                #     #new = row[column_name] + row[other_colum_name]
+                #     # TODO just sum up both colums
+                #     print(index)
+                #     print(df_sessions.loc[index, column_name], df_sessions.loc[index, other_colum_name])
+                #     pre = df_sessions.loc[index, other_colum_name] + df_sessions.loc[index, column_name]
+                #     df_sessions.loc[index, other_colum_name] = pre
+                #     print("new", df_sessions.loc[index, other_colum_name])
+
+                # df_sessions.drop(columns=[column], inplace=True)
+
+                # print(df_sessions[df_sessions[column] > 0, other_colum_name])
+                # df_sessions.at[[df_sessions[column] == 1], other_colum_name] += count
+                # print(t)
+                # print(t.columns)
+                # df_sessions.drop(columns=['f_sequences'], inplace=True)
+
+    df_sessions.to_csv(fr'{dataframe_dir_ml}\user-sessions_features_all_f_reduction.csv')
+    with open(fr'{dataframe_dir_ml}\user-sessions_features_all_f_reduction.pickle', 'wb') as f:
+        pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
+
+
 def concat_sessions():
     print('concat sessions')
     path_list = pathlib.Path(dataframe_dir_sessions_features).glob('**/*.pickle')
@@ -707,8 +861,13 @@ if __name__ == '__main__':
     # 11. Only use users that completed the second questionnaire
     # filter_users()
 
-    # 12. create labels as targets (only works with onhot encoded data)
-    create_labels()
+    # 12. reduce feautre dimension by grouping columns together
+    # WIP
+    # reduce_feature_dimension()
+
+    # 13. create labels as targets (only works with onhot encoded data)
+    create_labels_single()
+    # labeling_combined()
 
     # Testing
     # print_test_df()

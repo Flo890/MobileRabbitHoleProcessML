@@ -8,7 +8,8 @@ from imblearn.over_sampling import RandomOverSampler
 from imblearn.over_sampling import SMOTE
 
 dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
-milkGreen= '#0BCB85'
+milkGreen = '#0BCB85'
+
 
 def check_labels():
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_labeled.pickle')
@@ -62,7 +63,8 @@ def clean_df(df):
 def prepare_clustering(df):
     return df[['f_session_length', 'f_bag_of_apps']].fillna(0)
 
-def prepare_df(df):
+
+def prepare_df_oversampling(df):
     print("--prepare df---")
     df = clean_df(df)
     x = df.drop('target_label', axis=1)
@@ -70,6 +72,15 @@ def prepare_df(df):
     # save the feature name and target variables
 
     return oversampling_smote(x, y)
+
+
+def prepare_df_undersampling(df):
+    print("--prepare df---")
+    df = clean_df(df)
+    x = df.drop('target_label', axis=1)
+    y = df['target_label']
+    # save the feature name and target variables
+    return undersampling(x, y)
 
 
 def prepare_df_no_oversampling(df):
