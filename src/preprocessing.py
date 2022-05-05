@@ -422,20 +422,13 @@ def create_labels_single():
         # what when not finished intention and did not more than intention?
         # rabbit hole finished intetion but did more, or not finished intention and did more?
 
-        # if ((df_sessions.f_esm_finished_intention_Yes == 1 & df_sessions.f_esm_more_than_intention_No == 0) |
-        #   (df_sessions.f_esm_finished_intention_nan == 1 & df_sessions.f_esm_more_than_intention_nan == 1)):
-
         # ['f_esm_intention', 'f_esm_finished_intention', 'f_esm_more_than_intention', 'f_esm_track_of_time', 'f_esm_track_of_space', 'f_esm_emotion', 'f_esm_regret', 'f_esm_agency']
         if df_sessions.loc[index, 'f_esm_more_than_intention_Yes'] == 1:
             df_sessions.at[index, 'target_label'] = rh
         else:
             df_sessions.at[index, 'target_label'] = no_rh
 
-    # df_sessions.to_csv(fr'{dataframe_dir_ml}\user-sessions_features_labeled.csv')
-    # df_MRH1.columns.str.startswith('AB01')
-    colums_esm = [x for x in df_sessions.columns.values if x.startswith('f_esm')]
-    df_sessions.drop(columns=colums_esm, inplace=True)
-    # df_sessions.drop(columns=['f_esm_more_than_intention_Yes', 'f_esm_more_than_intention_No', 'f_esm_more_than_intention_nan'], inplace=True)
+    df_sessions = drop_esm_features(df_sessions)
 
     with open(fr'{dataframe_dir_ml}\labled\user-sessions_features_labeled_more_than_intention.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
@@ -443,8 +436,8 @@ def create_labels_single():
 
 def labeling_combined():
     labelist = [('f_esm_more_than_intention_Yes', 'f_esm_emotion_interest-expectancy'), ('f_esm_more_than_intention_Yes', 'f_esm_emotion_happiness-elation'),
-                ('f_esm_more_than_intention_Yes', 'f_esm_emotion_calm-contentment'), ('f_esm_more_than_intention_Yes', 'f_esm_emotion_boredom-indifference'),
-                ('f_esm_more_than_intention_Yes', 'f_esm_emotion_anxiety-fear')]
+                ('f_esm_more_than_intention_Yes', 'f_esm_emotion_calm-contentment')]\
+                # ('f_esm_more_than_intention_Yes', 'f_esm_emotion_boredom-indifference'), ('f_esm_more_than_intention_Yes', 'f_esm_emotion_anxiety-fear')]
     labelListScale = [('f_esm_more_than_intention_Yes', 'f_esm_regret_7.0', 'f_esm_regret_6.0', 'f_esm_regret_5.0'),
                       ('f_esm_more_than_intention_Yes', 'f_esm_agency_0.0', 'f_esm_agency_1.0', 'f_esm_agency_2.0'),
                       ('f_esm_more_than_intention_Yes', 'f_esm_track_of_time_6.0', 'f_esm_track_of_time_7.0', 'f_esm_track_of_time_5.0'),
@@ -475,9 +468,7 @@ def create_labels_combines(label1, label2):
         else:
             df_sessions.at[index, 'target_label'] = no_rh
 
-    colums_esm = [x for x in df_sessions.columns.values if x.startswith('f_esm')]
-    df_sessions.drop(columns=colums_esm, inplace=True)
-    # df_sessions.drop(columns=['f_esm_more_than_intention_Yes', 'f_esm_more_than_intention_No', 'f_esm_more_than_intention_nan'], inplace=True)
+    df_sessions = drop_esm_features(df_sessions)
 
     with open(fr'{dataframe_dir_ml}\labled\user-sessions_features_labeled_{label1}_{label2}.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
@@ -491,7 +482,6 @@ def create_labels_combines_scale(label1, label2_1, label2_2, label2_3):
     rh = 'rabbit_hole'
     no_rh = 'no_rabbithole'
 
-    # df_sessions['f_bag_of_apps'] = pd.Series(dtype='string')
     df_sessions.insert(6, 'target_label', '')
 
     for index, session in enumerate(df_sessions.itertuples(index=False)):
@@ -500,12 +490,16 @@ def create_labels_combines_scale(label1, label2_1, label2_2, label2_3):
         else:
             df_sessions.at[index, 'target_label'] = no_rh
 
-    colums_esm = [x for x in df_sessions.columns.values if x.startswith('f_esm')]
-    df_sessions.drop(columns=colums_esm, inplace=True)
-    # df_sessions.drop(columns=['f_esm_more_than_intention_Yes', 'f_esm_more_than_intention_No', 'f_esm_more_than_intention_nan'], inplace=True)
+    df_sessions = drop_esm_features(df_sessions)
 
     with open(fr'{dataframe_dir_ml}\labled\user-sessions_features_labeled_{label1}_{label2_1}.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
+
+
+def drop_esm_features(df_sessions):
+    colums_esm = [x for x in df_sessions.columns.values if x.startswith('f_esm')]
+    df_sessions.drop(columns=colums_esm, inplace=True)
+    return df_sessions
 
 
 def one_hot_encoding_dummies():

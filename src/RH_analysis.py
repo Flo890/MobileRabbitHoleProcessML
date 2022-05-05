@@ -27,12 +27,18 @@ df_sessions_a = pd.read_pickle(fr'{dataframe_dir_ml}\analyze-no1hot-withseq-nola
 df_rh = df_sessions_a[df_sessions_a['f_esm_more_than_intention'] == 'Yes']
 
 
-def df_analyze_apps():
-    list = [('APP', 'com.instagram.android'), ('APP', 'com.google.android.apps.nexuslauncher'), ('APP', 'com.android.chrome'), ('APP', 'com.google.android.apps.nexuslauncher')]
 
+def df_analyze_apps():
+    # list = [('APP', 'com.instagram.android'), ('APP', 'com.google.android.apps.nexuslauncher'), ('APP', 'com.android.chrome'), ('APP', 'com.google.android.apps.nexuslauncher')]
+
+    # f_sequences_apps [list(['com.whatsapp', 'com.google.android.apps.nexuslauncher', 'com.instagram.android'])]
+    list = ['com.whatsapp', 'com.google.android.apps.nexuslauncher', 'com.instagram.android']
+
+    df_sequences_apps =
     df_new = df_rh.copy()
     df_new['f_app_count_rh'] = 0
-    df_new_seq = df_new.dropna(subset=['f_sequences']) #fillna('[]')
+
+    df_new_seq = df_new.dropna(subset=['f_sequences_apps']) #fillna('[]')
     for i, row in df_new_seq.iterrows():
         print('row', i)
         seq = row['f_sequences']
