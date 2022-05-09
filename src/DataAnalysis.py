@@ -167,6 +167,10 @@ def rh_analyze_intentions(df_rh):
     plt.show()
 
 
+def rh_analyze_app_sequences(df_rh):
+
+
+
 if __name__ == '__main__':
     path = [rf'{dataframe_dir_labled}\user-sessions_features_labeled_more_than_intention.pickle',
             rf'{dataframe_dir_labled}\user-sessions_features_labeled_f_esm_more_than_intention_Yes_f_esm_agency_0.0.pickle',

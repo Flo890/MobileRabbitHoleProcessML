@@ -17,6 +17,7 @@ from sklearn.tree import export_text
 from sklearn.metrics import confusion_matrix
 from sklearn import metrics
 import ML_helpers
+import shap
 from sklearn import decomposition, datasets
 from sklearn import tree
 from sklearn.pipeline import Pipeline
@@ -25,6 +26,7 @@ from sklearn.preprocessing import StandardScaler
 from imblearn.ensemble import BalancedRandomForestClassifier
 
 dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
+dataframe_dir_results = rf"M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\results"
 dataframe_dir_ml_labeled = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data\labled'
 dataframe_dir_ml_labeled_all = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data\labled_all'
 dataframe_dir_ml_labeled_m = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data\labled_first_more'
@@ -183,9 +185,28 @@ def random_forest_classifier(x, y, filename, report_df):
     importance = pd.DataFrame({'feature': feature_list, 'importance': np.round(forest.feature_importances_, 3)})
     importance.sort_values('importance', ascending=False, inplace=True)
     print(importance)
-    importance.to_csv(fr'{dataframe_dir_ml}\feature_importance\{filename}-randomForest_f_importance.csv')
+    importance.to_csv(fr'{dataframe_dir_results}\feature_importance\{filename}-randomForest_f_importance.csv')
+
+    print("---------------SHAP PLOTS-------------")
+    shap_values = shap.TreeExplainer(forest).shap_values(x_train_features)
+
+    plt.figure()
+    shap.summary_plot(shap_values, x_train_features, plot_type="bar")
+    plt.show()
+
+
+    # shap.summary_plot(shap_values, x_train_features, feature_names=feature_list)
+    print(type(feature_list))
+    shap.summary_plot(shap_values, features=x, plot_type='bar', feature_names=feature_list) #, max_display=features_list_g.shape[0])
+    plt.show()
+
+
+    # f.savefig("/summary_plot1.png", bbox_inches='tight', dpi=600)
 
     return pd.concat([report_df, report])
+
+
+
 
 
 def decision_tree_classifier(x, y, filename, report_df):
@@ -220,7 +241,7 @@ def decision_tree_classifier(x, y, filename, report_df):
     importance.sort_values('importance', ascending=False, inplace=True)
     importance.reset_index(drop=True, inplace=True)
     print(importance)
-    importance.to_csv(fr'{dataframe_dir_ml}\feature_importance\{filename}-decision_tree_f_importance.csv')
+    importance.to_csv(fr'{dataframe_dir_results}\feature_importance\{filename}-decision_tree_f_importance.csv')
     # with open(fr'{dataframe_dir_ml}\feature_importance\{filename}-decision_tree_f_importance.txt', 'w') as f:
     #     print(importance, file=f)
     print(type(report_df))
@@ -232,27 +253,39 @@ def dt_grid_search(X, y):
     print("grid_search")
     std_slc = StandardScaler()
     pca = decomposition.PCA()
-    dec_tree = tree.DecisionTreeClassifier()
+    dec_tree = DecisionTreeClassifier()
 
     pipe = Pipeline(steps=[('std_slc', std_slc),
                            ('pca', pca),
                            ('dec_tree', dec_tree)])
     n_components = list(range(1, X.shape[1] + 1, 1))
     criterion = ['gini', 'entropy']
-    max_depth = [2,4,6,8,10,12]
+    max_depth = [2, 4, 6, 8, 10, 12]
 
     parameters = dict(pca__n_components=n_components,
                       dec_tree__criterion=criterion,
                       dec_tree__max_depth=max_depth)
+    pram = {"criterion": criterion,
+            "max_depth":max_depth,
+            "min_samples_split": range(1, 10),
+            "min_samples_lead": range(1, 5)}
 
-    clf_GS = GridSearchCV(pipe, parameters)
+    clf_GS = GridSearchCV(dec_tree, param_grid=pram, cv=10)
     clf_GS.fit(X, y)
 
-    print('Best Criterion:', clf_GS.best_estimator_.get_params()['dec_tree__criterion'])
-    print('Best max_depth:', clf_GS.best_estimator_.get_params()['dec_tree__max_depth'])
-    print('Best Number Of Components:', clf_GS.best_estimator_.get_params()['pca__n_components'])
+    print('Best Criterion:', clf_GS.best_estimator_.get_params()['criterion'])
+    print('Best max_depth:', clf_GS.best_estimator_.get_params()['max_depth'])
+    print('min_samplesplit:', clf_GS.best_estimator_.get_params()['min_samples_split'])
+    print('min samples_lead:', clf_GS.best_estimator_.get_params()['min_samples_lead'])
     print()
     print(clf_GS.best_estimator_.get_params()['dec_tree'])
+
+
+    # print('Best Criterion:', clf_GS.best_estimator_.get_params()['dec_tree__criterion'])
+    # print('Best max_depth:', clf_GS.best_estimator_.get_params()['dec_tree__max_depth'])
+    # print('Best Number Of Components:', clf_GS.best_estimator_.get_params()['pca__n_components'])
+    # print()
+    # print(clf_GS.best_estimator_.get_params()['dec_tree'])
 
 
 if __name__ == '__main__':
@@ -271,14 +304,14 @@ if __name__ == '__main__':
         # df_sessions.to_csv(fr'{dataframe_dir_ml_labeled}\test_{data_path.stem}.csv')
         x, y = ML_helpers.prepare_df_undersampling(df_sessions)
 
-        # report_all = decision_tree_classifier(x, y, data_path.stem, report_all)
-        dt_grid_search(x, y)
+        report_all = decision_tree_classifier(x, y, data_path.stem, report_all)
+        # dt_grid_search(x, y)
 
-        # report_all = random_forest_classifier(x, y, data_path.stem, report_all)
+        report_all = random_forest_classifier(x, y, data_path.stem, report_all)
 
         # report_all = logistic_regression_classifier(x, y, data_path.stem, report_all)
 
-        # report_all = kNeighbors_classifier(x, y, data_path.stem, report_all)
+       #  report_all = kNeighbors_classifier(x, y, data_path.stem, report_all)
 
         # report_all = naive_bayes_classifier(x, y, data_path.stem, report_all)
 
