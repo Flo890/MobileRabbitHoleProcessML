@@ -34,7 +34,7 @@ def df_analyze_apps():
     # f_sequences_apps [list(['com.whatsapp', 'com.google.android.apps.nexuslauncher', 'com.instagram.android'])]
     list = ['com.whatsapp', 'com.google.android.apps.nexuslauncher', 'com.instagram.android']
 
-    df_sequences_apps =
+
     df_new = df_rh.copy()
     df_new['f_app_count_rh'] = 0
 

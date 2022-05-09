@@ -2,6 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import pandas as pd
+import pickle
+
+from pandas import ExcelWriter
 
 milkGreen = '#0BCB85'
 milkGreenDark = '#267355'
@@ -18,39 +21,87 @@ dataframe_dir_labled = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\da
 
 
 def get_rabbitHoleSessions(df_sessions):
-    return df_sessions[df_sessions['target_label'] == 'rabbit_hole']
+    df = df_sessions[df_sessions['target_label'] == 'rabbit_hole'].reset_index(drop=True)
+    return df.copy()
+
+
+def get_NOrabbitHoleSessions(df_sessions):
+    df = df_sessions[df_sessions['target_label'] == 'no_rabbithole'].reset_index(drop=True)
+    return df.copy()
 
 
 def rh_analyze_apps(df_rh):
-    print("rh_apps")
+    print("rh_apps overall")
     # App counts
     # most used app
     # list = [('APP', 'com.instagram.android'), ('APP', 'com.google.android.apps.nexuslauncher'), ('APP', 'com.android.chrome'), ('APP', 'com.google.android.apps.nexuslauncher')]
-
     # f_sequences_apps [list(['com.whatsapp', 'com.google.android.apps.nexuslauncher', 'com.instagram.android'])]
-    list = ['com.whatsapp', 'com.google.android.apps.nexuslauncher', 'com.instagram.android']
 
-    df_sequences_apps = df_rh['f_sequences_apps']
-    # df_new = df_rh.copy()
-    print(df_rh['f_sequences_apps'])
-    print(type(df_rh['f_sequences_apps']))
-    print(df_rh['f_sequences_apps'].values[0])
-    # df_sequences_apps['f_app_count'] = df_rh['f_sequences_apps'][0].count()
+    df_rh['f_sequences_apps'].fillna('nan', inplace=True)
+    df_rh['f_all_app_count'] = 0
 
-    # print(df_sequences_apps['f_app_count'].head(0))
+    df_apps_count = {}
+    df_apps_time = {}
 
-    # sns.countplot(df_sequences_apps['f_app_count'], color=milkGreen)
-    # plt.xlabel('App count in rabbit hole sessions')
+    for i, row in df_rh.iterrows():
+        # get total app count per session
+        apps = row['f_sequences_apps'][0]
+        if apps != 'n':
+            df_rh.at[i, 'f_all_app_count'] = len(apps)
+
+        # most used apps per sessions - count
+
+        # most used apps per session - time
+
+    # app count
+    sns.countplot(df_rh['f_all_app_count'], color=milkGreen)
+    plt.xlabel('App count in rabbit hole sessions')
     # plt.show()
 
-    # f_app_time
-    # f_app_count
-    #
-    # f_app_category_count_
-    # f_app_category_time
-    # f_clicks f_scrolls
+    # most used apps
 
-    # df_rh.columns.str.startswith('f_app_time')
+    # ax = sns.countplot(x=df_sessions_a[esm_item], order=df_sessions_a[esm_item].value_counts(ascending=False).index, color=milkGreen)
+    #     #ax = sns.countplot(x=df['feature_name'], order=df['feature_name'].value_counts(ascending=False).index, color=milkGreen)
+    #     abs_values = df_sessions_a[esm_item].value_counts(ascending=False).values
+    #     plt.bar_label(container=ax.containers[0], labels=abs_values)
+
+    # f_app_category_time
+    list_times = ['f_app_time', 'f_app_category_time', ]
+    list_counts = ['f_app_count', 'f_app_category_count', 'f_clicks', 'f_scrolls', 'f_scrolls_app_category', 'f_clicks', 'f_clicks_app_category']
+
+    colum_names_count = ['name', 'count']
+    column_names_time = ['name', 'time']
+
+    times = []
+    counts = []
+
+    for item in list_times:
+        times.append(get_counts_all(df_rh, item, column_names_time))
+
+    for item in list_counts:
+        counts.append(get_counts_all(df_rh, item, colum_names_count))
+
+    # with ExcelWriter(fr'{dataframe_dir_ml}\analyze_counts_times\counts.xls', if_sheet_exists="overlay",) as writer:
+    #     for n, df in enumerate(counts):
+    #         df.to_excel(writer,'sheet%s' % n)
+    # with ExcelWriter(fr'{dataframe_dir_ml}\analyze_counts_times\times.xls', if_sheet_exists="overlay",) as writer:
+    #     for n, df in enumerate(times):
+    #         df.to_excel(writer,'sheet%s' % n)
+
+
+def get_counts_all(df_rh,  column_prefix, colum_names):
+    df = df_rh.loc[:, df_rh.columns.str.startswith(column_prefix)]
+    df_all = {}
+    for colum in df.columns:
+        sum_count = df[colum].values.sum()
+        df_all[colum] = sum_count
+
+    df_all = pd.DataFrame.from_dict(df_all, orient='index').reset_index(drop=False)
+    df_all.columns = colum_names
+    df_all = df_all.sort_values(by=colum_names[1], ascending=False).reset_index(drop=True)
+    print(df_all)
+    df_all.to_csv(fr'{dataframe_dir_ml}\analyze_counts_times\analyze_{column_prefix}.csv')
+    return df_all
 
 
 def rh_analyze_sessionlenghts(df_rh):
@@ -96,7 +147,7 @@ def rh_analyze_context(df_rh):
 
     weekdays = {}
     # TODO create sessions labled dataframe without onehotenhoding??
-    #pw = (df_weekdays.value_counts.plot(kind="bar", ylabel='Counts', xlabel='weekday', color=milkGreen, title=f'Rabbit Hole Sessions')
+    # pw = (df_weekdays.value_counts.plot(kind="bar", ylabel='Counts', xlabel='weekday', color=milkGreen, title=f'Rabbit Hole Sessions')
     pw = (df_weekdays.groupby(level=0).count()).reindex(weekday_range, fill_value=0).plot(kind="bar", ylabel='Counts', xlabel='weekday', color=milkGreen, title=f'Rabbit Hole Sessions')
     plt.subplots_adjust(left=0.1, bottom=0.1, right=0.9, top=0.9, wspace=0.4, hspace=0.6)
     pw.set_xticklabels(weekday_labels, rotation=0)
@@ -117,19 +168,24 @@ def rh_analyze_intentions(df_rh):
 
 
 if __name__ == '__main__':
-    path = rf'{dataframe_dir_labled}\user-sessions_features_labeled_more_than_intention.pickle'
+    path = [rf'{dataframe_dir_labled}\user-sessions_features_labeled_more_than_intention.pickle',
+            rf'{dataframe_dir_labled}\user-sessions_features_labeled_f_esm_more_than_intention_Yes_f_esm_agency_0.0.pickle',
+            rf'{dataframe_dir_labled}\user-sessions_features_labeled_f_esm_more_than_intention_Yes_f_esm_regret_7.0.pickle',
+            rf'{dataframe_dir_labled}\user-sessions_features_labeled_f_esm_more_than_intention_Yes_f_esm_track_of_time_6.0.pickle']
+
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
-    df_sessions_labled = pd.read_pickle(path)
+
+    df_sessions_labled = pd.read_pickle(path[0])
 
     # print(df_sessions.size)
     # print(df_sessions_labled.size)
 
     df_rabbitHole = get_rabbitHoleSessions(df_sessions_labled)
+    df_no_rabbitHole = get_NOrabbitHoleSessions(df_sessions_labled)
 
     # df_rabbitHole.to_csv()
 
     # rh_analyze_intentions(df_rabbitHole)
     # rh_analyze_context(df_rabbitHole)
     # rh_analyze_sessionlenghts(df_rabbitHole)
-    rh_analyze_apps(df_rabbitHole)
-
+    rh_analyze_apps(df_sessions)
