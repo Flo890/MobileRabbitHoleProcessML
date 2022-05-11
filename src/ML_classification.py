@@ -15,6 +15,7 @@ from sklearn.svm import SVC
 from sklearn.inspection import permutation_importance
 from sklearn.tree import export_text
 from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import LabelEncoder
 from sklearn import metrics
 import ML_helpers
 import shap
@@ -27,7 +28,8 @@ from imblearn.ensemble import BalancedRandomForestClassifier
 
 dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
 dataframe_dir_results = rf"M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\results"
-dataframe_dir_ml_labeled = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data\labled'
+dataframe_dir_ml_labeled = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data'
+dataframe_dir_ml_labeled_selected = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data\labled'
 dataframe_dir_ml_labeled_all = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data\labled_all'
 dataframe_dir_ml_labeled_m = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data\labled_first_more'
 
@@ -155,14 +157,17 @@ def random_forest_classifier(x, y, filename, report_df):
     print('***Random Forest***')
 
     feature_list = x.columns  # list(x_features.columns)
-    x = np.array(x)
-    y = np.array(y)
+    # TODO needed?
+    #x = np.array(x)
+    #y = np.array(y)
 
     x_train_features, x_test_features, y_train_labels, y_test_labels = train_test_split(x, y, test_size=0.25, random_state=42)
 
     forest = RandomForestClassifier(criterion='gini', n_estimators=5, random_state=42, n_jobs=2, class_weight='balanced')  # TODO class_weight='balanced_subsample' or balanced
     # BalancedRandomForestClassifier(n_estimators=10)
     forest.fit(x_train_features, y_train_labels)
+
+    print(forest.classes_)
 
     y_predict = forest.predict(x_test_features)
 
@@ -188,20 +193,36 @@ def random_forest_classifier(x, y, filename, report_df):
     importance.to_csv(fr'{dataframe_dir_results}\feature_importance\{filename}-randomForest_f_importance.csv')
 
     print("---------------SHAP PLOTS-------------")
-    shap_values = shap.TreeExplainer(forest).shap_values(x_train_features)
+    print(f'0: {forest.classes_[0]}, 1: {forest.classes_[1]}')
+    # forest.classes_ = ['no_rabbithole' 'rabbit_hole']
+    explainer = shap.TreeExplainer(forest)
+    shap_values = explainer.shap_values(x_train_features)
+    #shap_values = explainer.shap_values(x_train_features, 1)
+
+    # shap.force_plot(explainer.expected_value[0], shap_values[0])[0], x_train_features.iloc[0,:])
+    print(type(x_train_features))
+    # shap.force_plot(explainer.expected_value[1], shap_values[1][0], x_train_features.iloc[0,:], matplotlib=True)
+    plt.show()
 
     plt.figure()
-    shap.summary_plot(shap_values, x_train_features, plot_type="bar")
+    # shap.plots.waterfall(sum(shap_values),  show=True)
+    # shap.waterfall_plot(explainer.expected_value[1], shap_values[1][0], x_train_features.iloc[0,:])
+    # plt.show()
+    # shap.plots.beeswarm(sum(shap_values), max_display=30,  show=True)
+    #  plt.show()
+
+    # plt.figure()
+    shap.summary_plot(shap_values[0], x_train_features, plot_type="bar", max_display=30)
     plt.show()
 
-
-    # shap.summary_plot(shap_values, x_train_features, feature_names=feature_list)
+    shap.summary_plot(shap_values[0], x_train_features, plot_type="dot", max_display=30)
+    plt.show()
     print(type(feature_list))
-    shap.summary_plot(shap_values, features=x, plot_type='bar', feature_names=feature_list) #, max_display=features_list_g.shape[0])
-    plt.show()
 
 
-    # f.savefig("/summary_plot1.png", bbox_inches='tight', dpi=600)
+    #shap.summary_plot(shap_values[1], features=x_train_features, plot_type='dot', feature_names=feature_list) #, max_display=features_list_g.shape[0])
+    # shap.summary_plot(shap_values[0], x_train_features, plot_type='layered_violin', max_display=30)
+    # plt.show()
 
     return pd.concat([report_df, report])
 
@@ -211,6 +232,7 @@ def random_forest_classifier(x, y, filename, report_df):
 
 def decision_tree_classifier(x, y, filename, report_df):
     print('***Decision tree***')
+    feature_list = x.columns
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
 
     clf_model = DecisionTreeClassifier(criterion="gini", max_depth=4, random_state=42, min_samples_leaf=5)
@@ -246,7 +268,42 @@ def decision_tree_classifier(x, y, filename, report_df):
     #     print(importance, file=f)
     print(type(report_df))
     print(type(report))
+
+
+    print("---------------SHAP PLOTS-------------")
+    print(f'0: {clf_model.classes_[0]}, 1: {clf_model.classes_[1]}')
+    # forest.classes_ = ['no_rabbithole' 'rabbit_hole']
+    explainer = shap.TreeExplainer(clf_model)
+    shap_values = explainer.shap_values(x_train)
+
+    # shap.force_plot(explainer.expected_value[0], shap_values[0])[0], x_train_features.iloc[0,:])
+    print(type(x_train))
+    # shap.force_plot(explainer.expected_value[1], shap_values[1][0], x_train_features.iloc[0,:], matplotlib=True)
+    plt.show()
+
+    plt.figure()
+    # shap.plots.waterfall(sum(shap_values),  show=True)
+    # shap.waterfall_plot(explainer.expected_value[1], shap_values[1][0], x_train_features.iloc[0,:])
+    # plt.show()
+    # shap.plots.beeswarm(sum(shap_values), max_display=30,  show=True)
+    #  plt.show()
+
+    # plt.figure()
+    shap.summary_plot(shap_values[1], x_train, plot_type="bar", max_display=15)
+    plt.show()
+
+    shap.summary_plot(shap_values[1], x_train, plot_type="dot", max_display=15)
+    plt.show()
+
+
+    # shap.summary_plot(shap_values, x_train_features, feature_names=feature_list)
+    print(type(feature_list))
+    #shap.summary_plot(shap_values[1], features=x_train_features, plot_type='dot', feature_names=feature_list) #, max_display=features_list_g.shape[0])
+    # shap.summary_plot(shap_values[1], x_train, plot_type='layered_violin', max_display=20)
+    plt.show()
+    #
     return pd.concat([report_df, report])
+
 
 
 def dt_grid_search(X, y):
@@ -291,36 +348,48 @@ def dt_grid_search(X, y):
 if __name__ == '__main__':
     pd.set_option('display.max_columns', None)
 
-    pathlist = pathlib.Path(dataframe_dir_ml_labeled).glob('**/*.pickle')
     report_all = pd.DataFrame()
 
-    for data_path in pathlist:
-        path_in_str = str(data_path)
+    # pathlist = pathlib.Path(dataframe_dir_ml_labeled_selected).glob('**/*.pickle')
+    #
+    # for data_path in pathlist:
+    #     path_in_str = str(data_path)
+    #
+    #     # with open(f'{dataframe_dir_ml_labeled}\outout_noOversampling.txt', 'w') as f:
+    #     print(f'###################  target: {data_path.stem}   #############################')  # , file=f)
+    #
+    #     df_sessions = pd.read_pickle(path_in_str)
+    #     # df_sessions.to_csv(fr'{dataframe_dir_ml_labeled}\test_{data_path.stem}.csv')
+    #     x, y = ML_helpers.prepare_df_undersampling(df_sessions)
+    #
+    #     report_all = decision_tree_classifier(x, y, data_path.stem, report_all)
+    #     # dt_grid_search(x, y)
+    #
+    #     report_all = random_forest_classifier(x, y, data_path.stem, report_all)
+    #
+    #     # report_all = logistic_regression_classifier(x, y, data_path.stem, report_all)
+    #
+    #    #  report_all = kNeighbors_classifier(x, y, data_path.stem, report_all)
+    #
+    #     # report_all = naive_bayes_classifier(x, y, data_path.stem, report_all)
+    #
+    #     # x, y = ML_helpers.prepare_df_no_oversampling(df_sessions)
+    #     # report_all = svm_classifier(x, y, data_path.stem, report_all)
+    #     # h = input()
+    #     # if h == 'x':
+    #     #     break
+    #     # else:
+    #     #     continue
 
-        # with open(f'{dataframe_dir_ml_labeled}\outout_noOversampling.txt', 'w') as f:
-        print(f'###################  target: {data_path.stem}   #############################')  # , file=f)
+    path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.pickle'
+    print(f'###################  target: {path}   #############################')  # , file=f)
+    df_sessions = pd.read_pickle(path)
+    # df_sessions.to_csv(fr'{dataframe_dir_ml_labeled}\test_{data_path.stem}.csv')
+    x, y = ML_helpers.prepare_df_undersampling(df_sessions)
 
-        df_sessions = pd.read_pickle(path_in_str)
-        # df_sessions.to_csv(fr'{dataframe_dir_ml_labeled}\test_{data_path.stem}.csv')
-        x, y = ML_helpers.prepare_df_undersampling(df_sessions)
+    report_all = decision_tree_classifier(x, y, "more_than_intention", report_all)
+    # dt_grid_search(x, y)
 
-        report_all = decision_tree_classifier(x, y, data_path.stem, report_all)
-        # dt_grid_search(x, y)
-
-        report_all = random_forest_classifier(x, y, data_path.stem, report_all)
-
-        # report_all = logistic_regression_classifier(x, y, data_path.stem, report_all)
-
-       #  report_all = kNeighbors_classifier(x, y, data_path.stem, report_all)
-
-        # report_all = naive_bayes_classifier(x, y, data_path.stem, report_all)
-
-        # x, y = ML_helpers.prepare_df_no_oversampling(df_sessions)
-        # report_all = svm_classifier(x, y, data_path.stem, report_all)
-        # h = input()
-        # if h == 'x':
-        #     break
-        # else:
-        #     continue
+    report_all = random_forest_classifier(x, y,  "more_than_intention", report_all)
 
     report_all.to_csv(fr'{dataframe_dir_ml}\report_ml_undersampling_combined_test2.csv')

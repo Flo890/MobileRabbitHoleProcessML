@@ -436,8 +436,8 @@ def create_labels_single():
 
 def labeling_combined():
     labelist = [('f_esm_more_than_intention_Yes', 'f_esm_emotion_interest-expectancy'), ('f_esm_more_than_intention_Yes', 'f_esm_emotion_happiness-elation'),
-                ('f_esm_more_than_intention_Yes', 'f_esm_emotion_calm-contentment')]\
-                # ('f_esm_more_than_intention_Yes', 'f_esm_emotion_boredom-indifference'), ('f_esm_more_than_intention_Yes', 'f_esm_emotion_anxiety-fear')]
+                ('f_esm_more_than_intention_Yes', 'f_esm_emotion_calm-contentment')] \
+        # ('f_esm_more_than_intention_Yes', 'f_esm_emotion_boredom-indifference'), ('f_esm_more_than_intention_Yes', 'f_esm_emotion_anxiety-fear')]
     labelListScale = [('f_esm_more_than_intention_Yes', 'f_esm_regret_7.0', 'f_esm_regret_6.0', 'f_esm_regret_5.0'),
                       ('f_esm_more_than_intention_Yes', 'f_esm_agency_0.0', 'f_esm_agency_1.0', 'f_esm_agency_2.0'),
                       ('f_esm_more_than_intention_Yes', 'f_esm_track_of_time_6.0', 'f_esm_track_of_time_7.0', 'f_esm_track_of_time_5.0'),
@@ -542,6 +542,41 @@ def on_hot_encoding_scilearn():
     # df_sessions.to_csv(fr'{dataframe_dir_users}\user-sessions_features_encoded_sci.csv')
 
     with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
+        pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
+
+
+def demographics_encode_age():
+    print("Encode age")
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\labled_data\user-sessions_features_labeled_more_than_intention.pickle')
+
+    # Bag Age in age groups
+    df_sessions['f_demographics_age_0_19'] = 0
+    df_sessions['f_demographics_age_20_29'] = 0
+    df_sessions['f_demographics_age_30_39'] = 0
+    df_sessions['f_demographics_age_40_49'] = 0
+    df_sessions['f_demographics_age_50_59'] = 0
+    df_sessions['f_demographics_age_60_69'] = 0
+    df_sessions['f_demographics_age_70_100'] = 0
+
+    for index, session in enumerate(df_sessions.itertuples(index=False)):
+        if df_sessions.loc[index, 'f_demographics_age'] <= 19:
+            df_sessions.at[index, 'f_demographics_age_0_19'] = 1
+        elif (df_sessions.loc[index, 'f_demographics_age'] <= 29) & (df_sessions.loc[index, 'f_demographics_age'] >= 20):
+            df_sessions.at[index, 'f_demographics_age_20_29'] = 1
+        elif (df_sessions.loc[index, 'f_demographics_age'] <= 39) & (df_sessions.loc[index, 'f_demographics_age'] >= 30):
+            df_sessions.at[index, 'f_demographics_age_30_39'] = 1
+        elif (df_sessions.loc[index, 'f_demographics_age'] <= 49) & (df_sessions.loc[index, 'f_demographics_age'] >= 40):
+            df_sessions.at[index, 'f_demographics_age_40_49'] = 1
+        elif (df_sessions.loc[index, 'f_demographics_age'] <= 59) & (df_sessions.loc[index, 'f_demographics_age'] >= 50):
+            df_sessions.at[index, 'f_demographics_age_50_59'] = 1
+        elif (df_sessions.loc[index, 'f_demographics_age'] <= 69) & (df_sessions.loc[index, 'f_demographics_age'] >= 60):
+            df_sessions.at[index, 'f_demographics_age_60_69'] = 1
+        elif df_sessions.loc[index, 'f_demographics_age'] >= 70:
+            df_sessions.at[index, 'f_demographics_age_70_100'] = 1
+
+    df_sessions.drop(columns='f_demographics_age', inplace=True)
+
+    with open(fr'{dataframe_dir_ml}\labled_data\user-sessions_features_all_age_bags.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -849,6 +884,9 @@ if __name__ == '__main__':
     # one_hot_encoding_dummies()
     # on_hot_encoding_scilearn()
 
+    # Bag and endcode demograpgics age
+    demographics_encode_age()
+
     # 10. Filter outliners
     # filter_sessions_outliners_all()
 
@@ -860,7 +898,7 @@ if __name__ == '__main__':
     # reduce_feature_dimension()
 
     # 13. create labels as targets (only works with onhot encoded data)
-    create_labels_single()
+    # create_labels_single()
     # labeling_combined()
 
     # Testing

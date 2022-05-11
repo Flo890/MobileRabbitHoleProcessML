@@ -14,6 +14,7 @@ DarkBlackishGray = '#6E707C'
 
 dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
 dataframe_dir_labled = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled'
+dataframe_dir_ml_labeled = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data'
 
 
 # df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
@@ -40,23 +41,55 @@ def rh_analyze_apps(df_rh):
     df_rh['f_sequences_apps'].fillna('nan', inplace=True)
     df_rh['f_all_app_count'] = 0
 
-    df_apps_count = {}
+
+    df_apps_count_start = {}
+    df_apps_count_end = {}
+
     df_apps_time = {}
 
     for i, row in df_rh.iterrows():
         # get total app count per session
         apps = row['f_sequences_apps'][0]
         if apps != 'n':
+            if apps[0] not in df_apps_count_start:
+                df_apps_count_start[apps[0]] = 1
+            else:
+                df_apps_count_start[apps[0]] += 1
+
+            if len(apps) > 1:
+                if apps[-1] not in df_apps_count_end:
+                    df_apps_count_end[apps[-1]] = 1
+                else:
+                    df_apps_count_end[apps[-1]] += 1
+
             df_rh.at[i, 'f_all_app_count'] = len(apps)
 
         # most used apps per sessions - count
-
         # most used apps per session - time
+
+    colum_names_count = ['name', 'count']
 
     # app count
     sns.countplot(df_rh['f_all_app_count'], color=milkGreen)
     plt.xlabel('App count in rabbit hole sessions')
-    # plt.show()
+    plt.show()
+
+    df_count_start = pd.DataFrame.from_dict(df_apps_count_start, orient="index").reset_index(drop=False)
+    df_count_start.columns = colum_names_count
+    df_count_start = df_count_start.sort_values(by=colum_names_count[1], ascending=False).reset_index(drop=True)
+    print(df_count_start)
+    p = df_count_start.plot(kind="bar", ylabel='Counts', xlabel='count of starter apps', color = milkGreen, title=f'Rabbit Hole Sessions')
+    p.set_xticklabels(df_count_start['name'], rotation=90)
+    plt.show()
+
+    df_count_end = pd.DataFrame.from_dict(df_apps_count_end, orient="index").reset_index(drop=False)
+    df_count_end.columns = colum_names_count
+    df_count_end = df_count_end.sort_values(by=colum_names_count[1], ascending=False).reset_index(drop=True)
+    print(df_count_end)
+    p = df_count_end.plot(kind="bar", ylabel='Counts', xlabel='count of end apps', color = milkGreen, title=f'Rabbit Hole Sessions')
+    p.set_xticklabels(df_count_end['name'], rotation=90)
+    plt.show()
+
 
     # most used apps
 
@@ -89,6 +122,51 @@ def rh_analyze_apps(df_rh):
     #         df.to_excel(writer,'sheet%s' % n)
 
 
+    # Relative Häufigkeit, session
+    for i, row in df_rh.iterrows():
+        # get total app count per session
+        apps = row['f_sequences_apps'][0]
+
+    # relative haufigigkeit von app use, count pro session, pro zeit wie oft wurde app benutzt
+
+
+def analyze_esm_features(df_rh):
+    df_rh['f_sequences_apps'].fillna('nan', inplace=True)
+    df_rh['f_all_app_count'] = 0
+
+    # Check emotion
+
+    # Check regret
+    df_wd = df_rh.loc[:, df_rh.columns.str.startswith('f_esm_regret')]
+    df_regret = pd.get_dummies(df_wd).idxmax(1)
+    df_regret.replace({'f_esm_regret_': ''}, regex=True, inplace=True)
+    df_regret.astype('float')
+
+    # CHeck track of time
+    df_regret = pd.get_dummies(df_wd).idxmax(1)
+    df_regret.replace({'f_esm_regret_': ''}, regex=True, inplace=True)
+    df_regret.astype('float')
+
+    # Check track of space
+    df_regret = pd.get_dummies(df_wd).idxmax(1)
+    df_regret.replace({'f_esm_regret_': ''}, regex=True, inplace=True)
+    df_regret.astype('float')
+    # Check agency
+    # f_esm_agency_nan
+    # f_esm_track_of_space_nan
+    # f_esm_regret_nan
+    # f_esm_track_of_time_nan
+    # f_esm_emotion_surprise-astonishment
+
+
+def onhotencoding_anti(df_rh, prefix, type):
+    df_wd = df_rh.loc[:, df_rh.columns.str.startswith(prefix)]
+    df_regret = pd.get_dummies(df_wd).idxmax(1)
+    df_regret.replace({prefix: ''}, regex=True, inplace=True)
+    df_regret.astype(type)
+    print(df_regret)
+
+
 def get_counts_all(df_rh,  column_prefix, colum_names):
     df = df_rh.loc[:, df_rh.columns.str.startswith(column_prefix)]
     df_all = {}
@@ -99,8 +177,8 @@ def get_counts_all(df_rh,  column_prefix, colum_names):
     df_all = pd.DataFrame.from_dict(df_all, orient='index').reset_index(drop=False)
     df_all.columns = colum_names
     df_all = df_all.sort_values(by=colum_names[1], ascending=False).reset_index(drop=True)
-    print(df_all)
-    df_all.to_csv(fr'{dataframe_dir_ml}\analyze_counts_times\analyze_{column_prefix}.csv')
+    # print(df_all)
+    # df_all.to_csv(fr'{dataframe_dir_ml}\analyze_counts_times\analyze_{column_prefix}.csv')
     return df_all
 
 
@@ -158,6 +236,13 @@ def rh_analyze_context(df_rh):
     # ph.set_xticklabels(labels_hours, rotation=0)
     plt.show()
 
+def reduce_onhotencoded(df_rh):
+    df_wd = df_rh.loc[:, df_rh.columns.str.startswith('f_weekday')]
+    df_weekdays = pd.get_dummies(df_wd).idxmax(1)
+    print(df_weekdays)
+    # print(df_weekdays.groupby(level=0))
+    df_weekdays.replace({'f_weekday_': ''}, regex=True, inplace=True)
+    df_weekdays.astype('float')
 
 def rh_analyze_intentions(df_rh):
     print(df_rh['f_esm_intention'].value_counts())
@@ -167,19 +252,17 @@ def rh_analyze_intentions(df_rh):
     plt.show()
 
 
-def rh_analyze_app_sequences(df_rh):
-
-
-
 if __name__ == '__main__':
-    path = [rf'{dataframe_dir_labled}\user-sessions_features_labeled_more_than_intention.pickle',
+    paths = [rf'{dataframe_dir_labled}\user-sessions_features_labeled_more_than_intention.pickle',
             rf'{dataframe_dir_labled}\user-sessions_features_labeled_f_esm_more_than_intention_Yes_f_esm_agency_0.0.pickle',
             rf'{dataframe_dir_labled}\user-sessions_features_labeled_f_esm_more_than_intention_Yes_f_esm_regret_7.0.pickle',
             rf'{dataframe_dir_labled}\user-sessions_features_labeled_f_esm_more_than_intention_Yes_f_esm_track_of_time_6.0.pickle']
 
+    path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.pickle'
+
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
 
-    df_sessions_labled = pd.read_pickle(path[0])
+    df_sessions_labled = pd.read_pickle(path)
 
     # print(df_sessions.size)
     # print(df_sessions_labled.size)
@@ -192,4 +275,4 @@ if __name__ == '__main__':
     # rh_analyze_intentions(df_rabbitHole)
     # rh_analyze_context(df_rabbitHole)
     # rh_analyze_sessionlenghts(df_rabbitHole)
-    rh_analyze_apps(df_sessions)
+    rh_analyze_apps(df_rabbitHole)
