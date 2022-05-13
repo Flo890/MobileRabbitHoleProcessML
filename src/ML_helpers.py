@@ -1,6 +1,7 @@
 from collections import Counter
 
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
 import pandas as pd
 from imblearn.under_sampling import RandomUnderSampler
@@ -57,6 +58,7 @@ def oversampling_smote(df_x_features, df_y_labels):
 
 def clean_df(df):
     # return df.drop(columns=['session_id', 'studyID', 'session_length', 'timestamp_1', 'timestamp_2', 'count', 'f_sequences_apps', 'f_esm_intention', 'f_bag_of_apps']).fillna(0)
+    df.drop(df.index[df['f_session_length'].isnull()], inplace=True)
     return df.drop(columns=['session_id', 'studyID', 'session_length', 'timestamp_1', 'timestamp_2', 'count', 'f_sequences_apps', 'f_bag_of_apps']).fillna(0)
 
 

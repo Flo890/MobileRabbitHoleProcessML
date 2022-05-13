@@ -157,6 +157,7 @@ def random_forest_classifier(x, y, filename, report_df):
     print('***Random Forest***')
 
     feature_list = x.columns  # list(x_features.columns)
+    print('feature length:', len(feature_list))
     # TODO needed?
     #x = np.array(x)
     #y = np.array(y)
@@ -196,7 +197,7 @@ def random_forest_classifier(x, y, filename, report_df):
     print(f'0: {forest.classes_[0]}, 1: {forest.classes_[1]}')
     # forest.classes_ = ['no_rabbithole' 'rabbit_hole']
     explainer = shap.TreeExplainer(forest)
-    shap_values = explainer.shap_values(x_train_features)
+    shap_values = explainer.shap_values(x_train_features, check_additivity=False)
     #shap_values = explainer.shap_values(x_train_features, 1)
 
     # shap.force_plot(explainer.expected_value[0], shap_values[0])[0], x_train_features.iloc[0,:])
@@ -212,12 +213,22 @@ def random_forest_classifier(x, y, filename, report_df):
     #  plt.show()
 
     # plt.figure()
-    shap.summary_plot(shap_values[0], x_train_features, plot_type="bar", max_display=30)
+    shap.summary_plot(shap_values[0], x_train_features, plot_type="bar", max_display=30, show=False)
+    plt.title("Random Forest - Shap values 0")
     plt.show()
 
-    shap.summary_plot(shap_values[0], x_train_features, plot_type="dot", max_display=30)
+    shap.summary_plot(shap_values[0], x_train_features, plot_type="dot", max_display=30, show=False)
+    plt.title("Random Forest - Shap values 0")
     plt.show()
-    print(type(feature_list))
+
+    shap.summary_plot(shap_values[1], x_train_features, plot_type="bar", max_display=30, show=False)
+    plt.title("Random Forest - Shap values 1")
+    plt.show()
+
+    shap.summary_plot(shap_values[1], x_train_features, plot_type="dot", max_display=30, show=False)
+    plt.title("Random Forest - Shap values 1")
+    plt.show()
+    #  print(type(feature_list))
 
 
     #shap.summary_plot(shap_values[1], features=x_train_features, plot_type='dot', feature_names=feature_list) #, max_display=features_list_g.shape[0])
@@ -289,10 +300,20 @@ def decision_tree_classifier(x, y, filename, report_df):
     #  plt.show()
 
     # plt.figure()
-    shap.summary_plot(shap_values[1], x_train, plot_type="bar", max_display=15)
+    shap.summary_plot(shap_values[0], x_train, plot_type="bar", max_display=15,  show=False)
+    plt.title("Decision Tree - Shap values 0")
     plt.show()
 
-    shap.summary_plot(shap_values[1], x_train, plot_type="dot", max_display=15)
+    shap.summary_plot(shap_values[0], x_train, plot_type="dot", max_display=15, show=False)
+    plt.title("Decision Tree - Shap values 0")
+    plt.show()
+
+    shap.summary_plot(shap_values[1], x_train, plot_type="bar", max_display=15,  show=False)
+    plt.title("Decision Tree - Shap values 1")
+    plt.show()
+
+    shap.summary_plot(shap_values[1], x_train, plot_type="dot", max_display=15,  show=False)
+    plt.title("Decision Tree - Shap values 1")
     plt.show()
 
 

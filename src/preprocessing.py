@@ -42,6 +42,8 @@ dataframe_dir_live_logs_sorted_preprocessed = r'M:\+Dokumente\PycharmProjects\Ra
 
 questionnaires_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData'
 
+dataframe_dir_ml_labeled = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data'
+
 path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions.pickle'
 path_testfile_sessions_all = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user_sessions_all.pickle'
 clean_users_dir_path = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users'
@@ -428,9 +430,9 @@ def create_labels_single():
         else:
             df_sessions.at[index, 'target_label'] = no_rh
 
-    df_sessions = drop_esm_features(df_sessions)
+    # df_sessions = drop_esm_features(df_sessions)
 
-    with open(fr'{dataframe_dir_ml}\labled\user-sessions_features_labeled_more_than_intention.pickle', 'wb') as f:
+    with open(fr'{dataframe_dir_ml_labeled}\user-sessions_features_labeled_more_than_intention_with_esm.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -547,7 +549,8 @@ def on_hot_encoding_scilearn():
 
 def demographics_encode_age():
     print("Encode age")
-    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\labled_data\user-sessions_features_labeled_more_than_intention.pickle')
+    # df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\labled_data\user-sessions_features_labeled_more_than_intention.pickle')
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
 
     # Bag Age in age groups
     df_sessions['f_demographics_age_0_19'] = 0
@@ -576,7 +579,8 @@ def demographics_encode_age():
 
     df_sessions.drop(columns='f_demographics_age', inplace=True)
 
-    with open(fr'{dataframe_dir_ml}\labled_data\user-sessions_features_all_age_bags.pickle', 'wb') as f:
+    # with open(fr'{dataframe_dir_ml}\labled_data\user-sessions_features_all_age_bags.pickle', 'wb') as f:
+    with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -805,6 +809,97 @@ def concat_features_dic():
         pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
 
 
+def add_things():
+    print("add things")
+    df_labled = pd.read_pickle(fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.pickle')
+    df_unlabled = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
+
+    df_unlabled.drop(df_unlabled.index[df_unlabled['f_session_length'].isnull()], inplace=True)
+    df_labled.drop(df_unlabled.index[df_unlabled['f_session_length'].isnull()], inplace=True)
+
+    print(df_labled.size)
+    print(df_unlabled.size)
+
+    df_esm = df_unlabled.loc[:, df_unlabled.columns.str.startswith('f_esm')]
+    df_concat = pd.concat([df_labled, df_esm], axis=1)
+
+    df_concat.to_csv(fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_with_esm.csv')
+    with open(fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_with_esm.pickle', 'wb') as f:
+        pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
+
+
+def clean_df():
+    # path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.pickle'
+    path = fr'{dataframe_dir_ml}\user-sessions_features_all.pickle'
+    df = pd.read_pickle(path)
+
+    df.drop(df.index[df['f_session_length'].isnull()], inplace=True)
+
+    for index, session in enumerate(df.itertuples(index=False)):
+        if session[2] == 'CO07FA':
+            df.at[index, 'f_demographics_age_0_19'] = 0
+            df.at[index, 'f_demographics_age_20_29'] = 1
+            df.at[index, 'f_demographics_gender_0.0'] = 0
+            df.at[index, 'f_demographics_gender_1.0'] = 1
+
+        if session[2] == 'ZA23PA':
+            df.at[index, 'f_demographics_gender_0.0'] = 0
+            df.at[index, 'f_demographics_gender_1.0'] = 1
+            df.at[index, 'f_demographics_gender_2.0'] = 0
+
+        if session[2] == 'AY1221':
+            df.at[index, 'f_absentminded_use'] = 4
+            df.at[index, 'f_general_use'] = 3.9
+            df.at[index, 'f_demographics_age_0_19'] = 0
+            df.at[index, 'f_demographics_age_20_29'] = 1
+            df.at[index, 'f_demographics_gender_0.0'] = 0
+            df.at[index, 'f_demographics_gender_1.0'] = 0
+            df.at[index, 'f_demographics_gender_2.0'] = 1
+
+        if session[2] == 'AN23GE':
+            df.at[index, 'f_demographics_gender_0.0'] = 0
+            df.at[index, 'f_demographics_gender_1.0'] = 1
+            df.at[index, 'f_demographics_gender_2.0'] = 0
+
+        if session[2] == 'BR04WO':
+            df.at[index, 'f_demographics_gender_0.0'] = 0
+            df.at[index, 'f_demographics_gender_1.0'] = 1
+            df.at[index, 'f_demographics_gender_2.0'] = 0
+
+        if session[2] == 'BR22NO':
+            # TODO df.at[index, 'f_absentminded_use'] = 4
+            # df.at[index, 'f_general_use'] = 3.9
+            df.at[index, 'f_demographics_age_0_19'] = 0
+            df.at[index, 'f_demographics_age_20_29'] = 1
+            df.at[index, 'f_demographics_gender_0.0'] = 0
+            df.at[index, 'f_demographics_gender_1.0'] = 1
+            df.at[index, 'f_demographics_gender_2.0'] = 0
+
+        if session[2] == 'SO23BA':
+            df.at[index, 'f_demographics_gender_0.0'] = 0
+            df.at[index, 'f_demographics_gender_1.0'] = 1
+            df.at[index, 'f_demographics_gender_2.0'] = 0
+
+        if session[2] == 'ju05ab':
+            df.at[index, 'f_demographics_gender_0.0'] = 0
+            df.at[index, 'f_demographics_gender_1.0'] = 0
+            df.at[index, 'f_demographics_gender_2.0'] = 1
+
+        if session[2] == 'so30vo':
+            df.at[index, 'f_absentminded_use'] = 5.9285
+            df.at[index, 'f_general_use'] = 5.9
+            df.at[index, 'f_demographics_gender_0.0'] = 0
+            df.at[index, 'f_demographics_gender_1.0'] = 1
+            df.at[index, 'f_demographics_gender_2.0'] = 0
+            df.at[index, 'f_demographics_age_0_19'] = 0
+            df.at[index, 'f_demographics_age_20_29'] = 0
+            df.at[index, 'f_demographics_age_30_39'] = 1
+
+    # df.to_csv(fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.csv')
+    with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
+        pickle.dump(df, f, pickle.HIGHEST_PROTOCOL)
+
+
 def print_test_df():
     print('print test')
     path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs_preprocessed\AY1221.pickle'
@@ -842,9 +937,10 @@ def print_test_df():
 
 
 def test():
-    path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\analyze-no1hot-withseq-nolabels\user-sessions_features_all.pickle'
+    # path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\analyze-no1hot-withseq-nolabels\user-sessions_features_all.pickle'
+    path_testfile = fr'{dataframe_dir_ml}\user-sessions_features_all.pickle'
     df = pd.read_pickle(path_testfile)
-    df.to_csv(fr'{dataframe_dir_ml}\analyze-no1hot-withseq-nolabels\user-sessions_features_all.csv')
+    df.to_csv(fr'{dataframe_dir_ml}\user-sessions_features_all.csv')
 
 
 if __name__ == '__main__':
@@ -885,7 +981,7 @@ if __name__ == '__main__':
     # on_hot_encoding_scilearn()
 
     # Bag and endcode demograpgics age
-    demographics_encode_age()
+    # demographics_encode_age()
 
     # 10. Filter outliners
     # filter_sessions_outliners_all()
@@ -898,8 +994,11 @@ if __name__ == '__main__':
     # reduce_feature_dimension()
 
     # 13. create labels as targets (only works with onhot encoded data)
-    # create_labels_single()
+    create_labels_single()
     # labeling_combined()
+
+    # clean_df()
+    # add_things()
 
     # Testing
     # print_test_df()

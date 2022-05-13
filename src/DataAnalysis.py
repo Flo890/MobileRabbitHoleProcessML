@@ -41,7 +41,6 @@ def rh_analyze_apps(df_rh):
     df_rh['f_sequences_apps'].fillna('nan', inplace=True)
     df_rh['f_all_app_count'] = 0
 
-
     df_apps_count_start = {}
     df_apps_count_end = {}
 
@@ -78,7 +77,7 @@ def rh_analyze_apps(df_rh):
     df_count_start.columns = colum_names_count
     df_count_start = df_count_start.sort_values(by=colum_names_count[1], ascending=False).reset_index(drop=True)
     print(df_count_start)
-    p = df_count_start.plot(kind="bar", ylabel='Counts', xlabel='count of starter apps', color = milkGreen, title=f'Rabbit Hole Sessions')
+    p = df_count_start.plot(kind="bar", ylabel='Counts', xlabel='count of starter apps', color=milkGreen, title=f'Rabbit Hole Sessions')
     p.set_xticklabels(df_count_start['name'], rotation=90)
     plt.show()
 
@@ -86,10 +85,9 @@ def rh_analyze_apps(df_rh):
     df_count_end.columns = colum_names_count
     df_count_end = df_count_end.sort_values(by=colum_names_count[1], ascending=False).reset_index(drop=True)
     print(df_count_end)
-    p = df_count_end.plot(kind="bar", ylabel='Counts', xlabel='count of end apps', color = milkGreen, title=f'Rabbit Hole Sessions')
+    p = df_count_end.plot(kind="bar", ylabel='Counts', xlabel='count of end apps', color=milkGreen, title=f'Rabbit Hole Sessions')
     p.set_xticklabels(df_count_end['name'], rotation=90)
     plt.show()
-
 
     # most used apps
 
@@ -121,7 +119,6 @@ def rh_analyze_apps(df_rh):
     #     for n, df in enumerate(times):
     #         df.to_excel(writer,'sheet%s' % n)
 
-
     # Relative Häufigkeit, session
     for i, row in df_rh.iterrows():
         # get total app count per session
@@ -131,26 +128,39 @@ def rh_analyze_apps(df_rh):
 
 
 def analyze_esm_features(df_rh):
-    df_rh['f_sequences_apps'].fillna('nan', inplace=True)
-    df_rh['f_all_app_count'] = 0
+
+
+    # plt.figure()
+    # plt.subplot(2, 1, 1)
+    # ps = (df_gender.value_counts().sort_index(axis=0)).plot(kind="bar", ylabel='Counts', xlabel='Gender', color=milkGreen, title=f'Rabbit Hole Sessions')
+    # abs_values_gender = df_gender.value_counts().sort_index(axis=0).values
+    # plt.bar_label(container=ps.containers[0], labels=abs_values_gender)
+    # plt.subplots_adjust(left=0.1, bottom=0.1, right=0.9, top=0.9, wspace=0.4, hspace=0.6)
+    # ps.set_xticklabels(gender_lables, rotation=0)
+    #
+    # plt.subplot(2, 1, 2)
+    # pw = (df_age.value_counts().sort_index(axis=0)).plot(kind="bar", ylabel='Counts', xlabel='Age', color=milkGreen)
+    # abs_values_age = df_age.value_counts().sort_index(axis=0).values
+    # plt.bar_label(container=pw.containers[0], labels=abs_values_age)
+    # pw.set_xticklabels(age_lables, rotation=0)
 
     # Check emotion
 
     # Check regret
-    df_wd = df_rh.loc[:, df_rh.columns.str.startswith('f_esm_regret')]
-    df_regret = pd.get_dummies(df_wd).idxmax(1)
-    df_regret.replace({'f_esm_regret_': ''}, regex=True, inplace=True)
-    df_regret.astype('float')
+    df_regret = onhotencoding_anti(df_rh, 'f_esm_regret_', 'float')
+    print(df_regret.value_counts().sort_index(axis=0))
+    pw = (df_regret.value_counts().sort_index(axis=0)).plot(kind="bar", ylabel='Counts', xlabel='Regret', color=milkGreen)
+    # abs_values_age = df_regret.value_counts().sort_index(axis=0).values
+    # plt.bar_label(container=pw.containers[0], labels=abs_values_age)
+    # pw.set_xticklabels(df_regret, rotation=0)
+    plt.show()
 
     # CHeck track of time
-    df_regret = pd.get_dummies(df_wd).idxmax(1)
-    df_regret.replace({'f_esm_regret_': ''}, regex=True, inplace=True)
-    df_regret.astype('float')
+    df_regret = onhotencoding_anti(df_rh, 'f_esm_regret_', 'float')
+
 
     # Check track of space
-    df_regret = pd.get_dummies(df_wd).idxmax(1)
-    df_regret.replace({'f_esm_regret_': ''}, regex=True, inplace=True)
-    df_regret.astype('float')
+
     # Check agency
     # f_esm_agency_nan
     # f_esm_track_of_space_nan
@@ -161,13 +171,14 @@ def analyze_esm_features(df_rh):
 
 def onhotencoding_anti(df_rh, prefix, type):
     df_wd = df_rh.loc[:, df_rh.columns.str.startswith(prefix)]
-    df_regret = pd.get_dummies(df_wd).idxmax(1)
-    df_regret.replace({prefix: ''}, regex=True, inplace=True)
-    df_regret.astype(type)
-    print(df_regret)
+    df_return = pd.get_dummies(df_wd).idxmax(1)
+    df_return.replace({prefix: ''}, regex=True, inplace=True)
+    df_return.astype(type)
+    # print(df_return)
+    return df_return
 
 
-def get_counts_all(df_rh,  column_prefix, colum_names):
+def get_counts_all(df_rh, column_prefix, colum_names):
     df = df_rh.loc[:, df_rh.columns.str.startswith(column_prefix)]
     df_all = {}
     for colum in df.columns:
@@ -236,13 +247,6 @@ def rh_analyze_context(df_rh):
     # ph.set_xticklabels(labels_hours, rotation=0)
     plt.show()
 
-def reduce_onhotencoded(df_rh):
-    df_wd = df_rh.loc[:, df_rh.columns.str.startswith('f_weekday')]
-    df_weekdays = pd.get_dummies(df_wd).idxmax(1)
-    print(df_weekdays)
-    # print(df_weekdays.groupby(level=0))
-    df_weekdays.replace({'f_weekday_': ''}, regex=True, inplace=True)
-    df_weekdays.astype('float')
 
 def rh_analyze_intentions(df_rh):
     print(df_rh['f_esm_intention'].value_counts())
@@ -252,13 +256,48 @@ def rh_analyze_intentions(df_rh):
     plt.show()
 
 
+def rh_analyze_demographics(df_rh):
+    print("analyze demographivs")
+    df_age = onhotencoding_anti(df_rh, prefix='f_demographics_age_', type='float')
+    df_gender = onhotencoding_anti(df_rh, prefix='f_demographics_gender_', type='float')
+
+    gender_range = list(range(0, 2))
+    age_range = list(range(0, 5))
+    gender_lables = ['female', 'male']
+    age_lables = ['<19', '20-29', '30-39', '40-49', '50-59'] #, '60-69', '<70']
+
+
+    #print((df_gender.groupby(level=0).count()).reindex(gender_range, fill_value=0))
+    #print((df_age.groupby(level=0).count()).reindex(gender_range, fill_value=0))
+
+    print(df_gender.value_counts().sort_index(axis=0)) #.reindex(gender_range, fill_value=0).sort_index(axis=0))
+    print(df_age.value_counts().sort_index(axis=0))
+
+    plt.figure()
+    plt.subplot(2, 1, 1)
+    ps = (df_gender.value_counts().sort_index(axis=0)).plot(kind="bar", ylabel='Counts', xlabel='Gender', color=milkGreen, title=f'Rabbit Hole Sessions')
+    abs_values_gender = df_gender.value_counts().sort_index(axis=0).values
+    plt.bar_label(container=ps.containers[0], labels=abs_values_gender)
+    plt.subplots_adjust(left=0.1, bottom=0.1, right=0.9, top=0.9, wspace=0.4, hspace=0.6)
+    ps.set_xticklabels(gender_lables, rotation=0)
+
+    plt.subplot(2, 1, 2)
+    pw = (df_age.value_counts().sort_index(axis=0)).plot(kind="bar", ylabel='Counts', xlabel='Age', color=milkGreen)
+    abs_values_age = df_age.value_counts().sort_index(axis=0).values
+    plt.bar_label(container=pw.containers[0], labels=abs_values_age)
+    pw.set_xticklabels(age_lables, rotation=0)
+
+    plt.show()
+
+
 if __name__ == '__main__':
     paths = [rf'{dataframe_dir_labled}\user-sessions_features_labeled_more_than_intention.pickle',
-            rf'{dataframe_dir_labled}\user-sessions_features_labeled_f_esm_more_than_intention_Yes_f_esm_agency_0.0.pickle',
-            rf'{dataframe_dir_labled}\user-sessions_features_labeled_f_esm_more_than_intention_Yes_f_esm_regret_7.0.pickle',
-            rf'{dataframe_dir_labled}\user-sessions_features_labeled_f_esm_more_than_intention_Yes_f_esm_track_of_time_6.0.pickle']
+             rf'{dataframe_dir_labled}\user-sessions_features_labeled_f_esm_more_than_intention_Yes_f_esm_agency_0.0.pickle',
+             rf'{dataframe_dir_labled}\user-sessions_features_labeled_f_esm_more_than_intention_Yes_f_esm_regret_7.0.pickle',
+             rf'{dataframe_dir_labled}\user-sessions_features_labeled_f_esm_more_than_intention_Yes_f_esm_track_of_time_6.0.pickle']
 
-    path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.pickle'
+    # path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.pickle'
+    path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_labeled_more_than_intention_with_esm.pickle'
 
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
 
@@ -275,4 +314,7 @@ if __name__ == '__main__':
     # rh_analyze_intentions(df_rabbitHole)
     # rh_analyze_context(df_rabbitHole)
     # rh_analyze_sessionlenghts(df_rabbitHole)
-    rh_analyze_apps(df_rabbitHole)
+    # rh_analyze_apps(df_rabbitHole)
+    # rh_analyze_demographics(df_rabbitHole)
+
+    analyze_esm_features(df_rabbitHole)
