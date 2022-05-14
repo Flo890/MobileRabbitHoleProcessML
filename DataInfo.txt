@@ -424,6 +424,13 @@ SD14 beschaeftigung
     <color name="darkblue">#002F43</color>
 
 
+    regret: 7 strong agree
+    agenceng: Strong sense 7 low 0
+    time agree 7
+    space good sense 7 low 0
+
+
+
 <string name="esm_lock_intention_question_intention_finished">Did you <b>finish</b> your intention?</string>
     <string name="esm_lock_intention_question_intention_more">Did you do <b>more</b> than your intention?</string>
     <string name="esm_lock_intention_question_regret">I feel <b>regret</b> for part of my phone use.</string>

@@ -112,13 +112,6 @@ def rh_analyze_apps(df_rh):
     for item in list_counts:
         counts.append(get_counts_all(df_rh, item, colum_names_count))
 
-    # with ExcelWriter(fr'{dataframe_dir_ml}\analyze_counts_times\counts.xls', if_sheet_exists="overlay",) as writer:
-    #     for n, df in enumerate(counts):
-    #         df.to_excel(writer,'sheet%s' % n)
-    # with ExcelWriter(fr'{dataframe_dir_ml}\analyze_counts_times\times.xls', if_sheet_exists="overlay",) as writer:
-    #     for n, df in enumerate(times):
-    #         df.to_excel(writer,'sheet%s' % n)
-
     # Relative Häufigkeit, session
     for i, row in df_rh.iterrows():
         # get total app count per session
@@ -128,25 +121,10 @@ def rh_analyze_apps(df_rh):
 
 
 def analyze_esm_features(df_rh):
+    print('analyze esm features rh')
+    # Check emotion - f_esm_emotion_surprise-astonishment
 
-
-    # plt.figure()
-    # plt.subplot(2, 1, 1)
-    # ps = (df_gender.value_counts().sort_index(axis=0)).plot(kind="bar", ylabel='Counts', xlabel='Gender', color=milkGreen, title=f'Rabbit Hole Sessions')
-    # abs_values_gender = df_gender.value_counts().sort_index(axis=0).values
-    # plt.bar_label(container=ps.containers[0], labels=abs_values_gender)
-    # plt.subplots_adjust(left=0.1, bottom=0.1, right=0.9, top=0.9, wspace=0.4, hspace=0.6)
-    # ps.set_xticklabels(gender_lables, rotation=0)
-    #
-    # plt.subplot(2, 1, 2)
-    # pw = (df_age.value_counts().sort_index(axis=0)).plot(kind="bar", ylabel='Counts', xlabel='Age', color=milkGreen)
-    # abs_values_age = df_age.value_counts().sort_index(axis=0).values
-    # plt.bar_label(container=pw.containers[0], labels=abs_values_age)
-    # pw.set_xticklabels(age_lables, rotation=0)
-
-    # Check emotion
-
-    # Check regret
+    # Check regret -  f_esm_regret_nan -  >I feel <b>regret</b> for part of my phone use
     df_regret = onhotencoding_anti(df_rh, 'f_esm_regret_', 'float')
     print(df_regret.value_counts().sort_index(axis=0))
     pw = (df_regret.value_counts().sort_index(axis=0)).plot(kind="bar", ylabel='Counts', xlabel='Regret', color=milkGreen)
@@ -155,18 +133,15 @@ def analyze_esm_features(df_rh):
     # pw.set_xticklabels(df_regret, rotation=0)
     plt.show()
 
-    # CHeck track of time
+    # CHeck track of time - f_esm_track_of_time_nan-  >I have <b>lost track of time</b> while using my phone
     df_regret = onhotencoding_anti(df_rh, 'f_esm_regret_', 'float')
 
 
-    # Check track of space
+    # Check track of space - f_esm_track_of_space_nan - I had a <b>good sense of my surroundings</b> while using my phone
 
-    # Check agency
-    # f_esm_agency_nan
-    # f_esm_track_of_space_nan
-    # f_esm_regret_nan
-    # f_esm_track_of_time_nan
-    # f_esm_emotion_surprise-astonishment
+    # Check agency - f_esm_agency_nan -  I had a strong sense of <b>agency<
+
+
 
 
 def onhotencoding_anti(df_rh, prefix, type):
