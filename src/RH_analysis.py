@@ -125,6 +125,7 @@ def test():
     print(df_rh.size) #1214784
     print(s.size) #356976 -> ca 30%
 
+
 def df_analyze_rh_sessions_time():
     print('analyze rabbithole')
     # df_sessions_a.to_csv(fr'{dataframe_dir_ml}\user-sessions_features_all-analyze.csv')

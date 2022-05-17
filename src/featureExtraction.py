@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import tldextract
+import ML_helpers
 
 
 def checkforactivity(df_logs):
@@ -28,9 +29,7 @@ def get_features_for_session(df_logs, df_sessions):
     # df_categories = pd.read_csv(categories)
     # new categories with
     # ['App_name' 'Perc_users' 'Training_Coding_1' 'Training_Coding_2' 'Training_Coding_all' 'Rater1' 'Rater2' 'Final_Rating']
-    path_categories = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\categories\app_categorisation_2020.csv'
-    df_categories = pd.read_csv(path_categories, sep=';')
-    df_categories.drop(columns=['Perc_users', 'Training_Coding_1', 'Training_Coding_all', 'Training_Coding_2', 'Rater1', 'Rater2'], inplace=True)
+
 
     # Add demographics features
     path_questionnaire_1 = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData'
@@ -198,7 +197,7 @@ def get_features_for_session(df_logs, df_sessions):
                         df_sessions.loc[index_row, f'f_clicks_{log.packageName}'] = pre
 
                         # ----- save clicks per app category ------#
-                        app_category = get_app_category(df_categories, log.packageName)
+                        app_category = ML_helpers.get_app_category(log.packageName)
                         if f'f_clicks_app_category_{app_category}' not in df_sessions.columns:
                             df_sessions[f'f_clicks_app_category_{app_category}'] = 0
 
@@ -214,7 +213,7 @@ def get_features_for_session(df_logs, df_sessions):
                         df_sessions.loc[index_row, f'f_scrolls_{log.packageName}'] = pre
 
                         # ----- save scrolls per app category ------ #
-                        app_category = get_app_category(df_categories, log.packageName)
+                        app_category = ML_helpers.get_app_category(log.packageName)
                         if f'f_scrolls_app_category_{app_category}' not in df_sessions.columns:
                             df_sessions[f'f_scrolls_app_category_{app_category}'] = 0
 
@@ -393,7 +392,7 @@ def get_features_for_session(df_logs, df_sessions):
 
                             # ___________________________________________________________________________________________#
                             # save category count
-                            app_category = get_app_category(df_categories, packagename)
+                            app_category = ML_helpers.get_app_category(packagename)
 
                             if f'f_app_category_count_{app_category}' not in df_sessions.columns:
                                 df_sessions[f'f_app_category_count_{app_category}'] = 0
@@ -486,7 +485,7 @@ def get_features_for_session(df_logs, df_sessions):
 
                 # ___________________________________________________________________________________________#
                 # save category count
-                app_category = get_app_category(df_categories, packagename)
+                app_category = ML_helpers.get_app_category(packagename)
 
                 if f'f_app_category_count_{app_category}' not in df_sessions.columns:
                     df_sessions[f'f_app_category_count_{app_category}'] = 0
@@ -531,14 +530,6 @@ def get_features_for_session(df_logs, df_sessions):
     # df_sessions.to_csv(fr'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\featuretest.csv')
     print("finished extracting features")
     return df_sessions, bag_of_apps_vocab
-
-
-def get_app_category(df_categories, packagename):
-    category = df_categories[(df_categories['App_name'].values == packagename)]['Final_Rating']
-    if not category.empty:
-        return category.values[0]
-    else:
-        return 'UNKNOWN'
 
 
 def get_domain_from_url(url):

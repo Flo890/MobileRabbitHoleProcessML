@@ -432,7 +432,7 @@ def create_labels_single():
 
     # df_sessions = drop_esm_features(df_sessions)
 
-    with open(fr'{dataframe_dir_ml_labeled}\user-sessions_features_labeled_more_than_intention_with_esm.pickle', 'wb') as f:
+    with open(fr'{dataframe_dir_ml_labeled}\sessions_features_labeled_more_than_intention_with_esm.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -828,7 +828,51 @@ def add_things():
         pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
 
 
+def remove_personalised_features():
+    path = fr'{dataframe_dir_ml_labeled}\sessions_features_labeled_more_than_intention_with_esm.pickle'
+    df_sessions = pd.read_pickle(path)
+
+    df_sessions.drop(df_sessions.index[df_sessions['f_session_length'].isnull()], inplace=True)
+
+    df_sessions = drop_esm_features(df_sessions)
+
+    colums_age = [x for x in df_sessions.columns.values if x.startswith('f_demographics_age')]
+    df_sessions.drop(columns=colums_age, inplace=True)
+
+    colums_gender = [x for x in df_sessions.columns.values if x.startswith('f_demographics_gender')]
+    df_sessions.drop(columns=colums_gender, inplace=True)
+
+    colums_wlan_name = [x for x in df_sessions.columns.values if x.startswith('f_internet_connected_WIFI_')]
+    df_sessions.drop(columns=colums_wlan_name, inplace=True)
+
+    df_sessions.drop(columns=['f_absentminded_use', 'f_general_use'], inplace=True)
+
+    df_sessions.to_csv(fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_no_personalized.csv')
+
+    with open(fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_normal_age_no_esm_no_personal.pickle', 'wb') as f:
+        pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
+
+
 def clean_df():
+    path = fr'{dataframe_dir_ml}\user-sessions_features_all.pickle'
+    df_sessions = pd.read_pickle(path)
+
+    path_questionnaire_1 = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData'
+    df_MRH1 = pd.read_csv(f'{path_questionnaire_1}\MRH1.csv', sep=',')
+
+    df_sessions.drop(df_sessions.index[df_sessions['f_session_length'].isnull()], inplace=True)
+
+    colums_age = [x for x in df_sessions.columns.values if x.startswith('f_demographics_age_')]
+    df_sessions.drop(columns=colums_age, inplace=True)
+
+    #Add age instead of age groupds
+    for index, session in enumerate(df_sessions.itertuples(index=False)):
+        if not df_MRH1[df_MRH1['IM01_01'].values == session[2]].empty:
+            df_qu_user = df_MRH1[df_MRH1['IM01_01'].values == session[2]].index.item()
+            df_sessions.at[index, 'f_demographics_age'] = df_MRH1.loc[df_qu_user, 'SD02_01']
+
+
+def clean_df_custom():
     # path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.pickle'
     path = fr'{dataframe_dir_ml}\user-sessions_features_all.pickle'
     df = pd.read_pickle(path)
@@ -837,12 +881,12 @@ def clean_df():
 
     for index, session in enumerate(df.itertuples(index=False)):
         if session[2] == 'CO07FA':
-            df.at[index, 'f_demographics_age_0_19'] = 0
-            df.at[index, 'f_demographics_age_20_29'] = 1
+            df.at[index, 'f_demographics_age'] = 23
             df.at[index, 'f_demographics_gender_0.0'] = 0
             df.at[index, 'f_demographics_gender_1.0'] = 1
 
         if session[2] == 'ZA23PA':
+            df.at[index, 'f_demographics_age'] = 25
             df.at[index, 'f_demographics_gender_0.0'] = 0
             df.at[index, 'f_demographics_gender_1.0'] = 1
             df.at[index, 'f_demographics_gender_2.0'] = 0
@@ -850,8 +894,7 @@ def clean_df():
         if session[2] == 'AY1221':
             df.at[index, 'f_absentminded_use'] = 4
             df.at[index, 'f_general_use'] = 3.9
-            df.at[index, 'f_demographics_age_0_19'] = 0
-            df.at[index, 'f_demographics_age_20_29'] = 1
+            df.at[index, 'f_demographics_age'] = 24
             df.at[index, 'f_demographics_gender_0.0'] = 0
             df.at[index, 'f_demographics_gender_1.0'] = 0
             df.at[index, 'f_demographics_gender_2.0'] = 1
@@ -867,10 +910,10 @@ def clean_df():
             df.at[index, 'f_demographics_gender_2.0'] = 0
 
         if session[2] == 'BR22NO':
-            # TODO df.at[index, 'f_absentminded_use'] = 4
-            # df.at[index, 'f_general_use'] = 3.9
-            df.at[index, 'f_demographics_age_0_19'] = 0
-            df.at[index, 'f_demographics_age_20_29'] = 1
+            # TODO replace with real values?
+            df.at[index, 'f_absentminded_use'] = 3.9
+            df.at[index, 'f_general_use'] = 5.4
+            df.at[index, 'f_demographics_age'] = 22
             df.at[index, 'f_demographics_gender_0.0'] = 0
             df.at[index, 'f_demographics_gender_1.0'] = 1
             df.at[index, 'f_demographics_gender_2.0'] = 0
@@ -881,6 +924,7 @@ def clean_df():
             df.at[index, 'f_demographics_gender_2.0'] = 0
 
         if session[2] == 'ju05ab':
+            df.at[index, 'f_demographics_age'] = 19
             df.at[index, 'f_demographics_gender_0.0'] = 0
             df.at[index, 'f_demographics_gender_1.0'] = 0
             df.at[index, 'f_demographics_gender_2.0'] = 1
@@ -891,9 +935,7 @@ def clean_df():
             df.at[index, 'f_demographics_gender_0.0'] = 0
             df.at[index, 'f_demographics_gender_1.0'] = 1
             df.at[index, 'f_demographics_gender_2.0'] = 0
-            df.at[index, 'f_demographics_age_0_19'] = 0
-            df.at[index, 'f_demographics_age_20_29'] = 0
-            df.at[index, 'f_demographics_age_30_39'] = 1
+            df.at[index, 'f_demographics_age'] = 30
 
     # df.to_csv(fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.csv')
     with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
@@ -994,11 +1036,12 @@ if __name__ == '__main__':
     # reduce_feature_dimension()
 
     # 13. create labels as targets (only works with onhot encoded data)
-    create_labels_single()
+    # create_labels_single()
     # labeling_combined()
 
     # clean_df()
     # add_things()
+    remove_personalised_features()
 
     # Testing
     # print_test_df()

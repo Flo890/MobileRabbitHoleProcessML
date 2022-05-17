@@ -11,6 +11,18 @@ from imblearn.over_sampling import SMOTE
 dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
 milkGreen = '#0BCB85'
 
+path_categories = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\categories\app_categorisation_2020.csv'
+df_categories = pd.read_csv(path_categories, sep=';')
+df_categories.drop(columns=['Perc_users', 'Training_Coding_1', 'Training_Coding_all', 'Training_Coding_2', 'Rater1', 'Rater2'], inplace=True)
+
+
+def get_app_category(app_packagename):
+    category = df_categories[(df_categories['App_name'].values == app_packagename)]['Final_Rating']
+    if not category.empty:
+        return category.values[0]
+    else:
+        return 'UNKNOWN'
+
 
 def check_labels():
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_labeled.pickle')

@@ -203,9 +203,8 @@ def random_forest_classifier(x, y, filename, report_df):
     # shap.force_plot(explainer.expected_value[0], shap_values[0])[0], x_train_features.iloc[0,:])
     print(type(x_train_features))
     # shap.force_plot(explainer.expected_value[1], shap_values[1][0], x_train_features.iloc[0,:], matplotlib=True)
-    plt.show()
+    # plt.show()
 
-    plt.figure()
     # shap.plots.waterfall(sum(shap_values),  show=True)
     # shap.waterfall_plot(explainer.expected_value[1], shap_values[1][0], x_train_features.iloc[0,:])
     # plt.show()
@@ -213,8 +212,10 @@ def random_forest_classifier(x, y, filename, report_df):
     #  plt.show()
 
     # plt.figure()
+    fig = plt.figure(figsize=(20, 9), dpi=100)
     shap.summary_plot(shap_values[0], x_train_features, plot_type="bar", max_display=30, show=False)
     plt.title("Random Forest - Shap values 0")
+    fig.tight_layout()
     plt.show()
 
     shap.summary_plot(shap_values[0], x_train_features, plot_type="dot", max_display=30, show=False)
@@ -402,7 +403,10 @@ if __name__ == '__main__':
     #     # else:
     #     #     continue
 
-    path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.pickle'
+    # path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.pickle'
+    #path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_normal_age_no_esm.pickle'
+    path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_normal_age_no_esm_no_personal.pickle'
+
     print(f'###################  target: {path}   #############################')  # , file=f)
     df_sessions = pd.read_pickle(path)
     # df_sessions.to_csv(fr'{dataframe_dir_ml_labeled}\test_{data_path.stem}.csv')
@@ -413,4 +417,4 @@ if __name__ == '__main__':
 
     report_all = random_forest_classifier(x, y,  "more_than_intention", report_all)
 
-    report_all.to_csv(fr'{dataframe_dir_ml}\report_ml_undersampling_combined_test2.csv')
+    report_all.to_csv(fr'{dataframe_dir_ml}\report_ml_undersampling_combined_test_no_personal.csv')

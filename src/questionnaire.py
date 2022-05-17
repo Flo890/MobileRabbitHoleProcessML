@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
 import matplotlib
-matplotlib.rcParams['figure.dpi'] = 100
+matplotlib.rcParams['figure.dpi'] = 150
 
 path_questionnaire = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\data_MobileRabbitHole.csv'
 path_raw = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData'
@@ -185,13 +185,13 @@ def influence():
     bars_labels_all = ('Strongly disagree', 'Disagree', 'Somewhat disagree', ' Neutral', 'Somewhat agree', 'Agree', 'Strongly agree')
     fig, axes = plt.subplots(nrow, ncol)
 
-    plot_bar(df_MRH2.TI01_01, bars=bars, labels=bars_labels, axes=axes[0, 0], title='The Rabbit hole tracker application influenced my usual mobile phone interactions.')
+    plot_bar(df_MRH2.TI01_01, bars=bars, labels=bars_labels, axes=axes[0, 0], title='a) The Rabbit hole tracker application influenced my usual mobile phone interactions.')
 
-    plot_bar(df_MRH2.TI01_02, bars=bars, labels=bars_labels, axes=axes[0, 1], title='Because of the rabbit hole tracker, I used my phone more than I usually do.')
+    plot_bar(df_MRH2.TI01_02, bars=bars, labels=bars_labels, axes=axes[0, 1], title='b) Because of the rabbit hole tracker, I used my phone more than I usually do.')
 
-    plot_bar(df_MRH2.TI01_03, bars=bars, labels=bars_labels, axes=axes[1, 0], title='Because of the rabbit hole tracker, I was more aware of my phone usage.')
+    plot_bar(df_MRH2.TI01_03, bars=bars, labels=bars_labels, axes=axes[1, 0], title='c) Because of the rabbit hole tracker, I was more aware of my phone usage.')
 
-    plot_bar(df_MRH2.TI01_04, bars=bars, labels=bars_labels, axes=axes[1, 1], title='Because of the rabbit hole tracker, I reduced my mobile phone usage time.')
+    plot_bar(df_MRH2.TI01_04, bars=bars, labels=bars_labels, axes=axes[1, 1], title='d) Because of the rabbit hole tracker, I reduced my mobile phone usage time.')
 
     plt.subplots_adjust(left=0.1,
                         bottom=0.1,
@@ -203,9 +203,9 @@ def influence():
 
     nrow = 3
     fig, axes = plt.subplots(nrow)
-    plot_bar(df_MRH2.TI01_05, bars=bars, labels=bars_labels, axes=axes[0], title='The experience samplings  were shown to frequently.')
-    plot_bar(df_MRH2.TI04_01, bars=bars, labels=bars_labels, axes=axes[1], title='I answered the experience samplings correctly.')
-    plot_bar(df_MRH2.TI04_02, bars=bars, labels=bars_labels, axes=axes[2], title='The experience sampling  annoyed me so much so that I just speeded through.')
+    plot_bar(df_MRH2.TI01_05, bars=bars, labels=bars_labels, axes=axes[0], title='a) The experience samplings  were shown to frequently.')
+    plot_bar(df_MRH2.TI04_01, bars=bars, labels=bars_labels, axes=axes[1], title='b) I answered the experience samplings correctly.')
+    plot_bar(df_MRH2.TI04_02, bars=bars, labels=bars_labels, axes=axes[2], title='c) The experience sampling  annoyed me so much so that I just speeded through.')
     plt.subplots_adjust(left=0.1,
                         bottom=0.1,
                         right=0.9,
@@ -265,7 +265,7 @@ def reindex():
 if __name__ == '__main__':
     # seperate()
     # reindex()
-    MRH_questionnaire_1()
+    # MRH_questionnaire_1()
 
     # general_absentminded_use()
 
