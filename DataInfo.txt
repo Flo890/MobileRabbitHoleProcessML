@@ -438,3 +438,25 @@ SD14 beschaeftigung
     <string name="esm_lock_intention_question_track_of_time">I have <b>lost track of time</b> while using my phone.</string>
     <string name="esm_lock_intention_question_track_of_space">I had a <b>good sense of my surroundings</b> while using my phone.</string>
     <string name="esm_lock_intention_question_emotion">Which pair of <b>emotion</b> corresponds best to how you felt this usage session?</string>
+
+
+
+% how often are apps used per session/rabbit hole session.
+% Different apps count total, differnt distinct apps per day, sessions
+% most popular app
+% Spent most time connected to the internet via the WLAN.
+% how long spent user on their phone per daz, mean session lengths and counts per day
+% average session length
+
+% average usage time per app+/category
+
+
+On average people use their phone for the last time at xx and for the first time at xx,
+how many sessions per day per user
+Time an weekday distribution of sessions and rabbit hole session are provided in Table \ref{tab:context_sessions}
+
+App chains:
+A importance feature to consider are 'application chains', which can be defined as a seuquence apps in a sessions.
+
+look at browers urls as well?, variety count?
+to complicated, as need to extract all from the logs again, can use sequences?

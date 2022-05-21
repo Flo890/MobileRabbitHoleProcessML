@@ -162,6 +162,7 @@ def rh_analyze_apps(df_rh):
     colum_names_count = ['name', 'count']
 
     # app count
+    df_rh.drop(df_rh.index[df_rh['f_all_app_count'] == 0], inplace=True)
     sns.countplot(df_rh['f_all_app_count'], color=milkGreen)
     plt.xlabel('App count in rabbit hole sessions')
     plt.show()
@@ -428,6 +429,19 @@ def rh_analyze_demographics_bins(df_rh):
     pw.set_xticklabels(age_lables, rotation=0)
 
     plt.show()
+
+
+def descriptive_statistics(df_rh):
+    print("descriptive statistics ")
+    # how long on phone per day, mean sessions lenghts and counts, not needed?
+    # rabbit hole sessions per day?
+
+    # average usage time per app/ category
+    # how many session per day
+
+    # how long on average spent in ringer mode, internet connection
+
+
 
 
 if __name__ == '__main__':

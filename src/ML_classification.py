@@ -25,6 +25,8 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from imblearn.ensemble import BalancedRandomForestClassifier
+import matplotlib
+matplotlib.rcParams['figure.dpi'] = 110
 
 dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
 dataframe_dir_results = rf"M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\results"
@@ -164,7 +166,7 @@ def random_forest_classifier(x, y, filename, report_df):
 
     x_train_features, x_test_features, y_train_labels, y_test_labels = train_test_split(x, y, test_size=0.25, random_state=42)
 
-    forest = RandomForestClassifier(criterion='gini', n_estimators=5, random_state=42, n_jobs=2, class_weight='balanced')  # TODO class_weight='balanced_subsample' or balanced
+    forest = RandomForestClassifier(criterion='gini', n_estimators=5, random_state=42, n_jobs=2) #, class_weight='balanced')  # TODO class_weight='balanced_subsample' or balanced
     # BalancedRandomForestClassifier(n_estimators=10)
     forest.fit(x_train_features, y_train_labels)
 
@@ -410,7 +412,7 @@ if __name__ == '__main__':
     print(f'###################  target: {path}   #############################')  # , file=f)
     df_sessions = pd.read_pickle(path)
     # df_sessions.to_csv(fr'{dataframe_dir_ml_labeled}\test_{data_path.stem}.csv')
-    x, y = ML_helpers.prepare_df_undersampling(df_sessions)
+    x, y = ML_helpers.prepare_df_oversampling(df_sessions)
 
     report_all = decision_tree_classifier(x, y, "more_than_intention", report_all)
     # dt_grid_search(x, y)
