@@ -4,6 +4,7 @@ import seaborn as sns
 import pandas as pd
 import pickle
 import ML_helpers
+import statistics
 
 import matplotlib
 
@@ -215,12 +216,93 @@ def rh_analyze_apps(df_rh):
 
     for item in list_times:
         times.append(get_counts_all(df_rh, item, column_names_time, time=True))
+        get_counts_average(df_rh, item, time=True)
 
     for item in list_counts:
         counts.append(get_counts_all(df_rh, item, colum_names_count))
+        get_counts_average(df_rh, item)
 
     for item in list_counts_sort:
         counts.append(get_counts_all(df_rh, item, colum_names_count, drop=True))
+        get_counts_average(df_rh, item)
+
+
+def get_counts_all(df_rh, column_prefix, colum_names, drop=False, time=False):
+    df = df_rh.loc[:, df_rh.columns.str.startswith(column_prefix)]
+    if drop:
+        to_drop = [x for x in df.columns.values if x.startswith(f'{column_prefix}app_category')]
+        df = df.drop(columns=to_drop)
+    df_all = {}
+    for colum in df.columns:
+        sum_count = df[colum].values.sum()
+        df_all[colum] = sum_count
+
+    df_all = pd.DataFrame.from_dict(df_all, orient='index').reset_index(drop=False)
+    df_all.columns = colum_names
+    df_all = df_all.sort_values(by=colum_names[1], ascending=False).reset_index(drop=True)
+    df_all = df_all.set_index('name')
+    # for time
+    if time:
+        df_all = df_all.apply(lambda x: round(((x / 1000) / 60), 2))
+
+    print(df_all.head(5))
+    counts = df_all.head(60)
+    abs_values = counts[colum_names[1]].values
+    p = counts.plot(kind='barh', color=milkGreen, title=column_prefix)
+    plt.bar_label(container=p.containers[0], labels=abs_values)
+    plt.show()
+
+    # print(df_all)
+    # df_all.to_csv(fr'{dataframe_dir_ml}\analyze_counts_times\analyze_{column_prefix}.csv')
+    return df_all
+
+
+def get_counts_average(df_rh, column_prefix, time=False):
+    df = df_rh.loc[:, df_rh.columns.str.startswith(column_prefix)].describe()
+    df = df.transpose()
+    print(df)
+    df = df.sort_values('mean', ascending=False)
+    # df.sort_values(by='mean', axis=1, ascending=False)
+    df.reset_index(inplace=True, drop=False)
+    if time:
+        df_mean = df['mean'].apply(lambda x: (x / 1000)).head(30)
+    else:
+        df_mean = df.loc[:, 'mean'].head(30)
+
+    plt.rcdefaults()
+    fig, ax = plt.subplots()
+
+    ax.barh(df.loc[:, 'index'].head(30), df_mean, color=milkGreen)
+    if time:
+        ax.set_xlabel('Seconds')
+    else:
+        ax.set_xlabel('Count')
+    ax.set_title(f'Mean {column_prefix}')
+    if time:
+        values = df.loc[:, 'mean'].apply(lambda x: round((x / 1000), 2)).head(30).values
+    else:
+        values = df.loc[:, 'mean'].apply(lambda x: round(x, 2)).head(30).values
+    plt.bar_label(container=ax.containers[0], labels=values, label_type='edge')
+    fig.set_dpi(150)
+    plt.show()
+
+    # fig, ax = plt.subplots()
+    # ax = plt.barh(df.loc[:, 'index'].head(30), df_mean, color=milkGreen)
+    # ax.title = f'Mean {column_prefix}'
+    # ax.label = f'Mean {column_prefix}'
+    # ax.xlabel = f'Mean {column_prefix}'
+    # ax.set_xlabel('mean')
+    # # ax.set_xlabel(f'Mean {column_prefix}')
+    # ax.set_title('title')
+    # # abs_values =  df.loc[:, 'mean'].head(30)
+    # if time:
+    #     values = df.loc[:, 'mean'].apply(lambda x: round(((x / 1000) / 60), 2)).head(30).values
+    # else:
+    #     values = df.loc['mean'].head(30).values
+    # plt.bar_label(container=pj, labels=values, label_type='center')
+    # plt.show()
+
+    # df.to_csv(fr'{dataframe_dir_results}\descriptives\descriptives_stats_{column_prefix}.csv')
 
 
 def expand_app_seq(app_seq, row):
@@ -274,7 +356,7 @@ def analyze_esm_features(df_rh):
 def plot_esm_count(df_rh, feature_name_prefix, title, x_lable, type_of_item):
     df_to_show = onhotencoding_anti(df_rh, feature_name_prefix, type_of_item)
     print(df_to_show.value_counts().sort_index(axis=0))
-    fig = plt.figure(figsize=(16, 9), dpi=100)
+    fig = plt.figure(figsize=(16, 9), dpi=250)
     pw = (df_to_show.value_counts().sort_index(axis=0)).plot(kind="bar", ylabel='Counts', xlabel=x_lable, title=title, color=milkGreen)
     abs_values = df_to_show.value_counts().sort_index(axis=0).values
     plt.bar_label(container=pw.containers[0], labels=abs_values)
@@ -289,36 +371,6 @@ def onhotencoding_anti(df_rh, prefix, type):
     df_return.astype(type)
     # print(df_return)
     return df_return
-
-
-def get_counts_all(df_rh, column_prefix, colum_names, drop=False, time=False):
-    df = df_rh.loc[:, df_rh.columns.str.startswith(column_prefix)]
-    if drop:
-        to_drop = [x for x in df.columns.values if x.startswith(f'{column_prefix}app_category')]
-        df = df.drop(columns=to_drop)
-    df_all = {}
-    for colum in df.columns:
-        sum_count = df[colum].values.sum()
-        df_all[colum] = sum_count
-
-    df_all = pd.DataFrame.from_dict(df_all, orient='index').reset_index(drop=False)
-    df_all.columns = colum_names
-    df_all = df_all.sort_values(by=colum_names[1], ascending=False).reset_index(drop=True)
-    df_all = df_all.set_index('name')
-    # for time
-    if time:
-        df_all = df_all.apply(lambda x: round(((x / 1000) / 60), 2))
-
-    print(df_all.head(5))
-    counts = df_all.head(60)
-    abs_values = counts[colum_names[1]].values
-    p = counts.plot(kind='barh', color=milkGreen, title=column_prefix)
-    plt.bar_label(container=p.containers[0], labels=abs_values)
-    plt.show()
-
-    # print(df_all)
-    # df_all.to_csv(fr'{dataframe_dir_ml}\analyze_counts_times\analyze_{column_prefix}.csv')
-    return df_all
 
 
 def rh_analyze_sessionlenghts(df_rh):
@@ -351,6 +403,64 @@ def rh_analyze_sessionlenghts(df_rh):
     plt.show()
 
 
+def analyze_per_user(df_rh):
+    print("analyzes per user")
+    df_rh['f_sequences_apps'].fillna('nan', inplace=True)
+
+    # different apps:
+    grouped_logs = df_rh.groupby(['studyID'])
+    colums_weekday = [x for x in df_rh.columns.values if x.startswith('f_weekday_')]
+    f_count_app = [x for x in df_rh.columns.values if x.startswith('f_app_count_')]
+
+    count_list_perday_mean = []
+    sessionLength_mean = []
+
+    # Iterate over sessions
+    for name, df_group in grouped_logs:
+        count_list_perday_peruser = []
+        mean_Sessions_length = []
+
+        for colum in colums_weekday:
+            # all sessions on weekday
+            # session counts per day
+            weekday = df_group[df_group[colum] == 1]
+            day_sessions_count = len(weekday)
+            count_list_perday_peruser.append(day_sessions_count)
+
+            # mean session length per day
+            sessionLength = weekday['f_session_length'].mean()
+            mean_Sessions_length.append(sessionLength)
+
+            # app count
+            # apps = df_group['f_sequences_apps'].apply(lambda x: len(x[0]))
+            # if apps != 'n':
+
+            # f_app_count_com.google.android.gm
+
+        count_list_perday_mean.append(statistics.mean(count_list_perday_peruser))
+        sessionLength_mean.append(statistics.mean(mean_Sessions_length))
+
+    # mean session counts per day
+    print("session count mean of mean", statistics.mean(count_list_perday_mean))
+    print("session count std:", statistics.stdev(count_list_perday_mean))
+    # rabbit hole sessions:
+    # mean all 2.4293478260869565
+
+    # no rh sessions:
+    # mean of mean 80.39
+
+    # all:
+    # mean 82.625
+
+    # mean app count per day
+
+
+    # On an average day, participants used their phone at 23:41 for the last time and at 7:55 for the first time
+    # the participants used a total number of 4,857 different apps, with each participant having used 13.10 (SD = 5.93) distinct apps per day, on average.
+    # Whereas the most popular app - WhatsApp was on average used 40.62 (SD = 40.32) times per day, per participant,
+    # unlocked their smartphones an average number of 47.73 (SD = 30.86) times per day. Furthermore,
+
+
 def rh_analyze_context(df_rh):
     print("analyze rh_context")
     # df_sessions_a.to_csv(fr'{dataframe_dir_ml}\user-sessions_features_all-analyze.csv')
@@ -358,26 +468,28 @@ def rh_analyze_context(df_rh):
     labels_hours = list(range(0, 24))
     weekday_range = list(range(0, 7))
     weekday_labels = ['Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun']
-    weekday_labels = ['Thur', 'Fri', 'Sat', 'Sun']
+    # weekday_labels = ['Thur', 'Fri', 'Sat', 'Sun']
 
-    df_hours = onhotencoding_anti(df_rh, prefix='f_weekday_', type='float')
-    print(df_hours)
-    df_weekday = onhotencoding_anti(df_rh, prefix='f_hour_of_day_', type='float')
-    print(df_weekday)
+    df_hours = onhotencoding_anti(df_rh, prefix='f_hour_of_day_', type='float')
+    df_H = df_hours.value_counts().reset_index(drop=False)
+    df_H['index'] = df_H['index'].astype(float)
+    # print(df_hours)
+    df_weekday = onhotencoding_anti(df_rh, prefix='f_weekday_', type='float')
+    # print(df_weekday)
 
     plt.figure()
     plt.subplot(2, 1, 1)
-    ps = (df_weekday.value_counts().sort_index(axis=0)).plot(kind="bar", ylabel='Counts', xlabel='Weekday', color=milkGreen, title=f'Rabbit Hole Sessions')
-    # abs_values = df_weekday.value_counts().sort_index(axis=0).values
-    # plt.bar_label(container=ps.containers[0], labels=abs_values)
+    ps = (df_weekday.value_counts().sort_index(axis=0)).plot(kind="bar", ylabel='Counts', xlabel='Weekday', color=milkGreen)
+    abs_values = df_weekday.value_counts().sort_index(axis=0).values
+    plt.bar_label(container=ps.containers[0], labels=abs_values)
     plt.subplots_adjust(left=0.1, bottom=0.1, right=0.9, top=0.9, wspace=0.4, hspace=0.6)
     ps.set_xticklabels(weekday_labels, rotation=0)
 
     plt.subplot(2, 1, 2)
-    pw = (df_hours.value_counts().sort_index(axis=0)).plot(kind="bar", ylabel='Counts', xlabel='hour of day', title=f'Rabbit Hole Sessions', color=milkGreen)
-    # abs_values = df_hours.value_counts().sort_index(axis=0).values
-    # plt.bar_label(container=pw.containers[0], labels=abs_values)
-    pw.set_xticklabels(labels_hours, rotation=0)
+    pw = (df_H.sort_values('index', axis=0, ascending=True).reset_index(drop=True).set_index('index', drop=True)).plot(kind="bar", ylabel='Counts', xlabel='hour of day', color=milkGreen)
+    abs_values = df_H.sort_values('index', axis=0, ascending=True).reset_index(drop=True).set_index('index', drop=True)[0].values
+    plt.bar_label(container=pw.containers[0], labels=abs_values)
+    # pw.set_xticklabels(labels_hours, rotation=0)
 
     plt.show()
 
@@ -391,11 +503,6 @@ def rh_analyze_intentions(df_rh):
     p = counts.plot(kind='barh', color=milkGreen, title="Intention counts")
     plt.bar_label(container=p.containers[0], labels=abs_values)
     plt.show()
-
-
-def rh_analyze_demographics_bins(df_rh):
-    print("analyze demographivs")
-    df_age = onhotencoding_anti(df_rh, prefix='f_demographics_age_', type='float')
 
 
 def rh_analyze_demographics_bins(df_rh):
@@ -431,19 +538,6 @@ def rh_analyze_demographics_bins(df_rh):
     plt.show()
 
 
-def descriptive_statistics(df_rh):
-    print("descriptive statistics ")
-    # how long on phone per day, mean sessions lenghts and counts, not needed?
-    # rabbit hole sessions per day?
-
-    # average usage time per app/ category
-    # how many session per day
-
-    # how long on average spent in ringer mode, internet connection
-
-
-
-
 if __name__ == '__main__':
     paths = [rf'{dataframe_dir_labled}\user-sessions_features_labeled_more_than_intention.pickle',
              rf'{dataframe_dir_labled}\user-sessions_features_labeled_f_esm_more_than_intention_Yes_f_esm_agency_0.0.pickle',
@@ -471,11 +565,13 @@ if __name__ == '__main__':
     # rh_analyze_context(df_rabbitHole)
     # rh_analyze_sessionlenghts(df_rabbitHole)
 
-    rh_analyze_apps(df_rabbitHole)
+    # rh_analyze_apps(df_rabbitHole)
+
+    # analyze_per_user(df_no_rabbitHole)
 
     # rh_analyze_demographics(df_rabbitHole)
 
-    # analyze_esm_features(df_rabbitHole)
+    analyze_esm_features(df_rabbitHole)
 
     # rh_realtive_frequency(df_rabbitHole)
     #  plot_relative_frequency()

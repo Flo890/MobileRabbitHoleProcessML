@@ -214,22 +214,28 @@ def random_forest_classifier(x, y, filename, report_df):
     #  plt.show()
 
     # plt.figure()
-    fig = plt.figure(figsize=(20, 9), dpi=100)
+    fig = plt.figure( dpi=150)
     shap.summary_plot(shap_values[0], x_train_features, plot_type="bar", max_display=30, show=False)
     plt.title("Random Forest - Shap values 0")
     fig.tight_layout()
     plt.show()
 
+    fig = plt.figure( dpi=150)
     shap.summary_plot(shap_values[0], x_train_features, plot_type="dot", max_display=30, show=False)
     plt.title("Random Forest - Shap values 0")
+    fig.tight_layout()
     plt.show()
 
+    fig = plt.figure( dpi=150)
     shap.summary_plot(shap_values[1], x_train_features, plot_type="bar", max_display=30, show=False)
     plt.title("Random Forest - Shap values 1")
+    fig.tight_layout()
     plt.show()
 
+    fig = plt.figure(dpi=150)
     shap.summary_plot(shap_values[1], x_train_features, plot_type="dot", max_display=30, show=False)
     plt.title("Random Forest - Shap values 1")
+    fig.tight_layout()
     plt.show()
     #  print(type(feature_list))
 
@@ -406,17 +412,25 @@ if __name__ == '__main__':
     #     #     continue
 
     # path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.pickle'
-    #path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_normal_age_no_esm.pickle'
+    # path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_normal_age_no_esm.pickle'
     path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_normal_age_no_esm_no_personal.pickle'
 
     print(f'###################  target: {path}   #############################')  # , file=f)
     df_sessions = pd.read_pickle(path)
     # df_sessions.to_csv(fr'{dataframe_dir_ml_labeled}\test_{data_path.stem}.csv')
-    x, y = ML_helpers.prepare_df_oversampling(df_sessions)
+    x, y = ML_helpers.prepare_df_undersampling(df_sessions)
 
-    report_all = decision_tree_classifier(x, y, "more_than_intention", report_all)
+    filename = "more_than_intention"
+
+    report_all = decision_tree_classifier(x, y, filename, report_all)
     # dt_grid_search(x, y)
 
-    report_all = random_forest_classifier(x, y,  "more_than_intention", report_all)
+    report_all = random_forest_classifier(x, y,  filename, report_all)
 
-    report_all.to_csv(fr'{dataframe_dir_ml}\report_ml_undersampling_combined_test_no_personal.csv')
+    report_all = naive_bayes_classifier(x, y, filename, report_all)
+
+    # report_all = kNeighbors_classifier(x, y, filename, report_all)
+
+    # report_all = svm_classifier(x, y, filename, report_all)
+
+    # report_all.to_csv(fr'{dataframe_dir_ml}\report_ml_undersampling_combined_test_no_personal_more1.csv')
