@@ -12,10 +12,6 @@ def extractMetaData(df_logs):
     :param logs: the dataframe with the colum of metaData to extract
     """
     print("_Extracting MetaData_")
-    # test = df_logs['metaData'].apply(pd.Series)
-    # print(test.columns.values)
-    # df_logs.drop(columns=['metaData'], inplace=True)
-    # t = pd.concat([df_logs, test], axis=1)
 
     if 'metaData' in df_logs.columns:
         # df_logs['metaData'].fillna('{}', inplace=True)
@@ -30,7 +26,7 @@ def extractMetaData(df_logs):
         return df_logs
 
 
-def extract_logs(directory, end_directory, save_type, is_gzip):
+def extract_logs(directory, end_directory, is_gzip):
     """
     Extracts for all json files in a directory the logs for each user and stores them in seperate files.
     :param directory: the directory where all json files to extract are stored

@@ -5,10 +5,28 @@ import pandas as pd
 import pickle
 import ML_helpers
 import statistics
-
 import matplotlib
 
-matplotlib.rcParams['figure.dpi'] = 150
+
+matplotlib.rcParams["figure.dpi"] = 250
+size=12
+ticksize = 12
+legendsize=13
+plt.rc('font', size=size) #controls default text size
+plt.rc('axes', titlesize=size) #fontsize of the title
+plt.rc('axes', labelsize=size) #fontsize of the x and y labels
+plt.rc('xtick', labelsize=ticksize) #fontsize of the x tick labels
+plt.rc('ytick', labelsize=ticksize) #fontsize of the y tick labels
+plt.rc('legend', fontsize=legendsize) #fontsize of the legend
+
+#plt.rcParams['text.usetex'] = True
+# preamb = r"\usepackage{bm} \usepackage{mathtools}"
+# params = {'text.latex.preamble' : preamb }
+# plt.rcParams.update(params)
+#plt.rcParams['font.family'] = "computer modern roman"
+
+
+
 
 milkGreen = '#0BCB85'
 milkGreenDark = '#267355'
@@ -22,21 +40,32 @@ dataframe_dir_labled = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\da
 dataframe_dir_ml_labeled = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data'
 
 
-# df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
-# df_sessions_a = pd.read_pickle(fr'{dataframe_dir_ml}\analyze-no1hot-withseq-nolabels\user-sessions_features_all.pickle')
-
 
 def get_rabbitHoleSessions(df_sessions):
+    """
+    Get all sessions labled as a rabbit holse
+    :param df_sessions: the labled dataset of al sessions
+    :return: rabbit hole sessions df
+    """
     df = df_sessions[df_sessions['target_label'] == 'rabbit_hole'].reset_index(drop=True)
     return df.copy()
 
 
-def get_NOrabbitHoleSessions(df_sessions):
+def get_NotRabbitHoleSessions(df_sessions):
+    """
+    Get all sessions labled as a not rabbit holse
+    :param df_sessions: the labled dataset of all sessions
+    :return: non rabbit hole sessions df
+    """
     df = df_sessions[df_sessions['target_label'] == 'no_rabbithole'].reset_index(drop=True)
     return df.copy()
 
 
-def rh_realtive_frequency(df_rh):
+def rh_relative_frequency(df_rh):
+    """
+    Calculate realtive frequency for differnt features per sessions
+    :param df_rh: dataframe of sessions
+    """
     print("relative freuquency")
     df_rh['f_sequences_apps'].fillna('nan', inplace=True)
     df_rh['f_all_app_count'] = 0
@@ -93,32 +122,6 @@ def rh_realtive_frequency(df_rh):
     #    pickle.dump(df_rh, f, pickle.HIGHEST_PROTOCOL)
 
 
-def plot_relative_frequency():
-    df_rh = pd.read_csv(rf'{dataframe_dir_ml_labeled}\features_labeled_more_than_intention_rabbitHoleSessions_analyzed.csv')
-
-    list = ['f_app_category_count', 'f_app_category_time', 'f_app_count', 'f_app_time']
-    ending = 'relative_frequency'
-
-    # bins_time = [0, 60000, 300000, 600000, 1200000, 1800000, 2400000, 3000000, 3600000, 5400000, 7200000, 9000000, 10800000]
-    # labels = ['0', '1min', '5min', '10min', '20min', '30min', '40min', '50min', '60min', '90min', '120min', '150min']
-    labels = [0, 1, 5, 10, 20, 30, 40, 50, 60, 90, 120, 150, 180]
-
-    for item in list:
-        f_app_category_count = df_rh.loc[:, (df_rh.columns.str.startswith(item) & df_rh.columns.str.endswith(ending))]
-        df = f_app_category_count.describe()
-        df = df.sort_values(by='mean', axis=1, ascending=False)
-        print(df)
-        df.to_csv(fr'{dataframe_dir_results}\reltive_frequency_{item}.csv')
-
-        # print(f_app_category_count.describe())
-        counts, edges, bars = plt.hist(f_app_category_count.values, edgecolor="k")
-        # n, bins, patches = plt.hist(x, num_bins, facecolor='blue', alpha=0.5)
-        # plt.xlabel('count')
-        # plt.xticks(bins, rotation='vertical')
-        # plt.bar_label(bars)
-
-        # plt.show()
-
 
 def rh_analyze_apps(df_rh):
     print("rh_apps overall")
@@ -163,9 +166,9 @@ def rh_analyze_apps(df_rh):
     colum_names_count = ['name', 'count']
 
     # app count
-    df_rh.drop(df_rh.index[df_rh['f_all_app_count'] == 0], inplace=True)
-    sns.countplot(df_rh['f_all_app_count'], color=milkGreen)
-    plt.xlabel('App count in rabbit hole sessions')
+    df_rh = df_rh.drop(df_rh.index[df_rh['f_all_app_count'] == 0]).drop(df_rh.index[df_rh['f_all_app_count'] > 100])
+    pl = sns.countplot(df_rh['f_all_app_count'], color=milkGreen)
+    plt.xlabel('App count')
     plt.show()
 
     app_count = df_rh['f_all_app_count'].describe()
@@ -179,6 +182,39 @@ def rh_analyze_apps(df_rh):
     # 75%        5.000000
     # max      109.000000
     # Name: f_all_app_count,
+
+    #RH
+    #     count    385.000000
+    # mean       5.189610
+    # std        6.852455
+    # min        1.000000
+    # 25%        2.000000
+    # 50%        3.000000
+    # 75%        5.000000
+    # max       78.000000
+    # Name: f_all_app_count, dtype: float64
+
+    # no RH
+    #     count    13486.000000
+    # mean         5.526324
+    # std          7.931362
+    # min          1.000000
+    # 25%          2.000000
+    # 50%          3.000000
+    # 75%          6.000000
+    # max         97.000000
+    # Name: f_all_app_count, dtype: float64
+
+    # all
+    #     count    13871.000000
+    # mean         5.516978
+    # std          7.903381
+    # min          1.000000
+    # 25%          2.000000
+    # 50%          3.000000
+    # 75%          6.000000
+    # max         97.000000
+    # Name: f_all_app_count, dtype: float64
 
     # df_count_start = pd.DataFrame.from_dict(df_apps_count_start, orient="index").reset_index(drop=False)
     # df_count_start.columns = colum_names_count
@@ -283,7 +319,7 @@ def get_counts_average(df_rh, column_prefix, time=False):
     else:
         values = df.loc[:, 'mean'].apply(lambda x: round(x, 2)).head(30).values
     plt.bar_label(container=ax.containers[0], labels=values, label_type='edge')
-    fig.set_dpi(150)
+    # fig.set_dpi(150)
     plt.show()
 
     # fig, ax = plt.subplots()
@@ -302,7 +338,7 @@ def get_counts_average(df_rh, column_prefix, time=False):
     # plt.bar_label(container=pj, labels=values, label_type='center')
     # plt.show()
 
-    # df.to_csv(fr'{dataframe_dir_results}\descriptives\descriptives_stats_{column_prefix}.csv')
+    df.to_csv(fr'{dataframe_dir_results}\descriptives\norh_descriptives_stats_{column_prefix}.csv')
 
 
 def expand_app_seq(app_seq, row):
@@ -335,22 +371,22 @@ def analyze_esm_features(df_rh):
     answer_title = 'ES answer'
 
     # Check finished - f_esm_finished_intention_nan - Did you <b>finish</b> your intention?
-    plot_esm_count(df_rh, 'f_esm_finished_intention_', 'Rabbit Hole Sessions - Did you finish your intention?', answer_title, 'string')
+    plot_esm_count(df_rh, 'f_esm_finished_intention_', 'Did you finish your intention?', answer_title, 'string')
 
     # Check emotion - f_esm_emotion_surprise-astonishment - Which pair of <b>emotion</b> corresponds best to how you felt this usage session?
-    plot_esm_count(df_rh, 'f_esm_emotion_', 'Rabbit Hole Sessions - Which pair of emotion corresponds best to how you felt this usage session?', answer_title, 'string')
+    plot_esm_count(df_rh, 'f_esm_emotion_', 'Which pair of emotion corresponds best to how you felt this usage session?', answer_title, 'string')
 
     # Check regret -  f_esm_regret_nan -  >I feel <b>regret</b> for part of my phone use
-    plot_esm_count(df_rh, 'f_esm_regret_', 'Rabbit Hole Sessions - I feel regret for part of my phone use.', likertScale_title, 'float')
+    plot_esm_count(df_rh, 'f_esm_regret_', 'I feel regret for part of my phone use.', likertScale_title, 'float')
 
     # CHeck track of time - f_esm_track_of_time_nan-  >I have <b>lost track of time</b> while using my phone
-    plot_esm_count(df_rh, 'f_esm_track_of_time_', 'Rabbit Hole Sessions - I have lost track of time while using my phone.', likertScale_title, 'float')
+    plot_esm_count(df_rh, 'f_esm_track_of_time_', 'I have lost track of time while using my phone.', likertScale_title, 'float')
 
     # Check track of space - f_esm_track_of_space_nan - I had a <b>good sense of my surroundings</b> while using my phone
-    plot_esm_count(df_rh, 'f_esm_track_of_space_', 'Rabbit Hole Sessions - I had a good sense of my surroundings while using my phone.', likertScale_title, 'float')
+    plot_esm_count(df_rh, 'f_esm_track_of_space_', 'I had a good sense of my surroundings while using my phone.', likertScale_title, 'float')
 
     # Check agency - f_esm_agency_nan -  I had a strong sense of <b>agency<
-    plot_esm_count(df_rh, 'f_esm_agency_', 'Rabbit Hole Sessions - I had a strong sense of agency.', likertScale_title, 'float')
+    plot_esm_count(df_rh, 'f_esm_agency_', 'I had a strong sense of agency.', likertScale_title, 'float')
 
 
 def plot_esm_count(df_rh, feature_name_prefix, title, x_lable, type_of_item):
@@ -359,7 +395,7 @@ def plot_esm_count(df_rh, feature_name_prefix, title, x_lable, type_of_item):
     fig = plt.figure(figsize=(16, 9), dpi=250)
     pw = (df_to_show.value_counts().sort_index(axis=0)).plot(kind="bar", ylabel='Counts', xlabel=x_lable, title=title, color=milkGreen)
     abs_values = df_to_show.value_counts().sort_index(axis=0).values
-    plt.bar_label(container=pw.containers[0], labels=abs_values)
+    plt.bar_label(container=pw.containers[0], labels=abs_values, padding=-2)
     fig.tight_layout()
     plt.show()
 
@@ -382,11 +418,14 @@ def rh_analyze_sessionlenghts(df_rh):
 
     df_length = df_rh['f_session_length'].apply(lambda x: (x / 1000) / 60)
 
+    #fig = plt.figure()
     sns.boxplot(df_length, color=milkGreen)
-    plt.title("Sessions lengths in not rabbit hole sessions")
+    plt.title("Sessions lengths distribution")
     plt.xlabel("minutes")
+    #fig.set_dpi(300)
     plt.show()
 
+    #fig = plt.figure()
     # bins = [0, 60000, 300000, 600000, 1200000, 1800000, 2400000, 3000000, 3600000, 5400000, 7200000, 9000000, 10800000]
     bins = [0, 1, 2, 5, 10, 20, 30, 40, 50, 60, 90, 120, 150]
     labels = ['0', '1min', '5min', '10min', '20min', '30min', '40min', '50min', '60min', '90min', '120min', '150min']
@@ -399,7 +438,7 @@ def rh_analyze_sessionlenghts(df_rh):
     plt.title("Sessions lengths in rabbit hole sessions")
     plt.xticks(bins, rotation='vertical')
     plt.bar_label(bars)
-
+    #fig.set_dpi(200)
     plt.show()
 
 
@@ -411,6 +450,7 @@ def analyze_per_user(df_rh):
     grouped_logs = df_rh.groupby(['studyID'])
     colums_weekday = [x for x in df_rh.columns.values if x.startswith('f_weekday_')]
     f_count_app = [x for x in df_rh.columns.values if x.startswith('f_app_count_')]
+
 
     count_list_perday_mean = []
     sessionLength_mean = []
@@ -440,17 +480,27 @@ def analyze_per_user(df_rh):
         count_list_perday_mean.append(statistics.mean(count_list_perday_peruser))
         sessionLength_mean.append(statistics.mean(mean_Sessions_length))
 
+    print("Session Length mean:", statistics.mean(sessionLength_mean))
+    print("session length std:", statistics.stdev(sessionLength_mean))
+
+    #     # all
+    #     Session Length mean: 82.625
+    # session length std: 49.5001446757145
+
     # mean session counts per day
     print("session count mean of mean", statistics.mean(count_list_perday_mean))
     print("session count std:", statistics.stdev(count_list_perday_mean))
     # rabbit hole sessions:
-    # mean all 2.4293478260869565
+    # session count mean of mean 2.4293478260869565
+    # session count std: 2.399936696299521
 
     # no rh sessions:
-    # mean of mean 80.39
+    # session count mean of mean 80.39
+    # session count std: 48.328874435131084
 
     # all:
-    # mean 82.625
+    # session count mean of mean 82.625
+    # session count std: 49.5001446757145
 
     # mean app count per day
 
@@ -498,12 +548,15 @@ def rh_analyze_intentions(df_rh):
     print(df_rh['f_esm_intention'].value_counts())
 
     counts_all = df_rh['f_esm_intention'].value_counts()  # .sort_values(by=['sessions_count'], ascending=True)
-    counts = counts_all.head(50)
+    counts = counts_all.head(30)
     abs_values = counts.values
+    #fig = plt.figure()
     p = counts.plot(kind='barh', color=milkGreen, title="Intention counts")
     plt.bar_label(container=p.containers[0], labels=abs_values)
+    #fig.set_dpi(150)
     plt.show()
 
+    counts_all.to_csv(fr'{dataframe_dir_results}\intentions_counts_norh')
 
 def rh_analyze_demographics_bins(df_rh):
     print("analyze demographivs")
@@ -556,22 +609,22 @@ if __name__ == '__main__':
     # print(df_sessions_labled.size)
 
     df_rabbitHole = get_rabbitHoleSessions(df_sessions_labled)
-    df_no_rabbitHole = get_NOrabbitHoleSessions(df_sessions_labled)
+    df_no_rabbitHole = get_NotRabbitHoleSessions(df_sessions_labled)
 
     # df_rabbitHole.to_csv()
 
-    # rh_analyze_intentions(df_rabbitHole)
+    # rh_analyze_intentions(df_sessions_labled)
 
     # rh_analyze_context(df_rabbitHole)
-    # rh_analyze_sessionlenghts(df_rabbitHole)
+    rh_analyze_sessionlenghts(df_sessions_labled)
 
-    # rh_analyze_apps(df_rabbitHole)
+    # rh_analyze_apps(df_no_rabbitHole)
 
-    # analyze_per_user(df_no_rabbitHole)
+    # analyze_per_user(df_rabbitHole)
 
     # rh_analyze_demographics(df_rabbitHole)
 
-    analyze_esm_features(df_rabbitHole)
+    # analyze_esm_features(df_rabbitHole)
 
     # rh_realtive_frequency(df_rabbitHole)
     #  plot_relative_frequency()

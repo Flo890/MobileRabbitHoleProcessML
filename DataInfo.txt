@@ -413,6 +413,19 @@ SD10_09 bildung extra
 SD14 beschaeftigung
 
 
+wlan: TI02
+Where do you mainly use a WLAN network as an Internet connection?
+01 at home
+02  At work/ school/ university
+03 other places
+
+mobile: TI03
+Where do you mainly use a mobile internet connection?
+01 at home
+02 At work/ school/ university
+04 while travelling
+05 On the way to work/ school/ university
+03 other places
 
     <color name="DarkBlackishGray">#444653</color>
     <color name="LightBlackishGray">#6E707C</color>

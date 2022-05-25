@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
 import matplotlib
-matplotlib.rcParams['figure.dpi'] = 150
 
 path_questionnaire = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\data_MobileRabbitHole.csv'
 path_raw = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData'
@@ -16,6 +15,17 @@ milkGreenDark= '#267355'
 blueish= '#0378C5'
 LightBlackishGray= '#6E707C'
 DarkBlackishGray= '#6E707C'
+
+matplotlib.rcParams["figure.dpi"] = 250
+size=11
+ticksize = 11
+legendsize=11
+plt.rc('font', size=size) #controls default text size
+plt.rc('axes', titlesize=size) #fontsize of the title
+plt.rc('axes', labelsize=size) #fontsize of the x and y labels
+plt.rc('xtick', labelsize=ticksize) #fontsize of the x tick labels
+plt.rc('ytick', labelsize=ticksize) #fontsize of the y tick labels
+plt.rc('legend', fontsize=legendsize) #fontsize of the legend
 
 def MRH_questionnaire_1():
     df_MRH1_raw = pd.read_csv(f'{path_raw}\MRH1.csv', sep=',')
@@ -225,13 +235,13 @@ def influence():
     bars_labels_all = ('Strongly disagree', 'Disagree', 'Somewhat disagree', ' Neutral', 'Somewhat agree', 'Agree', 'Strongly agree')
     fig, axes = plt.subplots(nrow, ncol)
 
-    plot_bar(df_MRH2.TI01_01, bars=bars, labels=bars_labels, axes=axes[0, 0], title='a) The Rabbit hole tracker application influenced my usual mobile phone interactions.')
+    plot_bar(df_MRH2.TI01_01, bars=bars, labels=bars_labels, axes=axes[0, 0], title='a) The Rabbit hole tracker application influenced \nmy usual mobile phone interactions.')
 
-    plot_bar(df_MRH2.TI01_02, bars=bars, labels=bars_labels, axes=axes[0, 1], title='b) Because of the rabbit hole tracker, I used my phone more than I usually do.')
+    plot_bar(df_MRH2.TI01_02, bars=bars, labels=bars_labels, axes=axes[0, 1], title='b) Because of the rabbit hole tracker, \nI used my phone more than I usually do.')
 
-    plot_bar(df_MRH2.TI01_03, bars=bars, labels=bars_labels, axes=axes[1, 0], title='c) Because of the rabbit hole tracker, I was more aware of my phone usage.')
+    plot_bar(df_MRH2.TI01_03, bars=bars, labels=bars_labels, axes=axes[1, 0], title='c) Because of the rabbit hole tracker, \nI was more aware of my phone usage.')
 
-    plot_bar(df_MRH2.TI01_04, bars=bars, labels=bars_labels, axes=axes[1, 1], title='d) Because of the rabbit hole tracker, I reduced my mobile phone usage time.')
+    plot_bar(df_MRH2.TI01_04, bars=bars, labels=bars_labels, axes=axes[1, 1], title='d) Because of the rabbit hole tracker, \nI reduced my mobile phone usage time.')
 
     plt.subplots_adjust(left=0.1,
                         bottom=0.1,
@@ -245,7 +255,7 @@ def influence():
     fig, axes = plt.subplots(nrow)
     plot_bar(df_MRH2.TI01_05, bars=bars, labels=bars_labels, axes=axes[0], title='a) The experience samplings  were shown to frequently.')
     plot_bar(df_MRH2.TI04_01, bars=bars, labels=bars_labels, axes=axes[1], title='b) I answered the experience samplings correctly.')
-    plot_bar(df_MRH2.TI04_02, bars=bars, labels=bars_labels, axes=axes[2], title='c) The experience sampling  annoyed me so much so that I just speeded through.')
+    plot_bar(df_MRH2.TI04_02, bars=bars, labels=bars_labels, axes=axes[2], title='c) The experience sampling annoyed me \n so much so that I just speeded through.')
     plt.subplots_adjust(left=0.1,
                         bottom=0.1,
                         right=0.9,
@@ -262,10 +272,27 @@ def influence():
     # plt.ylabel('Counts')
     # plt.show()
 
+    nrow = 2
+    bars3 = (1, 2, 3)
+    bars_labels3 = ('At home', 'At work/ school/ university', 'Other places' )
+    bars5 = (1, 2, 3, 4, 5)
+    bars_labels5 = ('At home', 'At work/ school/ \nuniversity', 'Other places', ' While travelling', 'On the way to work/ \n school/ university')
+    fig, axes = plt.subplots(nrow)
+    plot_bar(df_MRH2.TI02, bars=bars3, labels=bars_labels3, axes=axes[0], title='a) Where do you mainly use a WLAN network as an Internet connection?', xlabelcustom="")
+    plot_bar(df_MRH2.TI03, bars=bars5, labels=bars_labels5, axes=axes[1], title='b) Where do you mainly use a mobile internet connection?',  xlabelcustom="")
+    plt.subplots_adjust(left=0.1,
+                        bottom=0.1,
+                        right=0.9,
+                        top=0.9,
+                        wspace=0.4,
+                        hspace=0.6)
+    plt.show()
 
-def plot_bar(df, bars, labels, title, axes):
-    p = df.value_counts().reindex(bars, fill_value=0).sort_index(axis=0).plot(kind="bar", ax=axes, ylabel='Counts', xlabel='Likert Scale (1=Strongly Disagree, 7=Strongly Agree)', color=milkGreen, title=title)
-    p.set_xticklabels(labels, rotation=0)
+
+def plot_bar(df, bars, labels, title, axes, lable_rotation = 0, xlabelcustom='Likert Scale (1=Strongly Disagree, 7=Strongly Agree)'):
+    p = df.value_counts().reindex(bars, fill_value=0).sort_index(axis=0).plot(kind="bar", ax=axes, ylabel='Counts', xlabel=xlabelcustom, color=milkGreen, title=title)
+    p.set_xticklabels(labels, rotation=lable_rotation)
+    p.grid(axis = 'y', linestyle = '--', linewidth = 0.3)
     return p
 
 
@@ -277,6 +304,7 @@ def plot_subplots_bar(df_list, ncol, nrow):
         for c in range(ncol):
             print(df_list[count][1])
             df_list[count][0].value_counts().reindex(bars, fill_value=0).sort_index(axis=0).plot(kind="bar", ylabel='Counts', xlabel='Likert Scale (1=Strongly Disagree, 7=Strongly Agree)', color=milkGreen, title=df_list[count][1])
+            plt.grid(axis = 'y', linestyle = '--', linewidth = 0.3)
             count += 1
 
     plt.show()
@@ -307,6 +335,6 @@ if __name__ == '__main__':
     # reindex()
     # MRH_questionnaire_1()
 
-    general_absentminded_use()
+    # general_absentminded_use()
 
-    # influence()
+    influence()

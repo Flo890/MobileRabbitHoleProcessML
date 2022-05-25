@@ -23,10 +23,6 @@ def extract_sessions(df_logs):
 
     # Usage events screen interactive??
     screen_logs = df_logs[(df_logs['eventName'].values == 'SCREEN') | (df_logs['event'].values == 'SHUTDOWN')]
-    # drop unnessesary events
-
-    # screen_logs.drop(screen_logs.index[screen_logs['event'] == 'UNKNOWN'], inplace=True)
-    # screen_logs.drop(screen_logs.index[screen_logs['event'] == 'ON_UNLOCKED'], inplace=True)
 
     count = 1
     sessions = []  # pd.DataFrame(columns=['session_id', 'count', 'session_length', 'timestamp_1', 'timestamp_2'])
@@ -34,15 +30,13 @@ def extract_sessions(df_logs):
     # get all timestamps 1: User ON_USERPRESENT  (SCREEN_ON_UNLOCKED?)
     timestamps_1 = screen_logs[screen_logs['event'].values == 'ON_USERPRESENT']['correct_timestamp']
 
-    # len(df.index) == 0 - no rows
-    # df.dropna().empty
     print(len(timestamps_1))
     while not timestamps_1.empty:
         # print(len(timestamps_1))
         timestamp_1 = timestamps_1.values[0]
 
-        # TODO check if there is no ts2 event before the next ts1 event
-        # find ts2: OFF_LOCKED, OFF_UNLOCKED, TODO everything else that is not ON_USerpresent? und timestamp davon is later than tsi
+
+        # find ts2: OFF_LOCKED, OFF_UNLOCKED,
         timestamps_2 = screen_logs[((screen_logs['event'].values == 'OFF_LOCKED') |
                                     (screen_logs['event'].values == 'OFF_UNLOCKED') |
                                     (screen_logs['event'].values == 'SHUTDOWN')) &
@@ -57,15 +51,12 @@ def extract_sessions(df_logs):
 
         if ts_between.empty:
             id_saved = timestamps_2['id'].values[0] if not timestamps_2.empty else last_id
-            # print(f'ts2 {timestamp_2}')
 
             # calculate length of session in ms
             session_length = (timestamp_2 - timestamp_1)  # / np.timedelta64(1, 'ms')
-            # print(f'sesionlength {session_length}')
 
-            # assign sessionID: count and timestamp? #TODO only use count?
+            # assign sessionID: count and timestamp?
             session_id = f'{count}-{study_id}'
-            # print(f'sessionId {session_id}')
 
             # assign sessionID to all these rows within session timestamps
             df_logs.loc[((df_logs['correct_timestamp'].values >= timestamp_1) & (
@@ -75,7 +66,6 @@ def extract_sessions(df_logs):
             df_logs.loc[((df_logs['correct_timestamp'].values >= timestamp_1) &
                          (df_logs['id'].values == id_saved) &
                          (df_logs['eventName'].values == 'ESM')), 'session_id'] = count
-
 
             # add a new row to sessiondf with sessionid, sessionlngth, first and last timestamp
             sessions.append({'session_id': session_id, 'count': count, 'studyID': study_id, 'session_length': session_length, 'timestamp_1': timestamp_1,
@@ -91,43 +81,7 @@ def extract_sessions(df_logs):
             timestamps_1 = screen_logs[(screen_logs['event'].values == 'ON_USERPRESENT') & (
                            screen_logs['correct_timestamp'].values > timestamp_1)]['correct_timestamp']
 
-        # print(f'new ts1 {timestamps_1.head()}')
-
     sessions_list = pd.DataFrame(sessions)
     print("....extract sessions finished....")
     return df_logs, sessions_list
 
-
-# discard session that are very small/very big?
-
-def extract_meta(df_logs):
-    test = df_logs['metaData'].apply(pd.Series)
-    print(test.columns.values)
-    df_logs.drop(columns=['metaData'], inplace=True)
-    t = pd.concat([df_logs, test], axis=1)
-    print(t.columns.values)
-    t.to_csv(fr'{dataframe_dir}\test.csv')
-
-
-if __name__ == '__main__':
-    dataframe_dir_logs = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\test'
-    dataframe_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes'
-    pathlist = pathlib.Path(dataframe_dir_logs).glob('**/*.pickle')
-
-    user_sessions = {}
-    for data_path in pathlist:
-        path_in_str = str(data_path)
-        print(path_in_str)
-        df_logs = pd.read_pickle(path_in_str)
-
-        # ['description' 'event' 'eventName' 'id' 'name' 'packageName' 'timestamp' 'timezoneOffset' 'metaData' 'studyID' 'correct_timestamp' 'weekday']
-
-        extracted = extract_sessions(df_logs)  # can i assign to same variable again?
-        user_sessions[data_path.stem] = extracted[1]
-
-        with open(fr'{dataframe_dir_logs}\{data_path.stem}.pickle', 'wb') as f:
-            pickle.dump(extracted[0], f, pickle.HIGHEST_PROTOCOL)
-
-    # TODO save all in extra files or one file again?
-    with open(fr'{dataframe_dir}\user-sessions.pickle', 'wb') as f:
-        pickle.dump(user_sessions, f, pickle.HIGHEST_PROTOCOL)

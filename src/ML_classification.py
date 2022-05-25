@@ -13,9 +13,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.inspection import permutation_importance
-from sklearn.tree import export_text
 from sklearn.metrics import confusion_matrix
-from sklearn.preprocessing import LabelEncoder
 from sklearn import metrics
 import ML_helpers
 import shap
@@ -26,7 +24,16 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from imblearn.ensemble import BalancedRandomForestClassifier
 import matplotlib
-matplotlib.rcParams['figure.dpi'] = 110
+matplotlib.rcParams["figure.dpi"] = 250
+size=12
+ticksize = 12
+legendsize=13
+plt.rc('font', size=size) #controls default text size
+plt.rc('axes', titlesize=size) #fontsize of the title
+plt.rc('axes', labelsize=size) #fontsize of the x and y labels
+plt.rc('xtick', labelsize=ticksize) #fontsize of the x tick labels
+plt.rc('ytick', labelsize=ticksize) #fontsize of the y tick labels
+plt.rc('legend', fontsize=legendsize) #fontsize of the legend
 
 dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
 dataframe_dir_results = rf"M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\results"
@@ -39,10 +46,15 @@ dataframe_dir_ml_labeled_m = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\d
 # df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_labeled.pickle')
 
 def svm_classifier(x, y, filename, report_df):
+    """
+    Support Vector Machine Classifier,
+    :param x: the data
+    :param y: the labled for the data
+    :param filename: how to name the target in the report
+    :param report_df: the general report dataframe to append the report to
+    :return: the model report of the SVM classification model
+    """
     print("***SVM***")
-    # save the feature name and target variables
-    feature_names = x.columns
-    labels = y.unique()
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
 
     # svclassifier = SVC(kernel='poly', degree=8) # -> very long
@@ -160,9 +172,6 @@ def random_forest_classifier(x, y, filename, report_df):
 
     feature_list = x.columns  # list(x_features.columns)
     print('feature length:', len(feature_list))
-    # TODO needed?
-    #x = np.array(x)
-    #y = np.array(y)
 
     x_train_features, x_test_features, y_train_labels, y_test_labels = train_test_split(x, y, test_size=0.25, random_state=42)
 
@@ -207,47 +216,47 @@ def random_forest_classifier(x, y, filename, report_df):
     # shap.force_plot(explainer.expected_value[1], shap_values[1][0], x_train_features.iloc[0,:], matplotlib=True)
     # plt.show()
 
-    # shap.plots.waterfall(sum(shap_values),  show=True)
-    # shap.waterfall_plot(explainer.expected_value[1], shap_values[1][0], x_train_features.iloc[0,:])
-    # plt.show()
-    # shap.plots.beeswarm(sum(shap_values), max_display=30,  show=True)
-    #  plt.show()
-
     # plt.figure()
-    fig = plt.figure( dpi=150)
+    fig = plt.figure( dpi=250)
     shap.summary_plot(shap_values[0], x_train_features, plot_type="bar", max_display=30, show=False)
     plt.title("Random Forest - Shap values 0")
     fig.tight_layout()
+    matplotlib.rcParams["figure.dpi"] = 250
+    size=12
+    ticksize = 12
+    legendsize=13
+    plt.rc('font', size=size) #controls default text size
+    plt.rc('axes', titlesize=size) #fontsize of the title
+    plt.rc('axes', labelsize=size) #fontsize of the x and y labels
+    plt.rc('xtick', labelsize=ticksize) #fontsize of the x tick labels
+    plt.rc('ytick', labelsize=ticksize) #fontsize of the y tick labels
+    plt.rc('legend', fontsize=legendsize) #fontsize of the legend
     plt.show()
 
-    fig = plt.figure( dpi=150)
+    fig = plt.figure( dpi=250)
     shap.summary_plot(shap_values[0], x_train_features, plot_type="dot", max_display=30, show=False)
     plt.title("Random Forest - Shap values 0")
     fig.tight_layout()
     plt.show()
 
-    fig = plt.figure( dpi=150)
+    fig = plt.figure( dpi=250)
     shap.summary_plot(shap_values[1], x_train_features, plot_type="bar", max_display=30, show=False)
     plt.title("Random Forest - Shap values 1")
     fig.tight_layout()
     plt.show()
 
-    fig = plt.figure(dpi=150)
+    fig = plt.figure(dpi=250)
     shap.summary_plot(shap_values[1], x_train_features, plot_type="dot", max_display=30, show=False)
     plt.title("Random Forest - Shap values 1")
     fig.tight_layout()
     plt.show()
     #  print(type(feature_list))
 
-
     #shap.summary_plot(shap_values[1], features=x_train_features, plot_type='dot', feature_names=feature_list) #, max_display=features_list_g.shape[0])
     # shap.summary_plot(shap_values[0], x_train_features, plot_type='layered_violin', max_display=30)
     # plt.show()
 
     return pd.concat([report_df, report])
-
-
-
 
 
 def decision_tree_classifier(x, y, filename, report_df):
@@ -288,7 +297,6 @@ def decision_tree_classifier(x, y, filename, report_df):
     #     print(importance, file=f)
     print(type(report_df))
     print(type(report))
-
 
     print("---------------SHAP PLOTS-------------")
     print(f'0: {clf_model.classes_[0]}, 1: {clf_model.classes_[1]}')
@@ -380,39 +388,6 @@ if __name__ == '__main__':
 
     report_all = pd.DataFrame()
 
-    # pathlist = pathlib.Path(dataframe_dir_ml_labeled_selected).glob('**/*.pickle')
-    #
-    # for data_path in pathlist:
-    #     path_in_str = str(data_path)
-    #
-    #     # with open(f'{dataframe_dir_ml_labeled}\outout_noOversampling.txt', 'w') as f:
-    #     print(f'###################  target: {data_path.stem}   #############################')  # , file=f)
-    #
-    #     df_sessions = pd.read_pickle(path_in_str)
-    #     # df_sessions.to_csv(fr'{dataframe_dir_ml_labeled}\test_{data_path.stem}.csv')
-    #     x, y = ML_helpers.prepare_df_undersampling(df_sessions)
-    #
-    #     report_all = decision_tree_classifier(x, y, data_path.stem, report_all)
-    #     # dt_grid_search(x, y)
-    #
-    #     report_all = random_forest_classifier(x, y, data_path.stem, report_all)
-    #
-    #     # report_all = logistic_regression_classifier(x, y, data_path.stem, report_all)
-    #
-    #    #  report_all = kNeighbors_classifier(x, y, data_path.stem, report_all)
-    #
-    #     # report_all = naive_bayes_classifier(x, y, data_path.stem, report_all)
-    #
-    #     # x, y = ML_helpers.prepare_df_no_oversampling(df_sessions)
-    #     # report_all = svm_classifier(x, y, data_path.stem, report_all)
-    #     # h = input()
-    #     # if h == 'x':
-    #     #     break
-    #     # else:
-    #     #     continue
-
-    # path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.pickle'
-    # path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_normal_age_no_esm.pickle'
     path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_normal_age_no_esm_no_personal.pickle'
 
     print(f'###################  target: {path}   #############################')  # , file=f)

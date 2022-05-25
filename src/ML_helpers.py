@@ -17,6 +17,11 @@ df_categories.drop(columns=['Perc_users', 'Training_Coding_1', 'Training_Coding_
 
 
 def get_app_category(app_packagename):
+    """
+    Get tha app category for an application package with the help of a app category dataset
+    :param app_packagename: the package name
+    :return: the app category
+    """
     category = df_categories[(df_categories['App_name'].values == app_packagename)]['Final_Rating']
     if not category.empty:
         return category.values[0]

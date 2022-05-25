@@ -15,21 +15,8 @@ def get_features_for_session(df_logs, df_sessions):
     Extract all features from logs for each user
     :param df_logs: the logs dataframe of one user
     :param df_sessions: the extracted session dataframe of one user
-    :param df_MRH1 the questionnaire df to get the demographics
     :return: the sessions and feature dataframe for one user
     """
-
-    # Loop over session list  ,session_id, session_length, timestamp_1, timestamp_2
-
-    # index description event eventName id timestamp timezoneOffset name packageName studyID correct_timestamp weekday
-    # dataKey infoText interaction priority subText mobile_BYTES_RECEIVED mobile_BYTES_TRANSMITTED wifi_BYTES_RECEIVED wifi_BYTES_TRANSMITTED category
-
-    # old categories
-    # categories = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\categories\app_categories.csv'
-    # df_categories = pd.read_csv(categories)
-    # new categories with
-    # ['App_name' 'Perc_users' 'Training_Coding_1' 'Training_Coding_2' 'Training_Coding_all' 'Rater1' 'Rater2' 'Final_Rating']
-
 
     # Add demographics features
     path_questionnaire_1 = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData'
@@ -48,7 +35,6 @@ def get_features_for_session(df_logs, df_sessions):
         df_sessions['f_demographics_age'] = 0
         df_sessions['f_absentminded_use'] = 0
         df_sessions['f_general_use'] = 0
-        wlan_name = ''
 
     # Prepare feature columns
     pd.to_datetime(df_sessions['timestamp_1'])
@@ -64,7 +50,6 @@ def get_features_for_session(df_logs, df_sessions):
     df_sessions['f_esm_agency'] = ""
 
     df_sessions['f_sequences'] = np.nan
-    # df_sessions['f_sequences'] = df_sessions['f_sequences'].astype(object)
     df_sessions['f_hour_of_day'] = np.nan
     df_sessions['f_weekday'] = np.nan
     df_sessions['f_session_length'] = np.nan
@@ -115,15 +100,6 @@ def get_features_for_session(df_logs, df_sessions):
                                             (df_logs['correct_timestamp'].values > last_session_end) &
                                             (df_logs['correct_timestamp'].values < current_session_start)])
                 df_sessions.loc[index_row, 'f_glances_since_last_session'] = df_sessions.loc[index_row, 'f_glances_since_last_session'] + glances_count
-
-                # ---------------  FEATURE FEATURES LAST SESSION ------------------ #
-                # Get last session row, take every features execpt sessionid, ts1 and ts2
-                # df.loc[index_last_session, ~df.columns.isin(['col1', 'col2'])]
-                # features_last_sessions = df_sessions.loc[
-                #     index_last_session, (df_sessions.columns.values != 'timestamp_1') & (df_sessions.columns.values != 'timestamp_2') & (df_sessions.columns.values != 'session_id')]
-                #
-                # features_last_sessions.add_prefix('last_session_')
-                # df_sessions = df_sessions.join(features_last_sessions)
 
             # ---------------  FEATURE COUNT SESSION IN LAST HOUR ------------------ #
             # Calculate timestamp one hour ago
@@ -188,7 +164,7 @@ def get_features_for_session(df_logs, df_sessions):
                 # ---------------  FEATURE SCROLL AND CLICK COUNT ------------------ #
                 elif (log.eventName == 'ACCESSIBILITY') | (log.event == 'ACCESSIBILITY_KEYBOARD_INPUT'):
 
-                    if log.event == 'TYPE_VIEW_CLICKED':  # TODO also include context clicked, long clicks?
+                    if log.event == 'TYPE_VIEW_CLICKED':
                         df_sessions.loc[index_row, 'f_clicks'] += 1
                         if f'f_clicks_{log.packageName}' not in df_sessions.columns:
                             df_sessions[f'f_clicks_{log.packageName}'] = 0
@@ -238,9 +214,6 @@ def get_features_for_session(df_logs, df_sessions):
 
                 # ---------------  FEATURE NOTIFICATION ------------------ #
                 elif log.eventName == 'NOTIFICATION':
-                    # TODO CLEANUP, meybe use usage stats for that as well
-                    # ONLY Add notification posted not removed?
-
                     #  MetaNotification(
                     #  priority, category, infoText, subText, interaction = action.name)
                     # LogEvent(LogEventName.NOTIFICATION, timestamp, event = title, description = text, packageName = packageName)
@@ -520,13 +493,6 @@ def get_features_for_session(df_logs, df_sessions):
                 df_sessions.loc[index_row, 'f_sequences_apps'] = array
                 current_app_sequence_list = []
 
-    # ------------------- replace esm strings ----------------------- #
-    # Transform esm to binary encoding
-    # f_esm_intention?  map to Search for information, Messaging No concrete intention or else
-    # df_sessions = pd.get_dummies(df_sessions, columns=['f_esm_finished_intention', 'f_esm_more_than_intention', 'f_esm_emotion'])
-    # Dont do it this way as it might gives more importance to higher values
-    # df_sessions = transform_esm_strings(df_sessions)
-
     # df_sessions.to_csv(fr'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\featuretest.csv')
     print("finished extracting features")
     return df_sessions, bag_of_apps_vocab
@@ -542,27 +508,3 @@ def get_domain_from_url(url):
     # ExtractResult(subdomain='forums.news', domain='cnn', suffix='com')
     return f'{ext.subdomain}.{ext.domain}.{ext.suffix}'
 
-
-if __name__ == '__main__':
-    path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions.pickle'
-    path_testfile_logs = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\live\SO23BA.pickle'
-    test_csv = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\SO23BA_sessions_features.csv'
-
-    # Show all colums when printing head()
-    pd.set_option('display.max_columns', None)
-
-    # test_sessions = pd.read_csv(path_testfile_sessions)
-    # logs = pd.read_pickle(path_testfile_logs)
-
-    # get_features(logs, test_sessions)
-    # get_domain_from_url('https://developer.android.com/reference/android/app/usage/UsageEvents.Event')
-
-    df_all_logs = pd.read_pickle(path_testfile_logs)
-    # df_all_logs.to_csv(r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\so23ba_test_logs.csv')
-    # df_sessions = pd.read_csv(path_testfile_sessions)
-    df_all_sessions = pd.read_pickle(path_testfile_sessions)
-    test_csv_df = pd.read_csv(test_csv)
-
-    t = df_all_sessions['SO23BA']
-
-    df_features = get_features_for_session(df_logs=df_all_logs, df_sessions=t)
