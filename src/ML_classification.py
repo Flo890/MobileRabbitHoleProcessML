@@ -130,7 +130,7 @@ def random_forest_classifier(x, y, filename, report_df):
 
     x_train_features, x_test_features, y_train_labels, y_test_labels = train_test_split(x, y, test_size=0.25, random_state=42)
 
-    forest = RandomForestClassifier(criterion='gini', n_estimators=5, random_state=42, n_jobs=2)  # , class_weight='balanced')  # TODO class_weight='balanced_subsample' or balanced
+    forest = RandomForestClassifier(criterion='gini', n_estimators=5, random_state=42, n_jobs=2)
     # BalancedRandomForestClassifier(n_estimators=10)
     forest.fit(x_train_features, y_train_labels)
 

@@ -307,30 +307,6 @@ def get_counts_average(df_rh, column_prefix, time=False):
     df.to_csv(fr'{dataframe_dir_results}\descriptives\norh_descriptives_stats_{column_prefix}.csv')
 
 
-def expand_app_seq(app_seq, row):
-    """
-    Expand the app sequence list of a session with the time spent of each app and the app category
-    :param app_seq:
-    :return: the expanded sequence
-    """
-    # TODO what happens with reduced apps? time is mapped to other? dont list app in seq, create extra other?
-    seq_new = []
-    for app in app_seq:
-        print(app)
-        f_app_time = f'f_app_time_{app}'
-        time = row[f_app_time]
-
-        category = ML_helpers.get_app_category(app)
-        # f_app_category_time = f'f_app_category_time_{category}'
-        # f_app_category_count = f'f_app_category_count_{category}'
-
-        # if not time.empty:
-        tup = (app, category)
-        seq_new.append(tup)
-        # else:
-    return seq_new
-
-
 def analyze_esm_features(df_rh):
     """
     Plot the occurences of the ES features in the dataframe
