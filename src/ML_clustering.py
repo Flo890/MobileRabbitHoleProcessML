@@ -7,9 +7,11 @@ from sklearn.cluster import KMeans
 import ML_helpers
 from sklearn.cluster import DBSCAN
 import matplotlib
+
 matplotlib.rcParams['figure.dpi'] = 200
 
 dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
+
 
 def dcbscan(x):
     x = np.array(x)
@@ -27,17 +29,17 @@ def dcbscan(x):
     # show the plot
     plt.show()
 
+
 def k_means(x):
     print("----k-means----")
     x = np.array(x, dtype=object)
     kmeans = KMeans(n_clusters=4, init='k-means++', max_iter=300, n_init=10, random_state=0)
-    pred_y = kmeans.fit(x) # kmeans.fit_predict(x)
+    pred_y = kmeans.fit(x)  # kmeans.fit_predict(x)
     print(kmeans.labels_[:10])
     print(type(x))
     plt.scatter(x[:, 0], x[:, 1])
     plt.scatter(kmeans.cluster_centers_[:, 0], kmeans.cluster_centers_[:, 1], s=300, c='red')
     plt.show()
-
 
 
 def k_means_determine_cluster(x):
@@ -54,8 +56,10 @@ def k_means_determine_cluster(x):
     plt.show()
     # Optimum at k = 4
 
+
 def prepare_clustering(df):
     return df[['f_session_length', 'f_esm_more_than_intention_Yes']].fillna(0)
+
 
 if __name__ == '__main__':
     pd.set_option('display.max_columns', None)

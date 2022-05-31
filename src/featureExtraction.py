@@ -53,21 +53,21 @@ def get_features_for_session(df_logs, df_sessions):
     df_sessions['f_hour_of_day'] = np.nan
     df_sessions['f_weekday'] = np.nan
     df_sessions['f_session_length'] = np.nan
-    df_sessions['f_time_since_last_session'] = 0 # pd.Timedelta(days=0)
+    df_sessions['f_time_since_last_session'] = 0
     df_sessions['f_glances_since_last_session'] = 0
     df_sessions['f_count_session_1h'] = 0
     df_sessions['f_count_session_2h'] = 0
     df_sessions['f_count_session_3h'] = 0
     df_sessions['f_clicks'] = 0
     df_sessions['f_scrolls'] = 0
-    df_sessions['f_internet_connected_WIFI'] = 0 #pd.Timedelta(days=0)
-    df_sessions['f_internet_connected_mobile'] = 0 # pd.Timedelta(days=0)
-    df_sessions['f_internet_disconnected'] = 0 # pd.Timedelta(days=0)
-    df_sessions['f_internet_else'] = 0 # pd.Timedelta(days=0)
-    df_sessions['f_ringer_mode_silent'] = 0 # pd.Timedelta(days=0)
-    df_sessions['f_ringer_mode_vibrate'] = 0 # pd.Timedelta(days=0)
-    df_sessions['f_ringer_mode_normal'] = 0 # pd.Timedelta(days=0)
-    df_sessions['f_ringer_mode_unknown'] = 0 # pd.Timedelta(days=0)
+    df_sessions['f_internet_connected_WIFI'] = 0
+    df_sessions['f_internet_connected_mobile'] = 0
+    df_sessions['f_internet_disconnected'] = 0
+    df_sessions['f_internet_else'] = 0
+    df_sessions['f_ringer_mode_silent'] = 0
+    df_sessions['f_ringer_mode_vibrate'] = 0
+    df_sessions['f_ringer_mode_normal'] = 0
+    df_sessions['f_ringer_mode_unknown'] = 0
 
     currentInternetState = {'connectionType': 'UNKNOWN_first', 'wifiState': 'UNKNOWN_first', 'wifiName': '', 'timestamp': np.nan}
     currentApp = {"packageName": 'UNKNOWN_first', "timestamp": np.nan}
@@ -243,7 +243,7 @@ def get_features_for_session(df_logs, df_sessions):
                                 #  Also add the tme spent in specific wifi network
                                 wifi = currentInternetState['wifiName']
                                 if f'f_internet_connected_WIFI_{wifi}' not in df_sessions.columns:
-                                    df_sessions[f'f_internet_connected_WIFI_{wifi}'] = 0 # pd.Timedelta(days=0)
+                                    df_sessions[f'f_internet_connected_WIFI_{wifi}'] = 0  # pd.Timedelta(days=0)
 
                                 pre = df_sessions.loc[index_row, f'f_internet_connected_WIFI_{wifi}'] + dif
                                 df_sessions.loc[index_row, f'f_internet_connected_WIFI_{wifi}'] = pre
@@ -314,16 +314,6 @@ def get_features_for_session(df_logs, df_sessions):
                     # description = smsID,
                     current_sequence_list.append((log.eventName, log.event))
 
-                # ---------------  FEATURE PHSIKAL ACTIVITY ------------------ #
-                elif log.eventName == 'ACTIVITY':
-                    print("!!!!!!!!!!!!!!!!!!!!found acitvity!!!!!!!!!!!!!!!!!!!!!!!!")
-                    df_sessions['f_activity'] = 0
-                    # # LogEvent(eventName=LogEventName.ACTIVITY, timestamp=timestamp, event=activity, description=transition, name=elapasedTime.toString())
-                    # # currentActivity = {'activity': 'UNKNOWN_first', 'transition': 'UNKNOWN_first', 'timestamp': np.nan}
-                    # if currentActivity['activity'] == 'UNKNOWN_first':
-                    #         currentActivity = {'activity': log.event, 'transition': log.description, 'timestamp': np.nan}
-                    # #  else:
-
                 # ---------------  FEATURE USED APPS + SEQUENCE ------------------ #
                 elif log.eventName == 'USAGE_EVENTS':
                     # check the package name if different from before
@@ -358,7 +348,7 @@ def get_features_for_session(df_logs, df_sessions):
                             time_spent = round((log.correct_timestamp - currentApp['timestamp']).total_seconds() * 1000)
 
                             if f'f_app_time_{packagename}' not in df_sessions.columns:
-                                df_sessions[f'f_app_time_{packagename}'] = 0 # pd.Timedelta(days=0)
+                                df_sessions[f'f_app_time_{packagename}'] = 0  # pd.Timedelta(days=0)
 
                             pre_time = df_sessions.loc[index_row, f'f_app_time_{packagename}'] + time_spent
                             df_sessions.loc[index_row, f'f_app_time_{packagename}'] = pre_time
@@ -376,7 +366,7 @@ def get_features_for_session(df_logs, df_sessions):
                             # ___________________________________________________________________________________________#
                             # save time spent on category
                             if f'f_app_category_time_{app_category}' not in df_sessions.columns:
-                                df_sessions[f'f_app_category_time_{app_category}'] = 0 # pd.Timedelta(days=0)
+                                df_sessions[f'f_app_category_time_{app_category}'] = 0  # pd.Timedelta(days=0)
 
                             pre_time_cat = df_sessions.loc[
                                                index_row, f'f_app_category_time_{app_category}'] + time_spent
@@ -401,7 +391,7 @@ def get_features_for_session(df_logs, df_sessions):
                     #  Also add the tme spent in specific wifi network
                     wifi = currentInternetState['wifiName']
                     if f'f_internet_connected_WIFI_{wifi}' not in df_sessions.columns:
-                        df_sessions[f'f_internet_connected_WIFI_{wifi}'] = 0 # pd.Timedelta(days=0)
+                        df_sessions[f'f_internet_connected_WIFI_{wifi}'] = 0  # pd.Timedelta(days=0)
 
                     pre = df_sessions.loc[index_row, f'f_internet_connected_WIFI_{wifi}'] + dif
                     df_sessions.loc[index_row, f'f_internet_connected_WIFI_{wifi}'] = pre
@@ -451,7 +441,7 @@ def get_features_for_session(df_logs, df_sessions):
                 time_spent = round((last_log_time - currentApp['timestamp']).total_seconds() * 1000)
 
                 if f'f_app_time_{packagename}' not in df_sessions.columns:
-                    df_sessions[f'f_app_time_{packagename}'] = 0 # pd.Timedelta(days=0)
+                    df_sessions[f'f_app_time_{packagename}'] = 0  # pd.Timedelta(days=0)
 
                 pre_time = df_sessions.loc[index_row, f'f_app_time_{packagename}'] + time_spent
                 df_sessions.loc[index_row, f'f_app_time_{packagename}'] = pre_time
@@ -469,7 +459,7 @@ def get_features_for_session(df_logs, df_sessions):
                 # ___________________________________________________________________________________________#
                 # save time spent on category
                 if f'f_app_category_time_{app_category}' not in df_sessions.columns:
-                    df_sessions[f'f_app_category_time_{app_category}'] = 0 # pd.Timedelta(days=0)
+                    df_sessions[f'f_app_category_time_{app_category}'] = 0  # pd.Timedelta(days=0)
 
                 pre_time_cat = df_sessions.loc[
                                    index_row, f'f_app_category_time_{app_category}'] + time_spent
@@ -493,7 +483,6 @@ def get_features_for_session(df_logs, df_sessions):
                 df_sessions.loc[index_row, 'f_sequences_apps'] = array
                 current_app_sequence_list = []
 
-    # df_sessions.to_csv(fr'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\featuretest.csv')
     print("finished extracting features")
     return df_sessions, bag_of_apps_vocab
 
@@ -507,4 +496,3 @@ def get_domain_from_url(url):
     ext = tldextract.extract(url)
     # ExtractResult(subdomain='forums.news', domain='cnn', suffix='com')
     return f'{ext.subdomain}.{ext.domain}.{ext.suffix}'
-

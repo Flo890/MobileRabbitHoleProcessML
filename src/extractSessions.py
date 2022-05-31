@@ -1,9 +1,4 @@
 import pandas as pd
-import math
-import json
-import pathlib
-import pickle
-import numpy as np
 
 
 def extract_sessions(df_logs):
@@ -30,11 +25,8 @@ def extract_sessions(df_logs):
     # get all timestamps 1: User ON_USERPRESENT  (SCREEN_ON_UNLOCKED?)
     timestamps_1 = screen_logs[screen_logs['event'].values == 'ON_USERPRESENT']['correct_timestamp']
 
-    print(len(timestamps_1))
     while not timestamps_1.empty:
-        # print(len(timestamps_1))
         timestamp_1 = timestamps_1.values[0]
-
 
         # find ts2: OFF_LOCKED, OFF_UNLOCKED,
         timestamps_2 = screen_logs[((screen_logs['event'].values == 'OFF_LOCKED') |

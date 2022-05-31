@@ -30,12 +30,15 @@ def get_app_category(app_packagename):
 
 
 def check_labels():
+    """
+    Get the size of the two classification classes
+    """
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_labeled.pickle')
     df_sessions = clean_df(df_sessions)
     # df_sessions.to_csv(fr'{dataframe_dir_users}\user-sessions_features_labeled_cleand.csv')
     sns.countplot(df_sessions['target_label'], color=milkGreen)
-    print(len(df_sessions[df_sessions['target_label'] == 'rabbit_hole']))  # 456
-    print(len(df_sessions[df_sessions['target_label'] == 'no_rabbithole']))  # 16305
+    print(len(df_sessions[df_sessions['target_label'] == 'rabbit_hole']))
+    print(len(df_sessions[df_sessions['target_label'] == 'no_rabbithole']))
     plt.show()
 
 
@@ -74,13 +77,14 @@ def oversampling_smote(df_x_features, df_y_labels):
 
 
 def clean_df(df):
+    """
+    Prepare the df for machine learning and drop all unnecessary columns
+    :param df: the dataframe to clean
+    :return: the cleand df
+    """
     # return df.drop(columns=['session_id', 'studyID', 'session_length', 'timestamp_1', 'timestamp_2', 'count', 'f_sequences_apps', 'f_esm_intention', 'f_bag_of_apps']).fillna(0)
     df.drop(df.index[df['f_session_length'].isnull()], inplace=True)
     return df.drop(columns=['session_id', 'studyID', 'session_length', 'timestamp_1', 'timestamp_2', 'count', 'f_sequences_apps', 'f_bag_of_apps']).fillna(0)
-
-
-def prepare_clustering(df):
-    return df[['f_session_length', 'f_bag_of_apps']].fillna(0)
 
 
 def prepare_df_oversampling(df):
@@ -110,8 +114,3 @@ def prepare_df_no_oversampling(df):
     y = df['target_label']
 
     return x, y
-
-
-if __name__ == '__main__':
-    pd.set_option('display.max_columns', None)
-    check_labels()

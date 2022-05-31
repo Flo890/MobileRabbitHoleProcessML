@@ -10,24 +10,30 @@ path_raw = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData'
 
 que_MRH1 = ['SD01', 'SD02_01', 'SD10', 'SD10_09', 'SD14']
 
-milkGreen= '#0BCB85'
-milkGreenDark= '#267355'
-blueish= '#0378C5'
-LightBlackishGray= '#6E707C'
-DarkBlackishGray= '#6E707C'
+milkGreen = '#0BCB85'
+milkGreenDark = '#267355'
+blueish = '#0378C5'
+LightBlackishGray = '#6E707C'
+DarkBlackishGray = '#6E707C'
 
 matplotlib.rcParams["figure.dpi"] = 250
-size=11
+size = 11
 ticksize = 11
-legendsize=11
-plt.rc('font', size=size) #controls default text size
-plt.rc('axes', titlesize=size) #fontsize of the title
-plt.rc('axes', labelsize=size) #fontsize of the x and y labels
-plt.rc('xtick', labelsize=ticksize) #fontsize of the x tick labels
-plt.rc('ytick', labelsize=ticksize) #fontsize of the y tick labels
-plt.rc('legend', fontsize=legendsize) #fontsize of the legend
+legendsize = 11
+plt.rc('font', size=size)  # controls default text size
+plt.rc('axes', titlesize=size)  # fontsize of the title
+plt.rc('axes', labelsize=size)  # fontsize of the x and y labels
+plt.rc('xtick', labelsize=ticksize)  # fontsize of the x tick labels
+plt.rc('ytick', labelsize=ticksize)  # fontsize of the y tick labels
+plt.rc('legend', fontsize=legendsize)  # fontsize of the legend
+
 
 def MRH_questionnaire_1():
+    """
+    Get statistics about demographics from questionnaires, calculate means
+    Look at absentmined and general use score, check for normal distribution, make a paired ttest
+    :return:
+    """
     df_MRH1_raw = pd.read_csv(f'{path_raw}\MRH1.csv', sep=',')
     df_MRH2 = pd.read_csv(f'{path_raw}\MRH2.csv', sep=',')
 
@@ -37,7 +43,7 @@ def MRH_questionnaire_1():
     mean_age = df_MRH1['SD02_01'].mean()
     mean_gender = df_MRH1['SD01'].mean()
     val_count_age = df_MRH1['SD02_01'].value_counts()
-    val_count_gender = df_MRH1['SD01'].value_counts()#.sort_values(by=['correct_timestamp'], ascending=True, inplace=True)
+    val_count_gender = df_MRH1['SD01'].value_counts()  # .sort_values(by=['correct_timestamp'], ascending=True, inplace=True)
     val_education = df_MRH1['SD10'].value_counts()
 
     print(mean_age)
@@ -57,7 +63,6 @@ def MRH_questionnaire_1():
     print(val_education)
 
     # df_demograhpics = df_MRH1[:, ['SD02_01', 'SD01', 'SD10']]
-    # plot = df_MRH1['SD02_01'].plot.bar()
     df_MRH1.describe().to_csv(fr'{path_raw}\MRH1_stats.csv')
 
     df_MRH1.SD02_01.dropna().astype('int64')
@@ -66,16 +71,11 @@ def MRH_questionnaire_1():
     # p = df_MRH1.SD02_01.value_counts(ascending=True).plot(kind = 'barh')
     # p = df_MRH1.SD01.value_counts().sort_index(axis=0).plot(kind = 'bar')
 
-    #
-    # selct colums that strat with str
-    # df_qu_user = df_MRH1[df_MRH1['IM01_01'].values == 'SO23BA'].index.item()
     absentminded = df_MRH1.loc[:, df_MRH1.columns.str.startswith('AB01')]
     general = df_MRH1.loc[:, df_MRH1.columns.str.startswith('AB02')]
 
     age = df_MRH1.loc[:, df_MRH1.columns.str.startswith('SD02_01')]
     gender = df_MRH1.loc[:, df_MRH1.columns.str.startswith('SD01')]
-
-    # print(absentminded.mean())
 
     print(absentminded.mean(axis=1))
     print(general.mean(axis=1))
@@ -95,14 +95,14 @@ def MRH_questionnaire_1():
     #    [0.67839887 0.47155547 0.90070218 0.73904268 0.39381979 0.22951735
     # 0.1396033  0.10960204 0.55445724 0.25119982 0.40092371 0.15104378
     # 0.75717849]
-     #newer
-     # [0.38109716 0.67456587 0.39003318 0.91103961 0.45712203 0.38518097
-     # 0.57706751 0.32467301 0.71280548 0.2069535  0.65445096 0.11530959
-     # 0.44832527]
+    # newer
+    # [0.38109716 0.67456587 0.39003318 0.91103961 0.45712203 0.38518097
+    # 0.57706751 0.32467301 0.71280548 0.2069535  0.65445096 0.11530959
+    # 0.44832527]
     print("general", p1)
     #  [0.04559977 0.77212013 0.40138207 0.10396851 0.50288916 0.33793807
-#     # 0.1247074  0.37327643 0.01125694 0.43596354]
-#     newer
+    #     # 0.1247074  0.37327643 0.01125694 0.43596354]
+    #     newer
     # [0.01189665 0.91573161 0.34772621 0.22316487 0.12998592 0.35738561
     #  0.19171388 0.15131763 0.08837857 0.45434457]
     print("age", p2)
@@ -116,6 +116,9 @@ def MRH_questionnaire_1():
 
 
 def general_absentminded_use():
+    """
+    Calculate the general and absentminded use score form questions
+    """
     df_MRH1_raw = pd.read_csv(f'{path_raw}\MRH1.csv', sep=',')
     df_MRH2 = pd.read_csv(f'{path_raw}\MRH2.csv', sep=',')
     #  FOR ju05 not mu but ab, ha07fl uppercase, br220 no in mrh1
@@ -132,28 +135,10 @@ def general_absentminded_use():
     df_MRH1.reset_index(drop=True, inplace=True)
     df_MRH2.reset_index(drop=True, inplace=True)
 
-    # print(len(df_MRH1))
-    # print(df_MRH1['IM01_01'])
-    #
-    # print(len(df_MRH2))
-    # print(df_MRH2['IM01_01'])
-
     mrh1_absentminded = df_MRH1.loc[:, df_MRH1.columns.str.startswith('AB01')]
     mrh1_general = df_MRH1.loc[:, df_MRH1.columns.str.startswith('AB02')]
     mean_mrh1_absentmineded = mrh1_absentminded.mean(axis=1)
     mean_mrh1_general = mrh1_general.mean(axis=1)
-
-
-
-    # mean_mrh1_absentmineded.hist()
-    # plt.show()
-    # mean_mrh1_general.hist()
-    # plt.show()
-    #
-    # k2, p = stats.normaltest(mean_mrh1_absentmineded)
-    # k1, p1 = stats.normaltest(mean_mrh1_general)
-    # print(p)
-    # print(p1)
 
     mrh2_absentminded = df_MRH2.loc[:, df_MRH2.columns.str.startswith('AB01')]
     mrh2_general = df_MRH2.loc[:, df_MRH2.columns.str.startswith('AB02')]
@@ -173,7 +158,6 @@ def general_absentminded_use():
     print(stat_absentminded, p_absentminded)  # 2.2244055078094105 0.04308068974121597  newer  3.3727893009427348 0.00262594927608339
     print(stat_general, p_general)  # 0.759395726885135 0.4602122087200744  newer 1.0283034705551917 0.31450055033018165
 
-
     # df2_cols = df2.columns.drop('stdev')
     # out = [stats.ttest_ind(df2.loc[i, df2_cols], row, equal_var=True, nan_policy='omit')
     #    for i, row in df1.drop(columns=['stdev','Ctrl average']).iterrows()]
@@ -189,7 +173,6 @@ def general_absentminded_use():
         df_MRH2.loc[i, 'general_use_ttest_stat'] = result_general[0]
         df_MRH2.loc[i, 'general_use_ttest_p-value'] = result_general[1]
 
-
     for i, row in mrh1_absentminded.iterrows():
         col = mrh2_absentminded.columns
         result_absentminded = stats.ttest_rel(mrh2_absentminded.loc[i, col], row, nan_policy='omit')
@@ -204,9 +187,11 @@ def general_absentminded_use():
     # So, we have enough proof to claim that the true mean test score is different for cars before and after applying the different engine oil.
 
 
-
-
 def influence():
+    """
+    Plot the results form the influence questions
+    :return:
+    """
     df_MRH2 = pd.read_csv(f'{path_raw}\MRH2.csv', sep=',')
     # TI01_01  influence: The Rabbit hole tracker application influenced my usual mobile phone interactions.
     # TI01_02 influence: Because of the rabbit hole tracker, I used my phone more than I usually do.
@@ -264,22 +249,14 @@ def influence():
                         hspace=0.6)
     plt.show()
 
-    # # plt.figure()
-    # p = df_MRH2.TI04_01.value_counts(ascending=True).sort_index(axis=0).plot(kind="bar")
-    # # plt.gca().set_xbound(-1, 7)
-    # plt.title('I answered the experience samplings correctly.')
-    # plt.xlabel('Likert Scale')
-    # plt.ylabel('Counts')
-    # plt.show()
-
     nrow = 2
     bars3 = (1, 2, 3)
-    bars_labels3 = ('At home', 'At work/ school/ university', 'Other places' )
+    bars_labels3 = ('At home', 'At work/ school/ university', 'Other places')
     bars5 = (1, 2, 3, 4, 5)
     bars_labels5 = ('At home', 'At work/ school/ \nuniversity', 'Other places', ' While travelling', 'On the way to work/ \n school/ university')
     fig, axes = plt.subplots(nrow)
     plot_bar(df_MRH2.TI02, bars=bars3, labels=bars_labels3, axes=axes[0], title='a) Where do you mainly use a WLAN network as an Internet connection?', xlabelcustom="")
-    plot_bar(df_MRH2.TI03, bars=bars5, labels=bars_labels5, axes=axes[1], title='b) Where do you mainly use a mobile internet connection?',  xlabelcustom="")
+    plot_bar(df_MRH2.TI03, bars=bars5, labels=bars_labels5, axes=axes[1], title='b) Where do you mainly use a mobile internet connection?', xlabelcustom="")
     plt.subplots_adjust(left=0.1,
                         bottom=0.1,
                         right=0.9,
@@ -289,10 +266,10 @@ def influence():
     plt.show()
 
 
-def plot_bar(df, bars, labels, title, axes, lable_rotation = 0, xlabelcustom='Likert Scale (1=Strongly Disagree, 7=Strongly Agree)'):
+def plot_bar(df, bars, labels, title, axes, lable_rotation=0, xlabelcustom='Likert Scale (1=Strongly Disagree, 7=Strongly Agree)'):
     p = df.value_counts().reindex(bars, fill_value=0).sort_index(axis=0).plot(kind="bar", ax=axes, ylabel='Counts', xlabel=xlabelcustom, color=milkGreen, title=title)
     p.set_xticklabels(labels, rotation=lable_rotation)
-    p.grid(axis = 'y', linestyle = '--', linewidth = 0.3)
+    p.grid(axis='y', linestyle='--', linewidth=0.3)
     return p
 
 
@@ -303,15 +280,19 @@ def plot_subplots_bar(df_list, ncol, nrow):
     for r in range(nrow):
         for c in range(ncol):
             print(df_list[count][1])
-            df_list[count][0].value_counts().reindex(bars, fill_value=0).sort_index(axis=0).plot(kind="bar", ylabel='Counts', xlabel='Likert Scale (1=Strongly Disagree, 7=Strongly Agree)', color=milkGreen, title=df_list[count][1])
-            plt.grid(axis = 'y', linestyle = '--', linewidth = 0.3)
+            df_list[count][0].value_counts().reindex(bars, fill_value=0).sort_index(axis=0).plot(kind="bar", ylabel='Counts', xlabel='Likert Scale (1=Strongly Disagree, 7=Strongly Agree)',
+                                                                                                 color=milkGreen, title=df_list[count][1])
+            plt.grid(axis='y', linestyle='--', linewidth=0.3)
             count += 1
 
     plt.show()
 
 
-
 def seperate():
+    """
+    Seperate the resutls into results from questionnaire MRH1 and questionnaire MRH2
+    :return:
+    """
     df_qu = pd.read_csv(path_questionnaire, sep=',')
     df_MRH1 = df_qu[df_qu['QUESTNNR'] == 'MRH1']
     df_MRH2 = df_qu[df_qu['QUESTNNR'] == 'MRH2']
@@ -319,7 +300,12 @@ def seperate():
     df_MRH1.dropna(axis=1, how='all').to_csv(fr'{path_raw}\MRH1.csv')
     df_MRH2.dropna(axis=1, how='all').to_csv(fr'{path_raw}\MRH2.csv')
 
+
 def reindex():
+    """
+    Reset the index for the seperated Questionnaire results
+    :return:
+    """
     df_MRH1 = pd.read_csv(f'{path_raw}\MRH1.csv', sep=',')
     df_MRH2 = pd.read_csv(f'{path_raw}\MRH2.csv', sep=',')
 
@@ -331,10 +317,15 @@ def reindex():
 
 
 if __name__ == '__main__':
-    # seperate()
-    # reindex()
-    # MRH_questionnaire_1()
+    # 1. Seperate and reindex the results for a better overview
+    seperate()
+    reindex()
 
-    # general_absentminded_use()
+    # Get statistics and plots
+    MRH_questionnaire_1()
 
+    # Check and TTest the use scores
+    general_absentminded_use()
+
+    # Get the plots for the influnce questions
     influence()

@@ -10,24 +10,15 @@ import extractSessions
 import featureExtraction
 import matplotlib.pyplot as plt
 import seaborn as sns
-from scipy import stats
+
 from sklearn.preprocessing import OneHotEncoder
 
-# Get rid of duplicated
-# Remove overhead logs aka TYPE_WINDOW_CONTENT_CHANGED
-# extract installed apps and dive info -> might add to user df
-# get rid of RabbitHole events aka admin and packagename com.lmu.rabbitholetracker
-# Clean Timestamps
-# Get sessions
-# add events that were not in sessions? like sms, calls or notifications?
-
-raw_data_dir_test = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\t'
 raw_data_user = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live\2022-04-27T20 20 31Z_absentmindedtrack-default-rtdb_data.json.gz'
 raw_data_live = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live'
 logs_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\logFiles'
 user_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\cleanedUsers'
 dataframe_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes'
-dataframe_dir_test = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\testing'
+
 dataframe_dir_live = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\live'
 
 dataframe_dir_users = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users'
@@ -37,20 +28,16 @@ dataframe_dir_sessions_features = r'M:\+Dokumente\PycharmProjects\RabbitHoleProc
 dataframe_dir_bagofapps_vocab = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\bag_of_apps_vocabs'
 
 dataframe_dir_live_logs_sorted = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs'
-dataframe_dir_live_logs_sorted2 = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs_old'
-dataframe_dir_live_logs_sorted_preprocessed = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs_preprocessed'
-
 questionnaires_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData'
 
 dataframe_dir_ml_labeled = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data'
-
-path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user-sessions.pickle'
-path_testfile_sessions_all = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\user_sessions_all.pickle'
 clean_users_dir_path = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users'
-clean_users_path = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users\cleaned_users.pickle'
 
 
 def extractData():
+    """
+    Extract the logs for each user from the raw data files
+    """
     # only run once
     # getFromJson.extractUsers(file_path=raw_data_live, end_directory=dataframe_dir_users, is_gzip=True)
 
@@ -59,35 +46,21 @@ def extractData():
 
     # concat all extracted logs
     # getFromJson.concat_user_logs(logs_dic_directory=dataframe_dir_live, end_directory=dataframe_dir_live_logs_sorted)
-    # user_list = getFromJson.getStudIDlist(clean_users_path)
-    user_list = [('BR22NO', 'fr29ka', 'BI21FR'), ('RE28RU', 'IN24RA', 'so30vo'), ('NI23HE', 'vi03th', 'AN23GE', 'BI21FR'), ('ju05ab', 'EW11FR', 'KE18ZA', 'ZA23PA'),
-                 ('TH28RU', 'ha07fl', 'MO22GO', 'NA07WE'), ('AN09BI', 'NI23HE', 'PI02MA', 'EL28LO'), ('BR04WO', 'IR03JO', 'PA29BU', 'SHTUSI'), ('IM12WE', 'AY1221', 'ta22ar', 'CR11AI'),
-                 ('MA06DR', 'AN06PE', 'SA23BR', 'CO07FA'), ('IR18RA', 'BA10SC', 'SO23BA', 'LE13FO')]
-    # user_list = ['IN24RA', 'so30vo', 'NI23HE', 'vi03th', 'AN23GE', 'BI21FR', 'ju05ab', 'EW11FR', 'KE18ZA', 'ZA23PA', 'TH28RU', 'ha07fl', 'MO22GO', 'NA07WE', 'AN09BI', 'PI02MA', 'EL28LO', 'BR04WO', 'IR03JO', 'PA29BU', 'SHTUSI', 'IM12WE', 'AY1221', 'ta22ar', 'CR11AI', 'MA06DR', 'AN06PE', 'SA23BR', 'CO07FA', 'IR18RA', 'BA10SC', 'SO23BA', 'LE13FO']
-    # user_list = [('LE13FO', 'vi03th'), ('AN23GE', 'BI21FR'), ('ju05ab', 'EW11FR'), ('KE18ZA', 'ZA23PA'), ('TH28RU', 'ha07fl'), ('MO22GO', 'NA07WE'), ('AN09BI', 'PI02MA'), ('EL28LO', 'BR04WO'),
-    #              ('IR03JO', 'PA29BU'), ('SHTUSI', 'IM12WE'), ('AY1221', 'ta22ar'), ('CR11AI', 'MA06DR'), ('AN06PE', 'SA23BR'), ('CO07FA', 'IR18RA'), ('BA10SC', 'SO23BA')]
-    # user_list = [('LE13FO', 'vi03th', 'AN23GE', 'BI21FR'), ('ju05ab', 'EW11FR', 'KE18ZA', 'ZA23PA'), ('TH28RU', 'ha07fl', 'MO22GO', 'NA07WE'), ('AN09BI', 'PI02MA', 'EL28LO', 'BR04WO'),
-    #              ('IR03JO', 'PA29BU', 'SHTUSI', 'IM12WE'), ('AY1221', 'ta22ar', 'CR11AI', 'MA06DR'), ('AN06PE', 'SA23BR', 'CO07FA', 'IR18RA'), ('BA10SC', 'SO23BA', 'tt', 'zz')]
-    #
+
+    user_list = getFromJson.getStudIDlist(clean_users_dir_path)
+
     for item in user_list:
         print(item)
         getFromJson.concat_logs_one_user(logs_dic_directory=dataframe_dir_live, end_directory=dataframe_dir_live_logs_sorted, studyID=item)
 
 
-# concat additional user logs
 def concat_additional_logs():
+    """
+    Add extracted log files later participants form database files
+    :return:
+    """
     print("çoncat logs")
     pathlist = pathlib.Path(dataframe_dir_live_logs_sorted).glob('**/*.pickle')
-    pathlist_old = pathlib.Path(dataframe_dir_live_logs_sorted2).glob('**/*.pickle')
-
-    # path = fr'{dataframe_dir_live_logs_sorted}\MA06DR.pickle'
-    # pathold = fr'{dataframe_dir_live_logs_sorted2}\MA06DR.pickle'
-    #
-    # df_logs = pd.read_pickle(path)
-    # df_logs_old = pd.read_pickle(pathold)
-    # df_concat = pd.concat([df_logs_old, df_logs], ignore_index=False)
-    # with open(fr'{dataframe_dir_live_logs_sorted}\MA06DR.pickle', 'wb') as f:
-    #     pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
 
     for data_path in pathlist:
         path_in_str = str(data_path)
@@ -135,11 +108,6 @@ def cleanup(df_logs):
 
     # Remove overhead logs aka TYPE_WINDOW_CONTENT_CHANGED
     df_logs.drop(df_logs.index[df_logs['event'] == 'TYPE_WINDOW_CONTENT_CHANGED'], inplace=True)
-
-    # Get rid of duplicated   unhashable type: 'dict'
-    # df_logs.drop_duplicates(inplace=True) # (subset=['brand', 'style'], keep='last')
-
-    # TODO clean notifications
 
     return df_logs
 
@@ -273,27 +241,12 @@ def filter_sessions_esm_user_based():
             print(len(df_session_features['f_session_length']))
             print('typeeee', type(df_session_features['f_session_length'].values[0]))
             print(df_session_features['f_session_length'].head())
-            # plt.show()
-            # (df_session_features['f_session_length'] / pd.Timedelta(seconds=1)).hist()
-            # plt.show()
-
-            # sns.distplot(df_session_features['f_session_length'] / pd.Timedelta(milliseconds=1))
-            # plt.show()
-            # sns.boxplot(df_session_features['f_session_length'] / pd.Timedelta(milliseconds=1))
-            # plt.show()
 
             upper_limit = df_session_features['f_session_length'].quantile(0.99)
             lower_limit = df_session_features['f_session_length'].quantile(0.01)
 
-            # new_df = df_session_features[(df_session_features['f_session_length'] <= upper_limit) & (df_session_features['f_session_length'] >= lower_limit)]
-            # print(type(new_df))
-            # sns.boxplot( new_df['f_session_length'] / pd.Timedelta(milliseconds=1))
-            # plt.show()
-
             print(upper_limit)
             print(lower_limit)
-
-            # new_df = df[(df['Height'] <= 74.78) & (df['Height'] >= 58.13)]
 
             # drop sessions
             # df_session_features = df_session_features.drop(df_session_features['f_session_length'] > threshold_max_cap)
@@ -302,35 +255,25 @@ def filter_sessions_esm_user_based():
             with open(fr'{dataframe_dir_sessions}\{data_path.stem}-sessions_filtered.pickle', 'wb') as f:
                 pickle.dump(df_filtered_esm, f, pickle.HIGHEST_PROTOCOL)
 
-            # TODO Change yes to and colums?
             df_esm_rabbithole_finished = df_filtered_esm[(df_filtered_esm['f_esm_finished_intention'] == 'No')]
             df_esm_rabbithole_more = df_filtered_esm[(df_filtered_esm['f_esm_more_than_intention'] == 'Yes')]
             df_esm_rabbithole_finished_more = df_filtered_esm[(df_filtered_esm['f_esm_finished_intention'] == 'No') & (df_filtered_esm['f_esm_more_than_intention'] != 'Yes')]
-            # print('not_finsihed', len(df_esm_rabbithole_finished))
-            # print("more", len(df_esm_rabbithole_more))
-            # print('finished more', len(df_esm_rabbithole_finished_more))
-
-            # TODO save counts and % ?
-            # print('sessioncount', len(df_session_features))
-            # print('esm sessioncounts', len(df_filtered_esm))
 
             session_length_mean = pd.to_timedelta(df_session_features['f_session_length']).mean()
-            # print('sessionlength mean', session_length_mean)
 
             session_stats.append({'studyID': data_path.stem, 'session_count': len(df_session_features), 'esm_over45s_count': len(df_filtered_esm), 'session_length_mean': session_length_mean,
                                   'sessions_not_finished': len(df_esm_rabbithole_finished),
                                   'session_more_than_intention': len(df_esm_rabbithole_more), 'sessions_not_finished_and_more': len(df_esm_rabbithole_finished_more)})
 
-    # Calculate mean session count
-    # Calculate mean session lenght (for each user?, all)
-    # Calculate mean rabbit hole sessions
     sessions_list = pd.DataFrame(session_stats)
     sessions_list.to_csv(fr'{user_dir}\sessions_stats.csv')
 
 
 def filter_sessions_outliners_all():
-    # Filter the relevant sessions
-    # Get all sessions that are over 45s and have a esm answers (f_esm_finished_intention not empty)
+    """
+    Filter and remove the outliner sessions
+    :return:
+    """
 
     feature_path = fr'{dataframe_dir_ml}\user-sessions_features_all.pickle'
     df_all_sessions = pd.read_pickle(feature_path)
@@ -355,74 +298,21 @@ def filter_sessions_outliners_all():
     with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
         pickle.dump(df_sessions_filtered, f, pickle.HIGHEST_PROTOCOL)
 
-    # Z Score -------------------------------
-    # sns.boxplot(df_all_sessions['f_session_length'])
-    # plt.show()
-    #
-    # z = np.abs(stats.zscore(df_all_sessions['f_session_length']))
-    # print(z, type(z))
-    # threshold = 3
-    #
-    # # Position of the outlier
-    # print(np.where(z > threshold))
-    # # filtered_entries = (z < threshold).all()
-    #
-    # # new = df_all_sessions[filtered_entries]
-    # new = df_all_sessions[(np.abs(stats.zscore(df_all_sessions['f_session_length'])) < 3).all()]
-    # df_new = df[(df.zscore>-3) & (df.zscore<3)]
-    #
-    # sns.boxplot(new['f_session_length'])
-    # plt.show()
-
-    # # IQR ----------------------------
-    # Q1 = np.percentile(df_all_sessions['f_session_length'], 25,
-    #                interpolation = 'midpoint')
-    #
-    # Q3 = np.percentile(df_all_sessions['f_session_length'], 75,
-    #                    interpolation = 'midpoint')
-    # IQR = Q3 - Q1
-    # print(IQR)
-    #
-    # # Above Upper bound
-    # upper = df_all_sessions['f_session_length'] >= (Q3+1.5*IQR)
-    #
-    # print("Upper bound:",upper)
-    # print(np.where(upper))
-    #
-    # # Below Lower bound
-    # lower = df_all_sessions['f_session_length'] <= (Q1-1.5*IQR)
-    # print("Lower bound:", lower)
-    # print(np.where(lower))
-    #
-    # df_new = df_all_sessions.drop(upper[0]).drop(lower[0])
-    # # df_new = df_all_sessions.drop(lower[0])
-    #
-    # sns.boxplot(df_all_sessions['f_session_length'])
-    # plt.show()
-    #
-    # sns.boxplot(df_new['f_session_length'])
-    # plt.show()
-
 
 def create_labels_single():
+    """
+    Label the session with the target class, using a single ES features as target
+    """
     print('create label')
-    #  finished yes more no is not a rabbit hole (an averything without ems?)
-    # alles andere is unintentional use or rabbit hole (boredom vs rabbit hole?)
-    # zeit mir aufnehmen?? Alles länger als und label is rabbit hole?
+
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
     df_sessions.reset_index(drop=True, inplace=True)
-    # df_sessions.to_csv(fr'{dataframe_dir_ml}\user-sessions_features_all.csv')
     rh = 'rabbit_hole'
     no_rh = 'no_rabbithole'
 
-    # df_sessions['f_bag_of_apps'] = pd.Series(dtype='string')
     df_sessions.insert(6, 'target_label', '')
 
     for index, session in enumerate(df_sessions.itertuples(index=False)):
-        # if df_sessions.f_esm_finished_intention f_esm_more_than_intention f_session_length 45,000
-        # f_esm_finished_intention_Yes 1  f_esm_more_than_intention_No 0
-        # what when not finished intention and did not more than intention?
-        # rabbit hole finished intetion but did more, or not finished intention and did more?
 
         # ['f_esm_intention', 'f_esm_finished_intention', 'f_esm_more_than_intention', 'f_esm_track_of_time', 'f_esm_track_of_space', 'f_esm_emotion', 'f_esm_regret', 'f_esm_agency']
         if df_sessions.loc[index, 'f_esm_more_than_intention_Yes'] == 1:
@@ -437,6 +327,10 @@ def create_labels_single():
 
 
 def labeling_combined():
+    """
+    Label the session with a target class, using a combination of features as target
+    :return:
+    """
     labelist = [('f_esm_more_than_intention_Yes', 'f_esm_emotion_interest-expectancy'), ('f_esm_more_than_intention_Yes', 'f_esm_emotion_happiness-elation'),
                 ('f_esm_more_than_intention_Yes', 'f_esm_emotion_calm-contentment')] \
         # ('f_esm_more_than_intention_Yes', 'f_esm_emotion_boredom-indifference'), ('f_esm_more_than_intention_Yes', 'f_esm_emotion_anxiety-fear')]
@@ -453,6 +347,9 @@ def labeling_combined():
 
 
 def create_labels_combines(label1, label2):
+    """
+    Helper function for combined target labels
+    """
     print('create label')
 
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
@@ -477,6 +374,9 @@ def create_labels_combines(label1, label2):
 
 
 def create_labels_combines_scale(label1, label2_1, label2_2, label2_3):
+    """
+    Helper function for combined target labels
+    """
     print('create label')
 
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
@@ -492,19 +392,28 @@ def create_labels_combines_scale(label1, label2_1, label2_2, label2_3):
         else:
             df_sessions.at[index, 'target_label'] = no_rh
 
-    df_sessions = drop_esm_features(df_sessions)
+    # df_sessions = drop_esm_features(df_sessions)
 
     with open(fr'{dataframe_dir_ml}\labled\user-sessions_features_labeled_{label1}_{label2_1}.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
 def drop_esm_features(df_sessions):
+    """
+    Drop all ESM feature colums form the dataframe
+    :param df_sessions: the dataframe to drop
+    :return:
+    """
     colums_esm = [x for x in df_sessions.columns.values if x.startswith('f_esm')]
     df_sessions.drop(columns=colums_esm, inplace=True)
     return df_sessions
 
 
 def one_hot_encoding_dummies():
+    """
+    One-hot-encode features using pandas.dummies
+    :return:
+    """
     print('on hot encoding dummies')
     df_sessions = pd.read_pickle(fr'{dataframe_dir_users}\user-sessions_features_all.pickle')
     # df_sessions.to_csv(fr'{dataframe_dir_users}\user-sessions_features_all.csv')
@@ -522,7 +431,11 @@ def one_hot_encoding_dummies():
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
-def on_hot_encoding_scilearn():
+def one_hot_encoding_scilearn():
+    """
+    One-hot-encode features using scilearn OneHotEncoder
+    :return:
+    """
     print('on hot encoding scilearn')
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
     df_sessions = df_sessions.replace(r'^\s*$', np.nan, regex=True)
@@ -548,6 +461,10 @@ def on_hot_encoding_scilearn():
 
 
 def demographics_encode_age():
+    """
+    Encode the age features into bag of ages
+    :return:
+    """
     print("Encode age")
     # df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\labled_data\user-sessions_features_labeled_more_than_intention.pickle')
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
@@ -585,6 +502,10 @@ def demographics_encode_age():
 
 
 def bag_of_apps_create_vocab():
+    """
+    Create the vocabulary for the bag of apps method
+    :return:
+    """
     print('create bag of apps vocabulary')
     # get the vocabulary, which is every application package used by every user?
     # create vocab from every users app list
@@ -633,6 +554,10 @@ def bag_of_apps_create_bags():
 
 
 def convert_timedeletas():
+    """
+    Convert time deltas to seconds
+    :return:
+    """
     print('convert timedeltas')
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
 
@@ -645,7 +570,11 @@ def convert_timedeletas():
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
-def convert_timedeletass(value):
+def convert_timedeleta(value):
+    """
+    Convert a time delta value to seconds
+    :return:
+    """
     print('convert timedeltas')
     # Round of the Milliseconds value
     return round(value.total_seconds() * 1000)
@@ -653,6 +582,10 @@ def convert_timedeletass(value):
 
 
 def filter_users():
+    """
+    Filter the sessions of user to only include participants that completed both questionnaires
+    :return:
+    """
     print('filter users')
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
     df_MRH1_raw = pd.read_csv(f'{questionnaires_dir}\MRH1.csv', sep=',')
@@ -681,6 +614,10 @@ def filter_users():
 
 
 def drop_sequences():
+    """
+    Drop the sequences features
+    :return:
+    """
     print('drop sequences')
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
     df_sessions.drop(columns=['f_sequences'], inplace=True)
@@ -690,6 +627,10 @@ def drop_sequences():
 
 
 def reduce_feature_dimension():
+    """
+    Reduce the feature dimension by summarizing app features that only occurred under a threshold value in a feature_other
+    :return:
+    """
     print("reduce_feature_dimension")
     # Create colum with other for each type
     # Get all columns starting with feature id
@@ -722,29 +663,12 @@ def reduce_feature_dimension():
         df_sessions[other_colum_name] = 0
 
         for column_name in colums_f:
-            # print(column_name)
-            # print(column)
-            # df_colum = df_sessions.loc[:, column]
-            # if 1 in df_sessions[column].values:
-
             df_sessions[column_name] = df_sessions[column_name].fillna(0)
 
             count = (df_sessions[column_name] > 0).sum()
-            # print(count)
-            # count = df_sessions[column].value_counts()[1]
 
             if count <= threshold:
-                # print("start")
-                # print(df_sessions[other_colum_name].head(7))
-                # print(print(df_sessions[column_name].head(7)))
-                # print(df_sessions[df_sessions[column_name] > 0][column_name].head(7))
-                # print(df_sessions[df_sessions[column_name] > 0][other_colum_name].head(7))
-
                 df_sessions[other_colum_name] = df_sessions[other_colum_name] + df_sessions[column_name]
-                # print(df_sessions[other_colum_name].head(7))
-                # print(df_sessions[df_sessions[column_name] > 0][other_colum_name].head(7))
-                # print("end")
-
                 df_sessions.drop(columns=[column_name], inplace=True)
 
                 # old = df_sessions.loc[df_sessions[column] > 0, other_colum_name]
@@ -756,7 +680,6 @@ def reduce_feature_dimension():
                 #     #print(row[column_name][0], row.other_colum_name)
                 #     #print( type(row[column]), row[column])
                 #     #new = row[column_name] + row[other_colum_name]
-                #     # TODO just sum up both colums
                 #     print(index)
                 #     print(df_sessions.loc[index, column_name], df_sessions.loc[index, other_colum_name])
                 #     pre = df_sessions.loc[index, other_colum_name] + df_sessions.loc[index, column_name]
@@ -809,26 +732,11 @@ def concat_features_dic():
         pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
 
 
-def add_things():
-    print("add things")
-    df_labled = pd.read_pickle(fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.pickle')
-    df_unlabled = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
-
-    df_unlabled.drop(df_unlabled.index[df_unlabled['f_session_length'].isnull()], inplace=True)
-    df_labled.drop(df_unlabled.index[df_unlabled['f_session_length'].isnull()], inplace=True)
-
-    print(df_labled.size)
-    print(df_unlabled.size)
-
-    df_esm = df_unlabled.loc[:, df_unlabled.columns.str.startswith('f_esm')]
-    df_concat = pd.concat([df_labled, df_esm], axis=1)
-
-    df_concat.to_csv(fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_with_esm.csv')
-    with open(fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_with_esm.pickle', 'wb') as f:
-        pickle.dump(df_concat, f, pickle.HIGHEST_PROTOCOL)
-
-
 def remove_personalised_features():
+    """
+    Remove the personalized feature to prepare the session for machine learning
+    :return:
+    """
     path = fr'{dataframe_dir_ml_labeled}\sessions_features_labeled_more_than_intention_with_esm.pickle'
     df_sessions = pd.read_pickle(path)
 
@@ -854,6 +762,10 @@ def remove_personalised_features():
 
 
 def clean_df():
+    """
+    Undo the age encoding into bags
+    :return:
+    """
     path = fr'{dataframe_dir_ml}\user-sessions_features_all.pickle'
     df_sessions = pd.read_pickle(path)
 
@@ -865,185 +777,64 @@ def clean_df():
     colums_age = [x for x in df_sessions.columns.values if x.startswith('f_demographics_age_')]
     df_sessions.drop(columns=colums_age, inplace=True)
 
-    #Add age instead of age groupds
+    # Add age instead of age groupds
     for index, session in enumerate(df_sessions.itertuples(index=False)):
         if not df_MRH1[df_MRH1['IM01_01'].values == session[2]].empty:
             df_qu_user = df_MRH1[df_MRH1['IM01_01'].values == session[2]].index.item()
             df_sessions.at[index, 'f_demographics_age'] = df_MRH1.loc[df_qu_user, 'SD02_01']
 
 
-def clean_df_custom():
-    # path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.pickle'
-    path = fr'{dataframe_dir_ml}\user-sessions_features_all.pickle'
-    df = pd.read_pickle(path)
-
-    df.drop(df.index[df['f_session_length'].isnull()], inplace=True)
-
-    for index, session in enumerate(df.itertuples(index=False)):
-        if session[2] == 'CO07FA':
-            df.at[index, 'f_demographics_age'] = 23
-            df.at[index, 'f_demographics_gender_0.0'] = 0
-            df.at[index, 'f_demographics_gender_1.0'] = 1
-
-        if session[2] == 'ZA23PA':
-            df.at[index, 'f_demographics_age'] = 25
-            df.at[index, 'f_demographics_gender_0.0'] = 0
-            df.at[index, 'f_demographics_gender_1.0'] = 1
-            df.at[index, 'f_demographics_gender_2.0'] = 0
-
-        if session[2] == 'AY1221':
-            df.at[index, 'f_absentminded_use'] = 4
-            df.at[index, 'f_general_use'] = 3.9
-            df.at[index, 'f_demographics_age'] = 24
-            df.at[index, 'f_demographics_gender_0.0'] = 0
-            df.at[index, 'f_demographics_gender_1.0'] = 0
-            df.at[index, 'f_demographics_gender_2.0'] = 1
-
-        if session[2] == 'AN23GE':
-            df.at[index, 'f_demographics_gender_0.0'] = 0
-            df.at[index, 'f_demographics_gender_1.0'] = 1
-            df.at[index, 'f_demographics_gender_2.0'] = 0
-
-        if session[2] == 'BR04WO':
-            df.at[index, 'f_demographics_gender_0.0'] = 0
-            df.at[index, 'f_demographics_gender_1.0'] = 1
-            df.at[index, 'f_demographics_gender_2.0'] = 0
-
-        if session[2] == 'BR22NO':
-            # TODO replace with real values?
-            df.at[index, 'f_absentminded_use'] = 3.9
-            df.at[index, 'f_general_use'] = 5.4
-            df.at[index, 'f_demographics_age'] = 22
-            df.at[index, 'f_demographics_gender_0.0'] = 0
-            df.at[index, 'f_demographics_gender_1.0'] = 1
-            df.at[index, 'f_demographics_gender_2.0'] = 0
-
-        if session[2] == 'SO23BA':
-            df.at[index, 'f_demographics_gender_0.0'] = 0
-            df.at[index, 'f_demographics_gender_1.0'] = 1
-            df.at[index, 'f_demographics_gender_2.0'] = 0
-
-        if session[2] == 'ju05ab':
-            df.at[index, 'f_demographics_age'] = 19
-            df.at[index, 'f_demographics_gender_0.0'] = 0
-            df.at[index, 'f_demographics_gender_1.0'] = 0
-            df.at[index, 'f_demographics_gender_2.0'] = 1
-
-        if session[2] == 'so30vo':
-            df.at[index, 'f_absentminded_use'] = 5.9285
-            df.at[index, 'f_general_use'] = 5.9
-            df.at[index, 'f_demographics_gender_0.0'] = 0
-            df.at[index, 'f_demographics_gender_1.0'] = 1
-            df.at[index, 'f_demographics_gender_2.0'] = 0
-            df.at[index, 'f_demographics_age'] = 30
-
-    # df.to_csv(fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention.csv')
-    with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
-        pickle.dump(df, f, pickle.HIGHEST_PROTOCOL)
-
-
-def print_test_df():
-    print('print test')
-    path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\usersorted_logs_preprocessed\AY1221.pickle'
-    t = pd.read_pickle(path_testfile)
-    ## time = t.correct_timestamp
-    r = t[(t['event'].values == 'ON_USERPRESENT') |
-          ((t['event'].values == 'OFF_LOCKED') | (t['event'].values == 'OFF_UNLOCKED')) |
-          (t['eventName'].values == 'ESM')]
-    r.to_csv(fr'{dataframe_dir_users}\AY1221_logs_preprocesses.csv')
-
-    # path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions_features\CO07Fa-sessions_features.pickle'
-    # t = pd.read_pickle(path_testfile)
-    # time = t.correct_timestamp
-    # get sequencelsit: t.f_sequences[0][0]
-
-    # t.to_csv(fr'{dataframe_dir_users}\CO07Fa_sessions-features.csv')
-
-    # path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions_filtered\CO07Fa-sessions_features-sessions_filtered.pickle'
-    # t = pd.read_pickle(path_testfile)
-    # # time = t.correct_timestamp
-    # t.to_csv(fr'{dataframe_dir_users}\CO07Fa_sessions-filtered.csv')
-
-    # path_testfile_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users\user-sessions_features_all.pickle'
-    # pickle_in = open(path_testfile_sessions, "rb")
-    # sessions = pickle.load(pickle_in)
-    # sessions.to_csv(fr'{dataframe_dir_users}\user-sessions_features_all.csv')
-
-    # path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users\user-device_info.pickle'
-    # device = pd.read_pickle(path_testfile)
-    # device.to_csv(fr'{user_dir}\user-device_info.csv')
-    #
-    # path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users\user-installed_apps.pickle'
-    # installed = pd.read_pickle(path_testfile)
-    # installed.to_csv(fr'{user_dir}\user-installed_apps.csv')
-
-
-def test():
-    # path_testfile = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\analyze-no1hot-withseq-nolabels\user-sessions_features_all.pickle'
-    path_testfile = fr'{dataframe_dir_ml}\user-sessions_features_all.pickle'
-    df = pd.read_pickle(path_testfile)
-    df.to_csv(fr'{dataframe_dir_ml}\user-sessions_features_all.csv')
-
-
 if __name__ == '__main__':
     pd.set_option('display.max_columns', None)
 
     # 1. Extract the logs from the raw database files
-    # extractData()
+    extractData()
 
     # 2. Extract the users without logs from raw database files
-    # extractUser()
-
-    # Check if one log for activity tracking exists
-    # check_for_activity()
+    extractUser()
 
     # 3. Run the preprocessing steps like transform timestams and extract sessions usw
-    # preprocessing()
+    preprocessing()
 
     # 4. Extract the features from the logs and saves it to the sessions df
-    # extract_features()
+    extract_features()
 
     # 5. concat all session and features df from each user to one
     # concat_features_dic() #old
-    # concat_sessions()
+    concat_sessions()
 
     # 6. Create the bag of apps for each sessions (using all session df)
-    # bag_of_apps_create_vocab()
-    # bag_of_apps_create_bags()
+    bag_of_apps_create_vocab()
+    bag_of_apps_create_bags()
 
     # 7. Convert timedeltas to milliseconds and drop unused columns
-    # drop_sequences()
-    # convert_timedeletas()
+    drop_sequences()
+    convert_timedeletas()
 
-    # 8.  Filter the session to give an overview over sessions with esm
+    #  Filter the session to give an overview over sessions with esm
     # filter_sessions_esm_user_based()
 
-    # 9. On hot encode colums like esm
+    # 10. On hot encode colums like esm
     # one_hot_encoding_dummies()
-    # on_hot_encoding_scilearn()
+    one_hot_encoding_scilearn()
 
     # Bag and endcode demograpgics age
     # demographics_encode_age()
 
-    # 10. Filter outliners
-    # filter_sessions_outliners_all()
+    # 11. Filter outliners
+    filter_sessions_outliners_all()
 
-    # 11. Only use users that completed the second questionnaire
-    # filter_users()
+    # 12. Only use users that completed the second questionnaire
+    filter_users()
 
-    # 12. reduce feautre dimension by grouping columns together
-    # WIP
-    # reduce_feature_dimension()
+    # 13. reduce feautre dimension by grouping columns together
+    reduce_feature_dimension()
 
     # 13. create labels as targets (only works with onhot encoded data)
-    # create_labels_single()
+    create_labels_single()
     # labeling_combined()
 
-    # clean_df()
-    # add_things()
+    # 14. If needed - remove personal features like age, gender or absentminded/general use scores
     remove_personalised_features()
 
-    # Testing
-    # print_test_df()
-    # test()
-    # concat_additional_logs()
+    # clean_df()
