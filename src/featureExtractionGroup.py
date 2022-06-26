@@ -3,7 +3,7 @@ import numpy as np
 import tldextract
 import ML_helpers
 import grouped_sessions
-
+import json
 
 
 
@@ -43,13 +43,13 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
     # TODO replace all the following df_sessions with df_session_groups
     df_sessions['f_esm_intention'] = ""
     df_sessions['f_esm_finished_intention'] = ""
-    df_sessions['f_esm_more_than_intention'] = ""
+    df_session_groups['f_esm_more_than_intention'] = "[]"
     df_session_groups['f_esm_atleastone_more_than_intention'] = ""
     df_sessions['f_esm_track_of_time'] = ""
     df_sessions['f_esm_track_of_space'] = ""
     df_sessions['f_esm_emotion'] = ""
-    df_sessions['f_esm_regret'] = ""
-    df_session_groups['f_esm_atleasetone_regret'] = ""
+    df_session_groups['f_esm_regret'] = "[]"
+    df_session_groups['f_esm_atleastone_regret'] = ""
     df_sessions['f_esm_agency'] = ""
 
     df_sessions['f_sequences'] = np.nan   # can be concatenated
@@ -159,7 +159,41 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
             df_session_groups.loc[index_row, 'f_session_group_length_active_sd'] = pd.Series(session_durations_active).std()
 
         # --------------- FEATURE ESM ------------------ #
-        ## atleast-one aggregation: group counts as regret, if at least one session has ESM label regret
+        for log in df_group.itertuples():
+
+            # --------------- FEATURE ESM ------------------ #
+            if log.eventName == 'ESM':
+                if log.event == 'ESM_LOCK_Q_MORE':
+                    print("more than intention: " + str(index_row) + ": " + log.name)
+                    my_json = json.loads(df_session_groups.loc[index_row, 'f_esm_more_than_intention'])
+                    my_json.append(log.name)
+                    df_session_groups.loc[index_row, 'f_esm_more_than_intention'] = json.dumps(my_json)
+
+                elif log.event == 'ESM_LOCK_Q_REGRET':
+                    print("regret: " + str(index_row) + ": " + log.name)
+                    my_json = json.loads(df_session_groups.loc[index_row, 'f_esm_regret'])
+                    my_json.append(log.name)
+                    df_session_groups.loc[index_row, 'f_esm_regret'] = json.dumps(my_json)
+
+        ## atleast-one aggregation more than intention
+        my_json = json.loads(df_session_groups.loc[index_row, 'f_esm_more_than_intention'])
+        group_mti = 'No'
+        for esm_a in my_json:
+            if esm_a == 'Yes':
+                group_mti = 'Yes'
+
+        if len(my_json) > 0:
+            df_session_groups.loc[index_row, 'f_esm_atleastone_more_than_intention'] = group_mti
+
+        ## atleast-one aggregation regret: group counts as regret, if at least one session has ESM label regret
+        my_json = json.loads(df_session_groups.loc[index_row, 'f_esm_regret'])
+        group_regret = 'No'
+        for esm_a in my_json:
+            if float(esm_a) >= 4.0:  # if regret of 4.0 or higher occurs, count group as regretted
+                group_regret = 'Yes'
+
+        if len(my_json) > 0: # if no ESM was answers, keep NA
+            df_session_groups.loc[index_row, 'f_esm_atleastone_regret'] = group_regret
 
 
     print("finished extracting features")
@@ -175,10 +209,10 @@ if __name__ == '__main__':
         "C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_with_features\\AN23GE.pickle")
     res = grouped_sessions.build_session_sessions(df, 120)
 
-    res2 = grouped_sessions.session_sessions_to_aggregate_df(res)
+    res2 = grouped_sessions.session_sessions_to_aggregate_df(res).head(20)
 
     df_logs = pd.read_pickle(
-        "D:\\usersorted_logs_preprocessed\\AN23GE.pickle")  # AN23GE.pickle")   AN09BI
+        "D:\\usersorted_logs_preprocessed\\AN23GE.pickle")  # AN23GE.pickle")   AN09BI    LE13FO
 
     ### add column group_id to df_logs
     # create mapping session_id -> group_id
