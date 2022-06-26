@@ -10,7 +10,7 @@ import matplotlib
 
 matplotlib.rcParams['figure.dpi'] = 200
 
-dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
+dataframe_dir_ml = r'..\..\RabbitHoleProcess\data\dataframes\sessions_ml'
 
 
 def dcbscan(x):

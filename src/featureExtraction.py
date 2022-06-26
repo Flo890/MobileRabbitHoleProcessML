@@ -10,6 +10,7 @@ def checkforactivity(df_logs):
     return not activity_logs.empty
 
 
+
 def get_features_for_session(df_logs, df_sessions):
     """
     Extract all features from logs for each user
@@ -19,7 +20,7 @@ def get_features_for_session(df_logs, df_sessions):
     """
 
     # Add demographics features
-    path_questionnaire_1 = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData'
+    path_questionnaire_1 = r'C:\projects\rabbithole\RabbitHoleProcess\data\rawData'
     df_MRH1 = pd.read_csv(f'{path_questionnaire_1}\MRH1.csv', sep=',')
     studyID = df_logs['studyID'].values[0]
     if not df_MRH1[df_MRH1['IM01_01'].values == studyID].empty:

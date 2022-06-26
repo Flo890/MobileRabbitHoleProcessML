@@ -29,12 +29,12 @@ plt.rc('xtick', labelsize=ticksize)  # fontsize of the x tick labels
 plt.rc('ytick', labelsize=ticksize)  # fontsize of the y tick labels
 plt.rc('legend', fontsize=legendsize)  # fontsize of the legend
 
-dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
-dataframe_dir_results = rf"M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\results"
-dataframe_dir_ml_labeled = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data'
-dataframe_dir_ml_labeled_selected = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data\labled'
-dataframe_dir_ml_labeled_all = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data\labled_all'
-dataframe_dir_ml_labeled_m = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data\labled_first_more'
+dataframe_dir_ml = r'..\..\RabbitHoleProcess\data\dataframes\sessions_ml'
+dataframe_dir_results = rf"..\..\RabbitHoleProcess\data\results"
+dataframe_dir_ml_labeled = f'C:\projects\\rabbithole\RabbitHoleProcess\data\dataframes\sessions_ml\labled_data'
+dataframe_dir_ml_labeled_selected = f'..\..\RabbitHoleProcess\data\dataframes\ML\labled_data\labled'
+dataframe_dir_ml_labeled_all = f'M..\..\RabbitHoleProcess\data\dataframes\ML\labled_data\labled_all'
+dataframe_dir_ml_labeled_m = f'..\..\RabbitHoleProcess\data\dataframes\ML\labled_data\labled_first_more'
 
 
 def svm_classifier(x, y, filename, report_df):
@@ -302,7 +302,7 @@ if __name__ == '__main__':
 
     report_all = pd.DataFrame()
 
-    path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_normal_age_no_esm_no_personal.pickle'
+    path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_no_esm_no_personal.pickle'
     # path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_normal_age_no_esm.pickle'
 
     print(f'###################  target: {path}   #############################')  # , file=f)
@@ -321,4 +321,4 @@ if __name__ == '__main__':
 
     report_all = svm_classifier(x, y, filename, report_all)
 
-    eport_all.to_csv(fr'{dataframe_dir_ml}\report_ml_undersampling_combined_test_no_personal_more1.csv')
+    report_all.to_csv(fr'{dataframe_dir_ml}\report_ml_undersampling_combined_test_no_personal_more1.csv')
