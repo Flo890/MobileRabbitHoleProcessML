@@ -90,7 +90,10 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
     # TODO the following loop can then mostly stay the same
 
     # Iterate over groups (instead of sessions)
+    group_counter = 0
     for name, df_group in grouped_logs:
+        if group_counter > 20: break
+        group_counter += 1
         if name[1]:  # | (not pd.isna(name):# if name is not empty
             # Get the df_session row of the current session to assign the values to
             df_row = df_session_groups[(df_session_groups['group_id'].values == name[1])]
@@ -195,7 +198,7 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
         if len(my_json) > 0: # if no ESM was answers, keep NA
             df_session_groups.loc[index_row, 'f_esm_atleastone_regret'] = group_regret
 
-
+    df_session_groups_sorted = df_session_groups.sort_values(by=['group_id'])  # to "remove gaps", when processing only n groups
     print("finished extracting features")
     return df_session_groups, bag_of_apps_vocab
 
@@ -209,10 +212,10 @@ if __name__ == '__main__':
         "C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_with_features\\AN23GE.pickle")
     res = grouped_sessions.build_session_sessions(df, 120)
 
-    res2 = grouped_sessions.session_sessions_to_aggregate_df(res).head(20)
+    res2 = grouped_sessions.session_sessions_to_aggregate_df(res)
 
-    df_logs = pd.read_pickle(
-        "D:\\usersorted_logs_preprocessed\\AN23GE.pickle")  # AN23GE.pickle")   AN09BI    LE13FO
+    df_logs = pd.read_pickle("C:\\Users\\florianb\\Downloads\\AN23GE.pickle")
+      #  "D:\\usersorted_logs_preprocessed\\AN23GE.pickle")  # AN23GE.pickle")   AN09BI    LE13FO
 
     ### add column group_id to df_logs
     # create mapping session_id -> group_id
