@@ -52,6 +52,7 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
     df_session_groups['f_esm_atleastone_regret'] = ""
     df_sessions['f_esm_agency'] = ""
 
+    df_session_groups['f_session_count_in_group'] = np.nan
     df_session_groups['f_sequences'] = np.nan   # can be concatenated
     df_session_groups['f_hour_of_day'] = np.nan
     df_session_groups['f_weekday'] = np.nan
@@ -75,6 +76,11 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
     df_session_groups['f_ringer_mode_vibrate'] = 0
     df_session_groups['f_ringer_mode_normal'] = 0
     df_session_groups['f_ringer_mode_unknown'] = 0
+
+    df_session_groups['f_activity_resumed_count'] = 0
+    df_session_groups['f_activity_resumed_frequency'] = 0
+    df_session_groups['f_click_frequency'] = 0.0
+    df_session_groups['f_scroll_frequency'] = 0.0
 
     currentInternetState = {'connectionType': 'UNKNOWN_first', 'wifiState': 'UNKNOWN_first', 'wifiName': '', 'timestamp': np.nan}
     currentApp = {"packageName": 'UNKNOWN_first', "timestamp": np.nan}
@@ -147,6 +153,9 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
             df_session_groups.loc[index_row, 'f_session_group_timespan'] = df_row['timestamp_2'].iloc[0] - \
                                                                  df_row['timestamp_1'].iloc[0]
 
+            # ---------------  FEATURE SESSION COUNT ---------------
+            df_session_groups.loc[index_row, 'f_session_count_in_group'] = len(df_session_groups.loc[index_row, 'session_ids'])
+
             # ---------------  FEATURE SESSION LENGTH------------------ #
             #  aggregate metrics over sessions
             session_durations_active = []
@@ -201,8 +210,6 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
 
         for log in df_group.itertuples():
             # ---------------  FEATURE SCROLL AND CLICK COUNT ------------------ #
-            # TODO frequencies!
-            # TODO noch nicht getestet, weil user AN23GE keine solche Daten hat
             if (log.eventName == 'ACCESSIBILITY') | (log.event == 'ACCESSIBILITY_KEYBOARD_INPUT'):
 
                 if log.event == 'TYPE_VIEW_CLICKED':
@@ -363,6 +370,8 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
                 # Check if it is activity resumed (ignore stopped and paused) when package name different and take this as endpoint for previous
                 if (currentApp['packageName'] != log.packageName) & (log.event == 'ACTIVITY_RESUMED'):
 
+                    df_session_groups['f_activity_resumed_count'] += 1
+
                     # Save the new app to sequence lists
                     current_sequence_list.append(('APP', log.packageName))
                     current_app_sequence_list.append(log.packageName)
@@ -420,6 +429,16 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
 
 
         #### loop end ####
+        # ---------------  SOME FREQUENCIES ---------------
+        click_frequency = df_session_groups.loc[index_row, 'f_clicks'] / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
+        df_session_groups.loc[index_row, 'f_click_frequency'] = click_frequency
+
+        scroll_frequency = df_session_groups.loc[index_row, 'f_scrolls'] / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
+        df_session_groups.loc[index_row, 'f_scroll_frequency'] = scroll_frequency
+
+        activity_resumed_frequency = df_session_groups.loc[index_row, 'f_scrolls'] / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
+        df_session_groups.loc[index_row, 'f_activity_resumed_frequency'] = activity_resumed_frequency
+
 
         # ---------------  save the last internet and app state with the last log ------------------ #
         last_log_time = df_group['correct_timestamp'].iloc[-1]
@@ -530,6 +549,40 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
             current_app_sequence_list = []
 
 
+        #### after loop over logs: FREQUENCIES APP USAGES ####
+        app_category_columns = [col for col in df_session_groups if (col.startswith('f_app_category_count_') and not col.endswith('freq'))]
+        for a_app_cat_col in app_category_columns:
+            df_session_groups.loc[index_row, f'{a_app_cat_col}_freq'] = \
+                df_session_groups.loc[index_row, f'{a_app_cat_col}'] / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
+
+        app_category_columns = [col for col in df_session_groups if (col.startswith('f_app_category_time_') and not col.endswith('freq'))]
+        for a_app_cat_col in app_category_columns:
+            df_session_groups.loc[index_row, f'{a_app_cat_col}_freq'] = \
+                df_session_groups.loc[index_row, f'{a_app_cat_col}'] / df_session_groups.loc[
+                    index_row, 'f_session_group_length_active'].seconds
+
+        # scroll frequency calculated within app (relative to time spent in app)
+        app_category_columns = [col for col in df_session_groups if
+                                (col.startswith('f_scrolls_app_category_') and not col.endswith('freq'))]
+        for a_app_cat_col in app_category_columns:
+            category_name = a_app_cat_col.split("_")[-1]
+            if not f'f_app_category_time_{category_name}' in df_session_groups:
+                continue
+                # TODO it occured that scrolls are logged, but no time in app
+            df_session_groups.loc[index_row, f'{a_app_cat_col}_freq'] = \
+                df_session_groups.loc[index_row, f'{a_app_cat_col}'] / df_session_groups.loc[
+                    index_row, f'f_app_category_time_{category_name}']
+
+        # the same with clicks
+        app_category_columns = [col for col in df_session_groups if
+                                (col.startswith('f_clicks_app_category_') and not col.endswith('freq'))]
+        for a_app_cat_col in app_category_columns:
+            category_name = a_app_cat_col.split("_")[-1]
+            if not f'f_app_category_time_{category_name}' in df_session_groups:
+                continue
+            df_session_groups.loc[index_row, f'{a_app_cat_col}_freq'] = \
+                df_session_groups.loc[index_row, f'{a_app_cat_col}'] / df_session_groups.loc[
+                    index_row, f'f_app_category_time_{category_name}']
 
     df_session_groups_sorted = df_session_groups.sort_values(by=['group_id'])  # to "remove gaps", when processing only n groups
     print("finished extracting features")
