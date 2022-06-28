@@ -106,6 +106,11 @@ def convert_timedeletas():
     df_sessions.reset_index(drop=True, inplace=True)
 
     df_sessions['f_session_group_timespan'] = df_sessions['f_session_group_timespan'].apply(lambda x: round(x.total_seconds() * 1000))
+    df_sessions['f_session_group_length_active'] = df_sessions['f_session_group_length_active'].apply(lambda x: round(x.total_seconds() * 1000))
+    df_sessions['f_session_group_length_active_mean'] = df_sessions['f_session_group_length_active_mean'].apply(lambda x: round(x.total_seconds() * 1000))
+    df_sessions['f_session_group_length_active_median'] = df_sessions['f_session_group_length_active_median'].apply(lambda x: round(x.total_seconds() * 1000))
+    df_sessions['f_session_group_length_active_sd'] = df_sessions['f_session_group_length_active_sd'].apply(lambda x: round(x.total_seconds() * 1000))
+
 
     with open(fr'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessiongroups-ml\user-session-group_features_all.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)

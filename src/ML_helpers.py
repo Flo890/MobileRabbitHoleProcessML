@@ -83,8 +83,8 @@ def clean_df(df):
     :return: the cleand df
     """
     # return df.drop(columns=['session_id', 'studyID', 'session_length', 'timestamp_1', 'timestamp_2', 'count', 'f_sequences_apps', 'f_esm_intention', 'f_bag_of_apps']).fillna(0)
-    df.drop(df.index[df['f_session_length'].isnull()], inplace=True)
-    return df.drop(columns=['session_id', 'studyID', 'session_length', 'timestamp_1', 'timestamp_2', 'count', 'f_sequences_apps', 'f_bag_of_apps']).fillna(0)
+    df.drop(df.index[df['f_session_group_timespan'].isnull()], inplace=True)
+    return df.drop(columns=['group_id', 'session_ids', 'studyID', 'timestamp_1', 'timestamp_2', 'count', 'f_sequences_apps', 'f_bag_of_apps']).fillna(0)
 
 
 def prepare_df_oversampling(df):

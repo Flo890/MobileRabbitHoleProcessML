@@ -302,14 +302,14 @@ if __name__ == '__main__':
 
     report_all = pd.DataFrame()
 
-    path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_no_esm_no_personal.pickle'
+    path = fr'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessiongroups-ml\labled_data\user-sessions_features_all_labled_more_than_intention_normal_age_no_esm_no_personal.pickle'
     # path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_normal_age_no_esm.pickle'
 
     print(f'###################  target: {path}   #############################')  # , file=f)
     df_sessions = pd.read_pickle(path)
     x, y = ML_helpers.prepare_df_undersampling(df_sessions)
 
-    filename = "more_than_intention"
+    filename = "atleastone_more_than_intention"
 
     report_all = decision_tree_classifier(x, y, filename, report_all)
 
@@ -321,4 +321,4 @@ if __name__ == '__main__':
 
     report_all = svm_classifier(x, y, filename, report_all)
 
-    report_all.to_csv(fr'{dataframe_dir_ml}\report_ml_undersampling_combined_test_no_personal_more1.csv')
+    report_all.to_csv(fr'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessiongroups-ml\report_ml_undersampling_combined_test_no_personal_more1.csv')
