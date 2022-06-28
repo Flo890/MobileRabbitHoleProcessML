@@ -7,6 +7,7 @@ def build_session_sessions(df, threshold_sec):
     :param threshold_seconds: how many seconds may max. be between to sessions, in order to group them together
     :return: list of session-sessions, each consisting of a list dfs (= usages that belong to the session-session)
     """
+    print('Grouping sessions to session groups')
     session_sessions = []
 
     # no usage sessions
@@ -15,7 +16,6 @@ def build_session_sessions(df, threshold_sec):
 
     session_sessions.append({'dfs':[df.iloc[[0]]]})  # create first session-session with first usage
     for i in range(1, len(df)):
-        print(i)
         current_usage = df.iloc[[i]]
         # get last usage of last session-session
         last_usage = session_sessions[-1]['dfs'][-1]
@@ -35,6 +35,7 @@ def session_sessions_to_aggregate_df(sessions):
     :param sessions:
     :return:
     """
+    print('Creating aggregated session-group dataframe')
     session_ids = []
     group_ids = []
     timestamps_one = []

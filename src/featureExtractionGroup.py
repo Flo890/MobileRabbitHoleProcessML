@@ -6,7 +6,15 @@ import grouped_sessions
 import json
 
 
+def progress_bar(current, total, bar_length=20):
+    fraction = current / total
 
+    arrow = int(fraction * bar_length - 1) * '-' + '>'
+    padding = int(bar_length - len(arrow)) * ' '
+
+    ending = '\n' if current == total else '\r'
+
+    print(f'Progress: [{arrow}{padding}] {int(fraction*100)}%', end=ending)
 
 
 def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
@@ -17,6 +25,7 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
     :param df_session_groups: result from grouped_sessions.session_sessions_to_aggregate_df
     :return: the sessions and feature dataframe for one user
     """
+    print('Starting feature extraction for session-group')
     # Add demographics features - equivalent
     path_questionnaire_1 = r'C:\projects\rabbithole\RabbitHoleProcess\data\rawData'
     df_MRH1 = pd.read_csv(f'{path_questionnaire_1}\MRH1.csv', sep=',')
@@ -93,13 +102,13 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
 
     # grouped_logs = df_logs.groupby('session_id').agg({'count': sum})
     grouped_logs = df_logs.groupby(['studyID', 'group_id'])   # here we group by group, not by session.
-    # TODO the following loop can then mostly stay the same
 
     # Iterate over groups (instead of sessions)
     group_counter = 0
     for name, df_group in grouped_logs:
-        if group_counter > 20: break
+        #if group_counter > 20: break  # limit amoun of groups for development here
         group_counter += 1
+        progress_bar(group_counter,len(grouped_logs))
         if name[1]:  # | (not pd.isna(name):# if name is not empty
             # Get the df_session row of the current session to assign the values to
             df_row = df_session_groups[(df_session_groups['group_id'].values == name[1])]
@@ -176,13 +185,13 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
             # --------------- FEATURE ESM ------------------ #
             if log.eventName == 'ESM':
                 if log.event == 'ESM_LOCK_Q_MORE':
-                    print("more than intention: " + str(index_row) + ": " + log.name)
+                 #   print("more than intention: " + str(index_row) + ": " + log.name)
                     my_json = json.loads(df_session_groups.loc[index_row, 'f_esm_more_than_intention'])
                     my_json.append(log.name)
                     df_session_groups.loc[index_row, 'f_esm_more_than_intention'] = json.dumps(my_json)
 
                 elif log.event == 'ESM_LOCK_Q_REGRET':
-                    print("regret: " + str(index_row) + ": " + log.name)
+                  #  print("regret: " + str(index_row) + ": " + log.name)
                     my_json = json.loads(df_session_groups.loc[index_row, 'f_esm_regret'])
                     my_json.append(log.name)
                     df_session_groups.loc[index_row, 'f_esm_regret'] = json.dumps(my_json)
@@ -566,7 +575,7 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
                                 (col.startswith('f_scrolls_app_category_') and not col.endswith('freq'))]
         for a_app_cat_col in app_category_columns:
             category_name = a_app_cat_col.split("_")[-1]
-            if not f'f_app_category_time_{category_name}' in df_session_groups:
+            if not f'f_app_category_time_{category_name}' in df_session_groups or df_session_groups.loc[index_row, f'f_app_category_time_{category_name}'] == 0:
                 continue
                 # TODO it occured that scrolls are logged, but no time in app
             df_session_groups.loc[index_row, f'{a_app_cat_col}_freq'] = \
@@ -578,7 +587,7 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
                                 (col.startswith('f_clicks_app_category_') and not col.endswith('freq'))]
         for a_app_cat_col in app_category_columns:
             category_name = a_app_cat_col.split("_")[-1]
-            if not f'f_app_category_time_{category_name}' in df_session_groups:
+            if not f'f_app_category_time_{category_name}' in df_session_groups or df_session_groups.loc[index_row, f'f_app_category_time_{category_name}'] == 0:
                 continue
             df_session_groups.loc[index_row, f'{a_app_cat_col}_freq'] = \
                 df_session_groups.loc[index_row, f'{a_app_cat_col}'] / df_session_groups.loc[
