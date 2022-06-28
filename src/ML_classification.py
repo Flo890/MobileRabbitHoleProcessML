@@ -123,15 +123,39 @@ def kNeighbors_classifier(x, y, filename, report_df):
 
 
 def random_forest_classifier(x, y, filename, report_df):
-    print('***Random Forest***')
+    print('\n\n***Random Forest***')
 
     feature_list = x.columns  # list(x_features.columns)
     print('feature length:', len(feature_list))
 
     x_train_features, x_test_features, y_train_labels, y_test_labels = train_test_split(x, y, test_size=0.25, random_state=42)
 
-    forest = RandomForestClassifier(criterion='gini', n_estimators=5, random_state=42, n_jobs=2)
+    forest2 = RandomForestClassifier()#criterion='gini', n_estimators=5, random_state=42, n_jobs=2)
     # BalancedRandomForestClassifier(n_estimators=10)
+ #   forest.fit(x_train_features, y_train_labels)
+
+##### parameter tuning
+    # param_grid = {
+    #     'n_estimators': [5, 10, 100, 200, 500, 700, 1000],
+    #     'max_features': ['sqrt', 'log2'],
+    #     'max_depth': [4, 5, 6, 7, 8, None],
+    #     'criterion': ['gini', 'entropy']
+    # }
+    # CV_rfc = GridSearchCV(estimator=forest2, param_grid=param_grid, cv=5)
+    # CV_rfc.fit(x_train_features, y_train_labels)
+    #
+    # best_params = CV_rfc.best_params_
+    # print('Best params:')
+    # print(best_params)
+
+##### training
+    forest = RandomForestClassifier(
+        max_features='log2',#best_params['max_features'],
+        n_estimators=500,#best_params['n_estimators'],
+        max_depth=None,#best_params['max_depth'],
+        criterion='entropy',#best_params['criterion'],
+        random_state=42
+    )
     forest.fit(x_train_features, y_train_labels)
 
     print(forest.classes_)
@@ -311,14 +335,14 @@ if __name__ == '__main__':
 
     filename = "atleastone_more_than_intention"
 
-    report_all = decision_tree_classifier(x, y, filename, report_all)
+  #  report_all = decision_tree_classifier(x, y, filename, report_all)
 
     report_all = random_forest_classifier(x, y, filename, report_all)
 
-    report_all = naive_bayes_classifier(x, y, filename, report_all)
+  #  report_all = naive_bayes_classifier(x, y, filename, report_all)
 
-    report_all = kNeighbors_classifier(x, y, filename, report_all)
+  #  report_all = kNeighbors_classifier(x, y, filename, report_all)
 
-    report_all = svm_classifier(x, y, filename, report_all)
+  #  report_all = svm_classifier(x, y, filename, report_all)
 
     report_all.to_csv(fr'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessiongroups-ml\report_ml_undersampling_combined_test_no_personal_more1.csv')
