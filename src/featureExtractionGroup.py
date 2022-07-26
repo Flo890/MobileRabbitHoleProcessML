@@ -110,6 +110,7 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
         if group_counter > 20: break  # TODO limits amount of groups for development here
         group_counter += 1
         progress_bar(group_counter,len(grouped_logs))
+
         if name[1]:  # | (not pd.isna(name):# if name is not empty
             # Get the df_session row of the current session to assign the values to
             df_row = df_session_groups[(df_session_groups['group_id'].values == name[1])]
@@ -484,6 +485,8 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
             #  print(last_log_time, currentRingerMode['timestamp'], current_session_start,  current_session_start > currentRingerMode['timestamp'])
             # Check if cached ringer mode,i if yes take session start if not take chached timestamp
             if current_session_start > currentRingerMode['timestamp']:
+                dif = round((last_log_time - current_session_start).total_seconds() * 1000)
+            elif last_log_time < currentRingerMode['timestamp']:
                 dif = round((last_log_time - current_session_start).total_seconds() * 1000)
             else:
                 dif = round((last_log_time - currentRingerMode['timestamp']).total_seconds() * 1000)
