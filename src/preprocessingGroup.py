@@ -369,9 +369,11 @@ def drop_esm_features(df_sessions):
 if __name__ == '__main__':
 
     # 4. Extract the features from the logs and saves it to the sessions df
-    path_list = pathlib.Path(r'D:\usersorted_logs_preprocessed').glob('**/*.pickle')
+ #   path_list = pathlib.Path(r'D:\usersorted_logs_preprocessed').glob('**/*.pickle')
+    path_list = pathlib.Path(r'C:\Users\florianb\Downloads').glob('**/*.pickle')
 
     for data_path in path_list:
+
         print(f'###### {data_path.stem} ######')
         path_in_str = str(data_path)
         # df_all_logs = pd.read_pickle(path_in_str)
