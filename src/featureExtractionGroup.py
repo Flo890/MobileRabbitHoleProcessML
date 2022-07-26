@@ -4,6 +4,7 @@ import tldextract
 import ML_helpers
 import grouped_sessions
 import json
+import warnings
 
 
 def progress_bar(current, total, bar_length=20):
@@ -106,7 +107,7 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
     # Iterate over groups (instead of sessions)
     group_counter = 0
     for name, df_group in grouped_logs:
-        #if group_counter > 20: break  # limit amoun of groups for development here
+        if group_counter > 20: break  # TODO limits amount of groups for development here
         group_counter += 1
         progress_bar(group_counter,len(grouped_logs))
         if name[1]:  # | (not pd.isna(name):# if name is not empty
@@ -217,7 +218,8 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
             df_session_groups.loc[index_row, 'f_esm_atleastone_regret'] = group_regret
 
 
-        for log in df_group.itertuples():
+        # loop over all logs from a group
+        for log in df_group.sort_values(by=['correct_timestamp']).itertuples():
             # ---------------  FEATURE SCROLL AND CLICK COUNT ------------------ #
             if (log.eventName == 'ACCESSIBILITY') | (log.event == 'ACCESSIBILITY_KEYBOARD_INPUT'):
 
@@ -486,6 +488,8 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
             else:
                 dif = round((last_log_time - currentRingerMode['timestamp']).total_seconds() * 1000)
             # add old state to feature table
+            if dif < 0:
+                warnings.warn(f'ringermode dif below zero! {dif}')
             if currentRingerMode['mode'] == 'NORMAL_MODE':
                 df_session_groups.loc[index_row, 'f_ringer_mode_normal'] += dif
 
