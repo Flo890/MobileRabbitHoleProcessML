@@ -107,7 +107,7 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
     # Iterate over groups (instead of sessions)
     group_counter = 0
     for name, df_group in grouped_logs:
-        if group_counter > 20: break  # TODO limits amount of groups for development here
+      #  if group_counter > 20: break  # TODO limits amount of groups for development here
         group_counter += 1
         progress_bar(group_counter,len(grouped_logs))
 

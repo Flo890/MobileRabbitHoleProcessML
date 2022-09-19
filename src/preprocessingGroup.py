@@ -1,3 +1,4 @@
+import numpy
 import pandas as pd
 import pathlib
 import pickle
@@ -8,6 +9,8 @@ import seaborn as sns
 
 import grouped_sessions
 import featureExtractionGroup
+
+import datetime
 
 
 
@@ -105,11 +108,12 @@ def convert_timedeletas():
     df_sessions.dropna(subset=['f_session_group_timespan'], inplace=True)
     df_sessions.reset_index(drop=True, inplace=True)
 
-    df_sessions['f_session_group_timespan'] = df_sessions['f_session_group_timespan'].apply(lambda x: round(x.total_seconds() * 1000))
-    df_sessions['f_session_group_length_active'] = df_sessions['f_session_group_length_active'].apply(lambda x: round(x.total_seconds() * 1000))
-    df_sessions['f_session_group_length_active_mean'] = df_sessions['f_session_group_length_active_mean'].apply(lambda x: round(x.total_seconds() * 1000))
-    df_sessions['f_session_group_length_active_median'] = df_sessions['f_session_group_length_active_median'].apply(lambda x: round(x.total_seconds() * 1000))
-    df_sessions['f_session_group_length_active_sd'] = df_sessions['f_session_group_length_active_sd'].apply(lambda x: round(x.total_seconds() * 1000))
+    if isinstance(df_sessions['f_session_group_timespan'], datetime.timedelta):
+        df_sessions['f_session_group_timespan'] = df_sessions['f_session_group_timespan'].apply(lambda x: round(x.total_seconds() * 1000))
+        df_sessions['f_session_group_length_active'] = df_sessions['f_session_group_length_active'].apply(lambda x: round(x.total_seconds() * 1000))
+        df_sessions['f_session_group_length_active_mean'] = df_sessions['f_session_group_length_active_mean'].apply(lambda x: round(x.total_seconds() * 1000))
+        df_sessions['f_session_group_length_active_median'] = df_sessions['f_session_group_length_active_median'].apply(lambda x: round(x.total_seconds() * 1000))
+        df_sessions['f_session_group_length_active_sd'] = df_sessions['f_session_group_length_active_sd'].apply(lambda x: numpy.nan if pd.isnull(x) else round(x.total_seconds() * 1000))
 
 
     with open(fr'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessiongroups-ml\user-session-group_features_all.pickle', 'wb') as f:
@@ -140,13 +144,16 @@ def one_hot_encoding_scilearn():
 
     for column in to_encode:
         # passing bridge-types-cat column (label encoded values of bridge_types)
-        end = enc.fit_transform(df_sessions[[column]]).toarray()
-        column_name = enc.get_feature_names_out([column])
-        enc_df = pd.DataFrame(end, columns=column_name)
+        if 'f_demographics_gender' in df_sessions:
+            end = enc.fit_transform(df_sessions[[column]]).toarray()
+            column_name = enc.get_feature_names_out([column])
+            enc_df = pd.DataFrame(end, columns=column_name)
 
-        # merge with main df bridge_df on key values
-        # df_sessions = df_sessions.join(enc_df)
-        df_sessions = pd.concat([df_sessions, enc_df], axis=1).drop(columns=[column])
+            # merge with main df bridge_df on key values
+            # df_sessions = df_sessions.join(enc_df)
+            df_sessions = pd.concat([df_sessions, enc_df], axis=1).drop(columns=[column])
+        else:
+            print('Skipping encoding for column '+column+'; Column doesnt exist')
 
     # df_sessions.to_csv(fr'{dataframe_dir_users}\user-sessions_features_encoded_sci.csv')
 
@@ -343,7 +350,6 @@ def remove_personalised_features():
     colums_gender = [x for x in df_sessions.columns.values if x.startswith('f_demographics_gender')]
     df_sessions.drop(columns=colums_gender, inplace=True)
 
-    # TODO warum wird wifi gedroppt?
     colums_wlan_name = [x for x in df_sessions.columns.values if x.startswith('f_internet_connected_WIFI_')]
     df_sessions.drop(columns=colums_wlan_name, inplace=True)
 
@@ -369,8 +375,8 @@ def drop_esm_features(df_sessions):
 if __name__ == '__main__':
 
     # 4. Extract the features from the logs and saves it to the sessions df
- #   path_list = pathlib.Path(r'D:\usersorted_logs_preprocessed').glob('**/*.pickle')
-    path_list = pathlib.Path(r'C:\Users\florianb\Downloads').glob('**/*.pickle')
+    path_list = pathlib.Path(r'D:\usersorted_logs_preprocessed').glob('**/*.pickle')
+  #  path_list = pathlib.Path(r'C:\Users\florianb\Downloads').glob('**/*.pickle')
 
     for data_path in path_list:
 
@@ -426,7 +432,7 @@ if __name__ == '__main__':
 
     # 7. Convert timedeltas to milliseconds and drop unused columns
     drop_sequences()
-    convert_timedeletas()
+ #   convert_timedeletas() TODO values are already int
 
     # 10. On hot encode colums like esm
     # one_hot_encoding_dummies()
@@ -447,3 +453,5 @@ if __name__ == '__main__':
 
     # 14. If needed - remove personal features like age, gender or absentminded/general use scores
     remove_personalised_features()
+
+    print('preprocessingGroup main() done.')
