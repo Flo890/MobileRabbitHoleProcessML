@@ -331,6 +331,11 @@ if __name__ == '__main__':
 
     print(f'###################  target: {path}   #############################')  # , file=f)
     df_sessions = pd.read_pickle(path)
+
+    # app frequencies - TODO temporary in here as long as I didnt rerun the preprocessing
+    app_cols = [col for col in df_sessions.columns if col.startswith('f_app_')]
+    df_sessions[app_cols] = df_sessions[app_cols].apply(lambda x: x / df_sessions['f_session_group_length_active'])
+
     x, y = ML_helpers.prepare_df_undersampling(df_sessions)
 
     filename = "atleastone_more_than_intention"

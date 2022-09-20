@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import pandas as pd
+import pathlib
 import pickle
 import ML_helpers
 import statistics
@@ -31,10 +32,10 @@ blueish = '#0378C5'
 LightBlackishGray = '#6E707C'
 DarkBlackishGray = '#6E707C'
 
-dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
-dataframe_dir_results = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\results'
-dataframe_dir_labled = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data\labled'
-dataframe_dir_ml_labeled = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data'
+#dataframe_dir_ml = r'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\ML'
+dataframe_dir_results = r'C:\projects\rabbithole\RabbitHoleProcess\data\results\descriptives'
+#dataframe_dir_labled = r'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\ML\labled_data\labled'
+#dataframe_dir_ml_labeled = f'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\ML\labled_data'
 
 
 def get_rabbitHoleSessions(df_sessions):
@@ -391,6 +392,7 @@ def rh_analyze_sessionlenghts(df_rh):
     df_length = df_rh['f_session_length'].apply(lambda x: (x / 1000) / 60)
 
     # fig = plt.figure()
+
     sns.boxplot(df_length, color=milkGreen)
     plt.title("Sessions lengths distribution")
     plt.xlabel("minutes")
@@ -573,10 +575,36 @@ def rh_analyze_demographics_bins(df_rh):
 
 
 if __name__ == '__main__':
-    #path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_normal_age_with_esm.pickle'
-    path = fr'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessiongroups-ml\labled_data\user-sessions_features_all_labled_more_than_intention_normal_age_no_esm_no_personal.pickle'
 
-    df_sessions_all_labeled = pd.read_pickle(path)
+    ## select all sessions with features (not grouped) and bind them into one df
+    path_list = pathlib.Path(r'C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_with_features').glob('**/*.pickle')
+    #  path_list = pathlib.Path(r'C:\Users\florianb\Downloads').glob('**/*.pickle')
+
+    df_list = []
+    for data_path in path_list:
+        df_sessions_auser = pd.read_pickle(
+            f'C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_with_features\\{data_path.stem}.pickle')
+        df_list.append(df_sessions_auser)
+
+    df_sessions = pd.concat(df_list)
+
+    rh = 'rabbit_hole'
+    no_rh = 'no_rabbithole'
+
+    df_sessions.insert(6, 'target_label', '')
+
+    df_sessions['target_label'] = df_sessions.apply(lambda row: rh if row.f_esm_more_than_intention == 'Yes' else no_rh, axis=1)
+    df_sessions_all_labeled = df_sessions
+
+ #   df_length = df_rh['f_session_length'].apply(lambda x: (x / 1000) / 60)
+
+    df_sessions_all_labeled['f_session_length'].apply(lambda x: (x / 1000) / 60)
+
+    df_sessions_all_labeled['f_session_length'] = df_sessions_all_labeled['f_session_length'].apply(lambda x: (x /1)).apply(lambda x: x.total_seconds())
+
+    df_sessions_all_labeled.to_csv(r"C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_with_features\all_sessions_with_features.csv",sep=";")
+
+   # df_sessions_all_labeled = pd.read_pickle(path)
     df_rabbitHole = get_rabbitHoleSessions(df_sessions_all_labeled)
     df_no_rabbitHole = get_NotRabbitHoleSessions(df_sessions_all_labeled)
 
@@ -585,7 +613,7 @@ if __name__ == '__main__':
   #  rh_analyze_context(df_rabbitHole)
   #  rh_analyze_context(df_no_rabbitHole)
 
-    rh_analyze_sessionlenghts(df_rabbitHole)
+    rh_analyze_sessionlenghts(df_no_rabbitHole)
 
     # rh_analyze_apps(df_rabbitHole)
 

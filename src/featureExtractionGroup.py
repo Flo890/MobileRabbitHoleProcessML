@@ -448,8 +448,16 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
         scroll_frequency = df_session_groups.loc[index_row, 'f_scrolls'] / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
         df_session_groups.loc[index_row, 'f_scroll_frequency'] = scroll_frequency
 
-        activity_resumed_frequency = df_session_groups.loc[index_row, 'f_scrolls'] / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
+        activity_resumed_frequency = df_session_groups.loc[index_row, 'f_activity_resumed'] / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
         df_session_groups.loc[index_row, 'f_activity_resumed_frequency'] = activity_resumed_frequency
+
+        internet_connected_wifi_frequency = df_session_groups.loc[index_row, 'f_internet_connected_WIFI'] / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
+        df_session_groups.loc[index_row, 'f_internet_connected_WIFI_frequency'] = internet_connected_wifi_frequency
+
+        # app frequencies
+        app_cols = [col for col in df_session_groups.columns if col.startswith('f_app_')]
+        df_session_groups[app_cols].apply(lambda x : x / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds)
+
 
 
         # ---------------  save the last internet and app state with the last log ------------------ #
