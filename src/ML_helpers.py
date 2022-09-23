@@ -66,7 +66,7 @@ def oversampling(df_x_features, df_y_labels):
 
 def oversampling_smote(df_x_features, df_y_labels):
     print('----oversampling smote-----')
-    smote = SMOTE()
+    smote = SMOTE(random_state=42)
 
     # fit predictor and target variable
     x_smote, y_smote = smote.fit_resample(df_x_features, df_y_labels)

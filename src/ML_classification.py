@@ -19,16 +19,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
 import matplotlib
+import zlib
 
-from random import randint
 
-def random_subset(s):
-    out = set()
-    for el in s:
-        # random coin flip
-        if randint(0, 1) == 0:
-            out.add(el)
-    return out
 
 matplotlib.rcParams["figure.dpi"] = 200
 size = 11
@@ -144,11 +137,21 @@ def random_forest_classifier(x, y, filename, report_df):
 
     # split by participant, and stratify amount of rabbit holes
     # https://scikit-learn.org/stable/modules/cross_validation.html#stratifiedgroupkfold
-    sgkf = StratifiedGroupKFold(n_splits=5)
+    sgkf = StratifiedGroupKFold(n_splits=10)
+    reports = []
     for a, b in sgkf.split(x, y, np.array(x['p_id'])):
         train_idxs = a
-        test_idxs = b # TODO atm uses just one fold
-        break;
+        test_idxs = b
+
+        x_train_features = x.iloc[train_idxs].drop(columns=['p_id'])
+        y_train_labels = y.iloc[train_idxs]
+        x_test_features = x.iloc[test_idxs].drop(columns=['p_id'])
+        y_test_labels = y.iloc[test_idxs]
+
+        forest, report = run_random_forest_classifier(filename, x_test_features, x_train_features, y_test_labels,
+                                                      y_train_labels)
+        np.append(report)
+      # break;
     x.drop(columns=['p_id'])
 
     x_train_features = x.iloc[train_idxs]
@@ -156,53 +159,7 @@ def random_forest_classifier(x, y, filename, report_df):
     x_test_features = x.iloc[test_idxs]
     y_test_labels = y.iloc[test_idxs]
 
-
-    #forest2 = RandomForestClassifier()#criterion='gini', n_estimators=5, random_state=42, n_jobs=2)
-    # BalancedRandomForestClassifier(n_estimators=10)
- #   forest.fit(x_train_features, y_train_labels)
-
-##### parameter tuning
-    # param_grid = {
-    #     'n_estimators': [5, 10, 100, 200, 500, 700, 1000],
-    #     'max_features': ['sqrt', 'log2'],
-    #     'max_depth': [4, 5, 6, 7, 8, None],
-    #     'criterion': ['gini', 'entropy']
-    # }
-    # CV_rfc = GridSearchCV(estimator=forest2, param_grid=param_grid, cv=5)
-    # CV_rfc.fit(x_train_features, y_train_labels)
-    #
-    # best_params = CV_rfc.best_params_
-    # print('Best params:')
-    # print(best_params)
-
-##### training
-    forest = RandomForestClassifier(
-        max_features='log2',#best_params['max_features'],
-        n_estimators=500,#best_params['n_estimators'],
-        max_depth=None,#best_params['max_depth'],
-        criterion='entropy',#best_params['criterion'],
-        random_state=42
-    )
-    forest.fit(x_train_features, y_train_labels)
-
-    print(forest.classes_)
-
-    y_predict = forest.predict(x_test_features)
-
-    print("-----report----------")
-    print(metrics.classification_report(y_test_labels, y_predict))  # output_dict=True))
-    report = pd.DataFrame.from_dict(metrics.classification_report(y_test_labels, y_predict, output_dict=True))
-    report['target'] = filename
-    report['algorithm'] = "random_forest"
-
-    print("-----score----------")
-    score = metrics.accuracy_score(y_test_labels, y_predict)
-    print(score)
-    report['score'] = score
-
-    print("---------confusion matrix--------")
-    cm = confusion_matrix(y_test_labels, y_predict)
-    print(cm)
+    #forest, report = run_random_forest_classifier(filename, x_test_features, x_train_features, y_test_labels, y_train_labels)
 
     print("-------importance--------")
     importance = pd.DataFrame({'feature': feature_list, 'importance': np.round(forest.feature_importances_, 3)})
@@ -242,41 +199,84 @@ def random_forest_classifier(x, y, filename, report_df):
 
 
 
-    plt.figure()
-    fig = plt.figure(dpi=200)
-    shap.summary_plot(shap_values[0], x_train_features, plot_type="bar", max_display=30, show=False)
-    plt.title("Random Forest - Shap values 0")
-    fig.tight_layout()
-    matplotlib.rcParams["figure.dpi"] = 200
- #   plt.show()
-    plt.savefig("figures/plt1.png")
-
-    fig = plt.figure(dpi=200)
-    shap.summary_plot(shap_values[0], x_train_features, plot_type="dot", max_display=30, show=False)
-    plt.title("Random Forest - Shap values 0")
-    fig.tight_layout()
- #   plt.show()
-    plt.savefig("figures/plt2.png")
-
-    fig = plt.figure(dpi=200)
-    shap.summary_plot(shap_values[1], x_train_features, plot_type="bar", max_display=30, show=False)
-    plt.title("Random Forest - Shap values 1")
-    fig.tight_layout()
- #   plt.show()
-    plt.savefig("figures/plt3.png")
-
-    fig = plt.figure(dpi=200)
-    shap.summary_plot(shap_values[1], x_train_features, plot_type="dot", max_display=30, show=False)
-    plt.title("Random Forest - Shap values 1")
-    fig.tight_layout()
-   # plt.show()
-    plt.savefig("figures/plt4.png")
+ #    plt.figure()
+ #    fig = plt.figure(dpi=200)
+ #    shap.summary_plot(shap_values[0], x_train_features, plot_type="bar", max_display=30, show=False)
+ #    plt.title("Random Forest - Shap values 0")
+ #    fig.tight_layout()
+ #    matplotlib.rcParams["figure.dpi"] = 200
+ # #   plt.show()
+ #    plt.savefig("figures/plt1.png")
+ #
+ #    fig = plt.figure(dpi=200)
+ #    shap.summary_plot(shap_values[0], x_train_features, plot_type="dot", max_display=30, show=False)
+ #    plt.title("Random Forest - Shap values 0")
+ #    fig.tight_layout()
+ # #   plt.show()
+ #    plt.savefig("figures/plt2.png")
+ #
+ #    fig = plt.figure(dpi=200)
+ #    shap.summary_plot(shap_values[1], x_train_features, plot_type="bar", max_display=30, show=False)
+ #    plt.title("Random Forest - Shap values 1")
+ #    fig.tight_layout()
+ # #   plt.show()
+ #    plt.savefig("figures/plt3.png")
+ #
+ #    fig = plt.figure(dpi=200)
+ #    shap.summary_plot(shap_values[1], x_train_features, plot_type="dot", max_display=30, show=False)
+ #    plt.title("Random Forest - Shap values 1")
+ #    fig.tight_layout()
+ #   # plt.show()
+ #    plt.savefig("figures/plt4.png")
 
     # shap.summary_plot(shap_values[1], features=x_train_features, plot_type='dot', feature_names=feature_list) #, max_display=features_list_g.shape[0])
     # shap.summary_plot(shap_values[0], x_train_features, plot_type='layered_violin', max_display=30)
     # plt.show()
 
     return pd.concat([report_df, report])
+
+
+def run_random_forest_classifier(filename, x_test_features, x_train_features, y_test_labels, y_train_labels):
+    # forest2 = RandomForestClassifier()#criterion='gini', n_estimators=5, random_state=42, n_jobs=2)
+    # BalancedRandomForestClassifier(n_estimators=10)
+    #   forest.fit(x_train_features, y_train_labels)
+    ##### parameter tuning
+    # param_grid = {
+    #     'n_estimators': [5, 10, 100, 200, 500, 700, 1000],
+    #     'max_features': ['sqrt', 'log2'],
+    #     'max_depth': [4, 5, 6, 7, 8, None],
+    #     'criterion': ['gini', 'entropy']
+    # }
+    # CV_rfc = GridSearchCV(estimator=forest2, param_grid=param_grid, cv=5)
+    # CV_rfc.fit(x_train_features, y_train_labels)
+    #
+    # best_params = CV_rfc.best_params_
+    # print('Best params:')
+    # print(best_params)
+    ##### training
+    forest = RandomForestClassifier(
+        max_features='log2',  # best_params['max_features'],
+        n_estimators=500,  # best_params['n_estimators'],
+        max_depth=None,  # best_params['max_depth'],
+        criterion='entropy',  # best_params['criterion'],
+        random_state=42
+    )
+    forest.fit(x_train_features, y_train_labels)
+    print(forest.classes_)
+    y_predict = forest.predict(x_test_features)
+    print("-----report----------")
+    print(metrics.classification_report(y_test_labels, y_predict))  # output_dict=True))
+    report = pd.DataFrame.from_dict(metrics.classification_report(y_test_labels, y_predict, output_dict=True))
+    report['target'] = filename
+    report['algorithm'] = "random_forest"
+    print("-----score----------")
+    score = metrics.accuracy_score(y_test_labels, y_predict)
+    print(score)
+    report['score'] = score
+    print("---------confusion matrix--------")
+    cm = confusion_matrix(y_test_labels, y_predict)
+    print(cm)
+    return forest, report
 
 
 def decision_tree_classifier(x, y, filename, report_df):
@@ -388,15 +388,17 @@ if __name__ == '__main__':
     print(f'###################  target: {path}   #############################')  # , file=f)
     df_sessions = pd.read_pickle(path)
 
+
    # df_sessions = df_sessions.sample(500)
     df_sessions['p_id'] = df_sessions['group_id'].str.slice(0, 6)
-    df_sessions['p_id'] = df_sessions['p_id'].apply(lambda x: abs(hash(x)) % (10 ** 8))
+    df_sessions['p_id'] = df_sessions['p_id'].apply(lambda x: abs(zlib.crc32(bytes(x, "utf-8"))))
 
     # app frequencies - TODO temporary in here as long as I didnt rerun the preprocessing
   #  app_cols = [col for col in df_sessions.columns if col.startswith('f_app_')]
   #  df_sessions[app_cols] = df_sessions[app_cols].apply(lambda x: x / df_sessions['f_session_group_length_active'])
 
-    x, y = ML_helpers.prepare_df_oversampling(df_sessions)#prepare_df_undersampling(df_sessions)
+    #x, y = ML_helpers.prepare_df_oversampling(df_sessions)
+    x, y = ML_helpers.prepare_df_undersampling(df_sessions)
 
     filename = "atleastone_more_than_intention"
 
