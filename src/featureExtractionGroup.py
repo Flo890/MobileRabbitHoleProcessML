@@ -448,15 +448,12 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
         scroll_frequency = df_session_groups.loc[index_row, 'f_scrolls'] / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
         df_session_groups.loc[index_row, 'f_scroll_frequency'] = scroll_frequency
 
-        activity_resumed_frequency = df_session_groups.loc[index_row, 'f_activity_resumed'] / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
+        activity_resumed_frequency = df_session_groups.loc[index_row, 'f_activity_resumed_count'] / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
         df_session_groups.loc[index_row, 'f_activity_resumed_frequency'] = activity_resumed_frequency
 
-        internet_connected_wifi_frequency = df_session_groups.loc[index_row, 'f_internet_connected_WIFI'] / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
-        df_session_groups.loc[index_row, 'f_internet_connected_WIFI_frequency'] = internet_connected_wifi_frequency
-
-        # app frequencies
-        app_cols = [col for col in df_session_groups.columns if col.startswith('f_app_')]
-        df_session_groups[app_cols].apply(lambda x : x / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds)
+        # app frequencies TODO is below
+   #     app_cols = [col for col in df_session_groups.columns if col.startswith('f_app_')]
+    #    df_session_groups[app_cols] = df_session_groups[app_cols].apply(lambda x : x / df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds)
 
 
 
@@ -607,6 +604,19 @@ def get_features_for_sessiongroup(df_logs, df_sessions, df_session_groups):
             df_session_groups.loc[index_row, f'{a_app_cat_col}_freq'] = \
                 df_session_groups.loc[index_row, f'{a_app_cat_col}'] / df_session_groups.loc[
                     index_row, f'f_app_category_time_{category_name}']
+
+
+        internet_connected_wifi_frequency = df_session_groups.loc[index_row, 'f_internet_connected_WIFI'] / \
+                                        df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
+        df_session_groups.loc[index_row, 'f_internet_connected_WIFI_frequency'] = internet_connected_wifi_frequency
+
+        internet_connected_mobile_frequency = df_session_groups.loc[index_row, 'f_internet_connected_mobile'] / \
+                                          df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
+        df_session_groups.loc[index_row, 'f_internet_connected_mobile_frequency'] = internet_connected_mobile_frequency
+
+        internet_disconnected_frequency = df_session_groups.loc[index_row, 'f_internet_disconnected'] / \
+                                      df_session_groups.loc[index_row, 'f_session_group_length_active'].seconds
+        df_session_groups.loc[index_row, 'f_internet_disconnected_frequency'] = internet_disconnected_frequency
 
     df_session_groups_sorted = df_session_groups.sort_values(by=['group_id'])  # to "remove gaps", when processing only n groups
     print("finished extracting features")

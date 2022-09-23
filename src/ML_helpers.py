@@ -8,10 +8,10 @@ from imblearn.under_sampling import RandomUnderSampler
 from imblearn.over_sampling import RandomOverSampler
 from imblearn.over_sampling import SMOTE
 
-dataframe_dir_ml = r'..\..\RabbitHoleProcess\data\dataframes\ML'
+dataframe_dir_ml = r'./../RabbitHoleProcess\data\dataframes\ML'
 milkGreen = '#0BCB85'
 
-path_categories = '..\\..\\RabbitHoleProcess\\data\\categories\\app_categorisation_2020.csv'
+path_categories = '../../RabbitHoleProcess\\data\\categories\\app_categorisation_2020.csv'
 df_categories = pd.read_csv(path_categories, sep=';')
 df_categories.drop(columns=['Perc_users', 'Training_Coding_1', 'Training_Coding_all', 'Training_Coding_2', 'Rater1', 'Rater2'], inplace=True)
 
@@ -84,7 +84,7 @@ def clean_df(df):
     """
     # return df.drop(columns=['session_id', 'studyID', 'session_length', 'timestamp_1', 'timestamp_2', 'count', 'f_sequences_apps', 'f_esm_intention', 'f_bag_of_apps']).fillna(0)
     df.drop(df.index[df['f_session_group_timespan'].isnull()], inplace=True)
-    return df.drop(columns=['group_id', 'session_ids', 'studyID', 'timestamp_1', 'timestamp_2', 'count', 'f_sequences_apps', 'f_bag_of_apps']).fillna(0)
+    return df.drop(columns=['group_id','session_ids', 'studyID', 'timestamp_1', 'timestamp_2', 'count', 'f_sequences_apps', 'f_bag_of_apps']).fillna(0)
 
 
 def prepare_df_oversampling(df):

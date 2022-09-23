@@ -1,7 +1,8 @@
+#!/home/ru56cir/rabbithole/MobileRabbitHoleProcessML/rabbitholeenv/bin/activate python
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, StratifiedGroupKFold
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -12,11 +13,22 @@ from sklearn.metrics import confusion_matrix
 from sklearn import metrics
 import ML_helpers
 import shap
+shap.initjs()
 from sklearn import decomposition, datasets
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
 import matplotlib
+
+from random import randint
+
+def random_subset(s):
+    out = set()
+    for el in s:
+        # random coin flip
+        if randint(0, 1) == 0:
+            out.add(el)
+    return out
 
 matplotlib.rcParams["figure.dpi"] = 200
 size = 11
@@ -29,12 +41,12 @@ plt.rc('xtick', labelsize=ticksize)  # fontsize of the x tick labels
 plt.rc('ytick', labelsize=ticksize)  # fontsize of the y tick labels
 plt.rc('legend', fontsize=legendsize)  # fontsize of the legend
 
-dataframe_dir_ml = r'..\..\RabbitHoleProcess\data\dataframes\sessions_ml'
-dataframe_dir_results = rf"..\..\RabbitHoleProcess\data\results"
-dataframe_dir_ml_labeled = f'C:\projects\\rabbithole\RabbitHoleProcess\data\dataframes\sessions_ml\labled_data'
-dataframe_dir_ml_labeled_selected = f'..\..\RabbitHoleProcess\data\dataframes\ML\labled_data\labled'
-dataframe_dir_ml_labeled_all = f'M..\..\RabbitHoleProcess\data\dataframes\ML\labled_data\labled_all'
-dataframe_dir_ml_labeled_m = f'..\..\RabbitHoleProcess\data\dataframes\ML\labled_data\labled_first_more'
+dataframe_dir_ml = r'../../RabbitHoleProcess\data\dataframes\sessions_ml'
+dataframe_dir_results = rf"../../RabbitHoleProcess\data\results"
+dataframe_dir_ml_labeled = f'../../RabbitHoleProcess\data\dataframes\sessions_ml\labled_data'
+dataframe_dir_ml_labeled_selected = f'../../RabbitHoleProcess\data\dataframes\ML\labled_data\labled'
+dataframe_dir_ml_labeled_all = f'../../RabbitHoleProcess\data\dataframes\ML\labled_data\labled_all'
+dataframe_dir_ml_labeled_m = f'../../RabbitHoleProcess\data\dataframes\ML\labled_data\labled_first_more'
 
 
 def svm_classifier(x, y, filename, report_df):
@@ -128,9 +140,24 @@ def random_forest_classifier(x, y, filename, report_df):
     feature_list = x.columns  # list(x_features.columns)
     print('feature length:', len(feature_list))
 
-    x_train_features, x_test_features, y_train_labels, y_test_labels = train_test_split(x, y, test_size=0.25, random_state=42)
+   # x_train_features, x_test_features, y_train_labels, y_test_labels = train_test_split(x, y, test_size=0.25, random_state=42)
 
-    forest2 = RandomForestClassifier()#criterion='gini', n_estimators=5, random_state=42, n_jobs=2)
+    # split by participant, and stratify amount of rabbit holes
+    # https://scikit-learn.org/stable/modules/cross_validation.html#stratifiedgroupkfold
+    sgkf = StratifiedGroupKFold(n_splits=5)
+    for a, b in sgkf.split(x, y, np.array(x['p_id'])):
+        train_idxs = a
+        test_idxs = b # TODO atm uses just one fold
+        break;
+    x.drop(columns=['p_id'])
+
+    x_train_features = x.iloc[train_idxs]
+    y_train_labels = y.iloc[train_idxs]
+    x_test_features = x.iloc[test_idxs]
+    y_test_labels = y.iloc[test_idxs]
+
+
+    #forest2 = RandomForestClassifier()#criterion='gini', n_estimators=5, random_state=42, n_jobs=2)
     # BalancedRandomForestClassifier(n_estimators=10)
  #   forest.fit(x_train_features, y_train_labels)
 
@@ -185,10 +212,35 @@ def random_forest_classifier(x, y, filename, report_df):
 
     print("---------------SHAP PLOTS-------------")
     print(f'0: {forest.classes_[0]}, 1: {forest.classes_[1]}')
-    # forest.classes_ = ['no_rabbithole' 'rabbit_hole']
+  # #  forest.classes_ = ['no_rabbithole' 'rabbit_hole']
     explainer = shap.TreeExplainer(forest)
+  #   explainer = shap.Explainer(forest)
     shap_values = explainer.shap_values(x_train_features, check_additivity=False)
-    print(type(x_train_features))
+  #   shap_values = explainer(x_train_features, check_additivity=False)
+  #   print(type(x_train_features))
+  #
+  #   X = x_test_features
+  #   # ### Waterfall plot for first observation
+  #   shap_values_nparray = np.array(shap_values)
+  #
+  #   shap.plots.waterfall(shap_values_nparray[0])
+  #   # ### Forceplot for first observation
+  #   shap.plots.force(shap_values_nparray[0])
+  #
+  #   # ### Mean SHAP
+  #   shap.plots.bar(shap_values_nparray)
+  #
+  #   # ### Beeswarm plot
+  #   shap.plots.beeswarm(shap_values_nparray)
+  #
+  #   # ### Decision Plot
+  #   # Get expected value and shap values array
+  #   expected_value = explainer.expected_value
+  #   shap_array = explainer.shap_values(X)
+  #   # Descion plot for first 10 observations
+  #   shap.decision_plot(expected_value, shap_array[0:10], feature_names=list(X.columns))
+
+
 
     plt.figure()
     fig = plt.figure(dpi=200)
@@ -196,25 +248,29 @@ def random_forest_classifier(x, y, filename, report_df):
     plt.title("Random Forest - Shap values 0")
     fig.tight_layout()
     matplotlib.rcParams["figure.dpi"] = 200
-    plt.show()
+ #   plt.show()
+    plt.savefig("figures/plt1.png")
 
     fig = plt.figure(dpi=200)
     shap.summary_plot(shap_values[0], x_train_features, plot_type="dot", max_display=30, show=False)
     plt.title("Random Forest - Shap values 0")
     fig.tight_layout()
-    plt.show()
+ #   plt.show()
+    plt.savefig("figures/plt2.png")
 
     fig = plt.figure(dpi=200)
     shap.summary_plot(shap_values[1], x_train_features, plot_type="bar", max_display=30, show=False)
     plt.title("Random Forest - Shap values 1")
     fig.tight_layout()
-    plt.show()
+ #   plt.show()
+    plt.savefig("figures/plt3.png")
 
     fig = plt.figure(dpi=200)
     shap.summary_plot(shap_values[1], x_train_features, plot_type="dot", max_display=30, show=False)
     plt.title("Random Forest - Shap values 1")
     fig.tight_layout()
-    plt.show()
+   # plt.show()
+    plt.savefig("figures/plt4.png")
 
     # shap.summary_plot(shap_values[1], features=x_train_features, plot_type='dot', feature_names=feature_list) #, max_display=features_list_g.shape[0])
     # shap.summary_plot(shap_values[0], x_train_features, plot_type='layered_violin', max_display=30)
@@ -332,11 +388,15 @@ if __name__ == '__main__':
     print(f'###################  target: {path}   #############################')  # , file=f)
     df_sessions = pd.read_pickle(path)
 
-    # app frequencies - TODO temporary in here as long as I didnt rerun the preprocessing
-    app_cols = [col for col in df_sessions.columns if col.startswith('f_app_')]
-    df_sessions[app_cols] = df_sessions[app_cols].apply(lambda x: x / df_sessions['f_session_group_length_active'])
+   # df_sessions = df_sessions.sample(500)
+    df_sessions['p_id'] = df_sessions['group_id'].str.slice(0, 6)
+    df_sessions['p_id'] = df_sessions['p_id'].apply(lambda x: abs(hash(x)) % (10 ** 8))
 
-    x, y = ML_helpers.prepare_df_undersampling(df_sessions)
+    # app frequencies - TODO temporary in here as long as I didnt rerun the preprocessing
+  #  app_cols = [col for col in df_sessions.columns if col.startswith('f_app_')]
+  #  df_sessions[app_cols] = df_sessions[app_cols].apply(lambda x: x / df_sessions['f_session_group_length_active'])
+
+    x, y = ML_helpers.prepare_df_oversampling(df_sessions)#prepare_df_undersampling(df_sessions)
 
     filename = "atleastone_more_than_intention"
 
