@@ -41,12 +41,12 @@ plt.rc('xtick', labelsize=ticksize)  # fontsize of the x tick labels
 plt.rc('ytick', labelsize=ticksize)  # fontsize of the y tick labels
 plt.rc('legend', fontsize=legendsize)  # fontsize of the legend
 
-dataframe_dir_ml = r'../../RabbitHoleProcess\data\dataframes\sessions_ml'
-dataframe_dir_results = rf"../../RabbitHoleProcess\data\results"
-dataframe_dir_ml_labeled = f'../../RabbitHoleProcess\data\dataframes\sessions_ml\labled_data'
-dataframe_dir_ml_labeled_selected = f'../../RabbitHoleProcess\data\dataframes\ML\labled_data\labled'
-dataframe_dir_ml_labeled_all = f'../../RabbitHoleProcess\data\dataframes\ML\labled_data\labled_all'
-dataframe_dir_ml_labeled_m = f'../../RabbitHoleProcess\data\dataframes\ML\labled_data\labled_first_more'
+dataframe_dir_ml = r'../../RabbitHoleProcess/data/dataframes/sessions_ml'
+dataframe_dir_results = rf"../../RabbitHoleProcess/data/results"
+dataframe_dir_ml_labeled = f'../../RabbitHoleProcess/data/dataframes/sessions_ml/labled_data'
+dataframe_dir_ml_labeled_selected = f'../../RabbitHoleProcess/data/dataframes/ML/labled_data/labled'
+dataframe_dir_ml_labeled_all = f'../../RabbitHoleProcess/data/dataframes/ML/labled_data/labled_all'
+dataframe_dir_ml_labeled_m = f'../../RabbitHoleProcess/data/dataframes/ML/labled_data/labled_first_more'
 
 
 def svm_classifier(x, y, filename, report_df):

@@ -8,10 +8,10 @@ from imblearn.under_sampling import RandomUnderSampler
 from imblearn.over_sampling import RandomOverSampler
 from imblearn.over_sampling import SMOTE
 
-dataframe_dir_ml = r'./../RabbitHoleProcess\data\dataframes\ML'
+dataframe_dir_ml = r'./../RabbitHoleProcess/data/dataframes/ML'
 milkGreen = '#0BCB85'
 
-path_categories = '../../RabbitHoleProcess\\data\\categories\\app_categorisation_2020.csv'
+path_categories = '../../RabbitHoleProcess/data/categories/app_categorisation_2020.csv'
 df_categories = pd.read_csv(path_categories, sep=';')
 df_categories.drop(columns=['Perc_users', 'Training_Coding_1', 'Training_Coding_all', 'Training_Coding_2', 'Rater1', 'Rater2'], inplace=True)
 
