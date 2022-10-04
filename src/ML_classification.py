@@ -138,6 +138,12 @@ def random_forest_classifier(x, y, filename, report_df):
     # split by participant, and stratify amount of rabbit holes
     # https://scikit-learn.org/stable/modules/cross_validation.html#stratifiedgroupkfold
     sgkf = StratifiedGroupKFold(n_splits=10)
+
+    scores_strat, model = run_cross_validation(
+        X=x.columns, y=y.columns, data=data_df, preprocess_X='zscore', cv=cv_stratified,
+        groups=groups, problem_type='regression', model='linreg',
+        return_estimator='final', scoring='neg_mean_absolute_error')
+
     reports = []
     for a, b in sgkf.split(x, y, np.array(x['p_id'])):
         train_idxs = a
