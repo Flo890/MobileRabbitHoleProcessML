@@ -144,7 +144,7 @@ def random_forest_classifier(x, y, filename, report_df):
 
     # split by participant, and stratify amount of rabbit holes
     # https://scikit-learn.org/stable/modules/cross_validation.html#stratifiedgroupkfold
-    sgkf = StratifiedGroupKFold(n_splits=5)
+    sgkf = StratifiedGroupKFold(n_splits=3)
     for a, b in sgkf.split(x, y, np.array(x['p_id'])):
         train_idxs = a
         test_idxs = b # TODO atm uses just one fold
