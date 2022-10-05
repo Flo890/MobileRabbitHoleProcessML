@@ -137,6 +137,11 @@ def kNeighbors_classifier(x, y, filename, report_df):
 def random_forest_classifier(x, y, filename, report_df):
     print('\n\n***Random Forest***')
 
+    # filter out app features
+    x = x.loc[ : , [col for col in x.columns if not ('f_app_' in col and not 'f_app_category_' in col)]]
+    x = x.loc[ : , [col for col in x.columns if not ('f_clicks_' in col and not 'f_clicks_app_category_' in col)]]
+    x = x.loc[ : , [col for col in x.columns if not ('f_scrolls_' in col and not 'f_scrolls_app_category_' in col)]]
+
     feature_list = x.columns  # list(x_features.columns)
     print('feature length:', len(feature_list))
 
@@ -147,7 +152,7 @@ def random_forest_classifier(x, y, filename, report_df):
     sgkf = StratifiedGroupKFold(n_splits=3)
     for a, b in sgkf.split(x, y, np.array(x['p_id'])):
         train_idxs = a
-        test_idxs = b # TODO atm uses just one fold
+        test_idxs = b
         break;
     x.drop(columns=['p_id'])
 
