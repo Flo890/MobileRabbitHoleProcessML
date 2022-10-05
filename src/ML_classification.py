@@ -142,8 +142,7 @@ def random_forest_classifier(x, y, filename, report_df):
     x = x.loc[ : , [col for col in x.columns if not ('f_clicks_' in col and not 'f_clicks_app_category_' in col)]]
     x = x.loc[ : , [col for col in x.columns if not ('f_scrolls_' in col and not 'f_scrolls_app_category_' in col)]]
 
-    feature_list = x.columns  # list(x_features.columns)
-    print('feature length:', len(feature_list))
+
 
    # x_train_features, x_test_features, y_train_labels, y_test_labels = train_test_split(x, y, test_size=0.25, random_state=42)
 
@@ -161,6 +160,11 @@ def random_forest_classifier(x, y, filename, report_df):
     x_test_features = x.iloc[test_idxs]
     y_test_labels = y.iloc[test_idxs]
 
+    x_train_features = x_train_features.loc[:, [col for col in x_train_features.columns if not ('p_id' in col)]]
+    x_test_features = x_test_features.loc[:, [col for col in x_test_features.columns if not ('p_id' in col)]]
+
+    feature_list = x_train_features.columns  # list(x_features.columns)
+    print('feature length:', len(feature_list))
 
     #forest2 = RandomForestClassifier()#criterion='gini', n_estimators=5, random_state=42, n_jobs=2)
     # BalancedRandomForestClassifier(n_estimators=10)
@@ -397,9 +401,6 @@ if __name__ == '__main__':
     df_sessions['p_id'] = df_sessions['group_id'].str.slice(0, 6)
     df_sessions['p_id'] = df_sessions['p_id'].apply(lambda x: abs(hash(x)) % (10 ** 8))
 
-    # app frequencies - TODO temporary in here as long as I didnt rerun the preprocessing
-  #  app_cols = [col for col in df_sessions.columns if col.startswith('f_app_')]
-  #  df_sessions[app_cols] = df_sessions[app_cols].apply(lambda x: x / df_sessions['f_session_group_length_active'])
 
     x, y = ML_helpers.prepare_df_oversampling(df_sessions)#prepare_df_undersampling(df_sessions)
 
