@@ -602,7 +602,13 @@ if __name__ == '__main__':
 
     df_sessions_all_labeled['f_session_length'] = df_sessions_all_labeled['f_session_length'].apply(lambda x: (x /1)).apply(lambda x: x.total_seconds())
 
+    # filter out app features
+    df_sessions_all_labeled = df_sessions_all_labeled.loc[:, [col for col in df_sessions_all_labeled.columns if not ('f_app_' in col and not 'f_app_category_' in col)]]
+    df_sessions_all_labeled = df_sessions_all_labeled.loc[:, [col for col in df_sessions_all_labeled.columns if not ('f_clicks_' in col and not 'f_clicks_app_category_' in col)]]
+    df_sessions_all_labeled = df_sessions_all_labeled.loc[:, [col for col in df_sessions_all_labeled.columns if not ('f_scrolls_' in col and not 'f_scrolls_app_category_' in col)]]
+
     df_sessions_all_labeled.to_csv(r"C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_with_features\all_sessions_with_features.csv",sep=";")
+    print('saved df_sessions_all_labeled to csv.')
 
    # df_sessions_all_labeled = pd.read_pickle(path)
     df_rabbitHole = get_rabbitHoleSessions(df_sessions_all_labeled)
