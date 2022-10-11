@@ -609,6 +609,7 @@ if __name__ == '__main__':
 
     df_sessions_all_labeled.to_csv(r"C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_with_features\all_sessions_with_features.csv",sep=";")
     print('saved df_sessions_all_labeled to csv.')
+    df_sessions_all_labeled.to_pickle(r"C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_with_features\all_sessions_with_features.pickle")
 
    # df_sessions_all_labeled = pd.read_pickle(path)
     df_rabbitHole = get_rabbitHoleSessions(df_sessions_all_labeled)
