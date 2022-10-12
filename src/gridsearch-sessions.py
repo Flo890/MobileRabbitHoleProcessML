@@ -341,33 +341,33 @@ def decision_tree_classifier(x, y, filename, report_df):
     print(type(report_df))
     print(type(report))
 
-    print("---------------SHAP PLOTS-------------")
-    print(f'0: {clf_model.classes_[0]}, 1: {clf_model.classes_[1]}')
-    # forest.classes_ = ['no_rabbithole' 'rabbit_hole']
-    explainer = shap.TreeExplainer(clf_model)
-    shap_values = explainer.shap_values(x_train)
-
-    print(type(x_train))
-    plt.show()
-
-    plt.figure()
-
+    # print("---------------SHAP PLOTS-------------")
+    # print(f'0: {clf_model.classes_[0]}, 1: {clf_model.classes_[1]}')
+    # # forest.classes_ = ['no_rabbithole' 'rabbit_hole']
+    # explainer = shap.TreeExplainer(clf_model)
+    # shap_values = explainer.shap_values(x_train)
+    #
+    # print(type(x_train))
+    # plt.show()
+    #
     # plt.figure()
-    shap.summary_plot(shap_values[0], x_train, plot_type="bar", max_display=15, show=False)
-    plt.title("Decision Tree - Shap values 0")
-    plt.show()
-
-    shap.summary_plot(shap_values[0], x_train, plot_type="dot", max_display=15, show=False)
-    plt.title("Decision Tree - Shap values 0")
-    plt.show()
-
-    shap.summary_plot(shap_values[1], x_train, plot_type="bar", max_display=15, show=False)
-    plt.title("Decision Tree - Shap values 1")
-    plt.show()
-
-    shap.summary_plot(shap_values[1], x_train, plot_type="dot", max_display=15, show=False)
-    plt.title("Decision Tree - Shap values 1")
-    plt.show()
+    #
+    # # plt.figure()
+    # shap.summary_plot(shap_values[0], x_train, plot_type="bar", max_display=15, show=False)
+    # plt.title("Decision Tree - Shap values 0")
+    # plt.show()
+    #
+    # shap.summary_plot(shap_values[0], x_train, plot_type="dot", max_display=15, show=False)
+    # plt.title("Decision Tree - Shap values 0")
+    # plt.show()
+    #
+    # shap.summary_plot(shap_values[1], x_train, plot_type="bar", max_display=15, show=False)
+    # plt.title("Decision Tree - Shap values 1")
+    # plt.show()
+    #
+    # shap.summary_plot(shap_values[1], x_train, plot_type="dot", max_display=15, show=False)
+    # plt.title("Decision Tree - Shap values 1")
+    # plt.show()
 
     print(type(feature_list))
     return pd.concat([report_df, report])
@@ -416,8 +416,9 @@ print(f'###################  target: {path}   #############################')  #
 df_sessions = pd.read_pickle(path)
 
 df_sessions = df_sessions[~df_sessions['f_session_length'].isnull()]
-#df_sessions = df_sessions.fillna(0)
-df_sessions = df_sessions.fillna(pd.Timedelta(seconds=0))
+df_sessions = df_sessions.drop(['session_length'],axis=1) # f_session_length exists instead (numeric)
+df_sessions = df_sessions.fillna(0)
+#df_sessions = df_sessions.fillna(pd.Timedelta(seconds=0))
 
 lstKeep = []
 for c in df_sessions.columns:
@@ -440,6 +441,10 @@ df_sessions["f_weekday"] = df_sessions[lstKeep].apply(lambda x: sum(x.values * t
 df_sessions['f_click_frequency'] = df_sessions['f_clicks'] / df_sessions['f_session_length']
 df_sessions['f_scroll_frequency'] = df_sessions['f_scrolls'] / df_sessions['f_session_length']
 
+# remove users, go get equal set as group prediction:
+df_sessions = df_sessions[df_sessions.studyID != 'AN09BI']
+df_sessions = df_sessions[df_sessions.studyID != 'NI23HE']
+df_sessions = df_sessions[df_sessions.studyID != 'PI02MA']
 
 lstFeatures = [
     #'f_activity_resumed_count', TODO
@@ -546,5 +551,11 @@ report_all, forest = random_forest_classifier(xTrain, yTrain, xVal, yVal, filena
 #  report_all = svm_classifier(x, y, filename, report_all)
 
 #report_all.to_csv(fr'./out/report_ml_undersampling_combined_test_no_personal_more1.csv')
+
+print("----- Report Validation (run 3) -----")
+y_predict = forest.predict(xTest)
+print(metrics.classification_report(yTest, y_predict))  # output_dict=True))
+#report = pd.DataFrame.from_dict(metrics.classification_report(yTest, y_predict, output_dict=True))
+print(metrics.accuracy_score(yTest, y_predict))
 
 print('ML done.')
