@@ -530,6 +530,67 @@ xTest, yTest  = ML_helpers.oversampling_smote(dfTest[lstFeatures], dfTest["targe
 
 
 ### Grid Search code goes here
+print('Grid Search starting.')
+param_grid = {
+    'n_estimators': [5, 10, 100, 200, 500, 700],  # , 1000], #, 2000, 3000],
+    'max_features': ['sqrt', 'log2', None],
+    'max_depth': [4, 5, 6, 7, 8, 10, 12, 14, None],
+    'criterion': ['gini', 'entropy', 'log_loss'],
+    'min_samples_leaf': [1, 2, 4],
+    'min_samples_split': [2, 5, 10],
+}
+lst = []
+for e in param_grid['n_estimators']:
+    for mf in param_grid['max_features']:
+        for md in param_grid['max_depth']:
+            for c in param_grid['criterion']:
+                for minl in param_grid['min_samples_leaf']:
+                    for mins in param_grid['min_samples_split']:
+                        for runs in range(5):
+                            lst.append([e, mf, md, c, minl, mins])
+len(lst)
+
+
+def doJob(x):
+    e, mf, md, c, minl, mins = x
+    starttime = time.time()
+    forest = RandomForestClassifier(
+        max_features=mf,
+        n_estimators=e,
+        max_depth=md,
+        criterion=c,
+        # random_state=42,
+        min_samples_leaf=minl,
+        min_samples_split=mins,
+        n_jobs=1
+    )
+    forest.fit(xTrain, yTrain)
+    endtime = time.time()
+    y_predict = forest.predict(xTrain)
+    scoreTrain = metrics.accuracy_score(yTrain, y_predict)
+
+    y_predict = forest.predict(xVal)
+    scoreTest = metrics.accuracy_score(yVal, y_predict)
+
+    return ["RF", e, mf, md, c, minl, mins, scoreTrain, scoreTest, endtime - starttime]
+
+
+with Pool(40) as p:
+    r = list(tqdm(p.imap(doJob, lst), total=len(lst)))
+
+
+dfStats = pd.DataFrame(r)
+dfStats.columns = ["Model", "n_estimators", "max_features", "max_depth", "criterion", "min_samples_leaf", "min_samples_split", "AccTrain", "AccTest", "TrainTime"]
+dfStats = dfStats.groupby(["Model", "n_estimators", "max_features", "max_depth", "min_samples_leaf", "min_samples_split", "criterion"]).describe()
+dfStats = dfStats[[("AccTrain", "mean"), ("AccTrain", "std"), ("AccTest", "mean"), ("AccTest", "std"), ("TrainTime", "mean")]]
+dfStats.columns = ["AccTrainMean", "AccTrainSD", "AccTestMean", "AccTestSD", "TrainTimeMean"]
+dfStats = dfStats.reset_index()
+dfStats = dfStats.sort_values("AccTestMean", ascending=False)
+dfStats[dfStats.AccTestMean >.875]
+dfStats.to_pickle('dfStatsGridSearch.pickle')
+
+
+print('Grid Search done.')
 
 
 
