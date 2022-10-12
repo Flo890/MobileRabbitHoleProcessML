@@ -172,8 +172,8 @@ def filter_sessions_outliners_all():
 
     # sns.distplot(df_session_features['f_session_length'] / pd.Timedelta(milliseconds=1))
     # plt.show()
-    sns.boxplot(df_all_sessions['f_session_group_timespan'])
-    plt.show()
+ #   sns.boxplot(df_all_sessions['f_session_group_timespan'])
+  #  plt.show()
 
     # quantile LIMIT -------------------------------------- # TODO limits checken
     upper_limit = df_all_sessions['f_session_group_timespan'].quantile(0.996)  # bis 5.5h bei 0.995 bis 3.5h
@@ -374,84 +374,84 @@ def drop_esm_features(df_sessions):
 
 if __name__ == '__main__':
 
-    # 4. Extract the features from the logs and saves it to the sessions df
-    path_list = pathlib.Path(r'D:\usersorted_logs_preprocessed').glob('**/*.pickle')
-  #  path_list = pathlib.Path(r'C:\Users\florianb\Downloads').glob('**/*.pickle')
-
-    for data_path in path_list:
-
-        print(f'###### {data_path.stem} ######')
-        path_in_str = str(data_path)
-        # df_all_logs = pd.read_pickle(path_in_str)
-        print('session_file', f'C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_raw_extracted\\{data_path.stem}-sessions.pickle')
-        df_all_sessions = pd.read_pickle(f'C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_raw_extracted\\{data_path.stem}-sessions.pickle')
-
-        print(data_path.stem)
-        # session_for_id = df_all_sessions[data_path.stem]
-
-
-        df = pd.read_pickle(
-            f"C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_with_features\\{data_path.stem}.pickle")
-        res = grouped_sessions.build_session_sessions(df, 120)
-
-        res2 = grouped_sessions.session_sessions_to_aggregate_df(res)
-
-        df_logs = pd.read_pickle(f"D:\\usersorted_logs_preprocessed\\{data_path.stem}.pickle")
-        #"C:\\Users\\florianb\\Downloads\\AN23GE.pickle")
-              # AN23GE.pickle")   AN09BI    LE13FO
-
-        ### add column group_id to df_logs
-        # create mapping session_id -> group_id
-        mapping = dict()
-        counter = 0
-        for a_group_i in range(len(res2)):
-            a_group = res2.iloc[a_group_i]
-            for a_session in a_group['session_ids']:
-                mapping[a_session[counter].split("-")[0]] = a_group['group_id']
-                counter += 1
-        mapping[''] = None
-
-        df_logs['group_id'] = df_logs['session_id'].apply(lambda x: mapping[str(x)])
-
-        df_all_sessions = pd.read_pickle(
-            f"C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_raw_extracted\\{data_path.stem}-sessions.pickle")
-
-        df_session_group_features = featureExtractionGroup.get_features_for_sessiongroup(df_logs, df_all_sessions, res2)
-
-        print('Writing out-file')
-        with open(fr'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\session_group_features\{data_path.stem}.pickle', 'wb') as f:
-            pickle.dump(df_session_group_features[0], f, pickle.HIGHEST_PROTOCOL)
-
-
-    # 5. concat all session and features df from each user to one
-    concat_sessions()
-
-    # 6. Create the bag of apps for each sessions (using all session df)
-    bag_of_apps_create_vocab()
-    bag_of_apps_create_bags()
-
-    # 7. Convert timedeltas to milliseconds and drop unused columns
-    drop_sequences()
- #   convert_timedeletas() TODO values are already int
-
-    # 10. On hot encode colums like esm
-    # one_hot_encoding_dummies()
-    one_hot_encoding_scilearn()
+ #    # 4. Extract the features from the logs and saves it to the sessions df
+ #    path_list = pathlib.Path(r'D:\usersorted_logs_preprocessed').glob('**/*.pickle')
+ #  #  path_list = pathlib.Path(r'C:\Users\florianb\Downloads').glob('**/*.pickle')
+ #
+ #    for data_path in path_list:
+ #
+ #        print(f'###### {data_path.stem} ######')
+ #        path_in_str = str(data_path)
+ #        # df_all_logs = pd.read_pickle(path_in_str)
+ #        print('session_file', f'C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_raw_extracted\\{data_path.stem}-sessions.pickle')
+ #        df_all_sessions = pd.read_pickle(f'C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_raw_extracted\\{data_path.stem}-sessions.pickle')
+ #
+ #        print(data_path.stem)
+ #        # session_for_id = df_all_sessions[data_path.stem]
+ #
+ #
+ #        df = pd.read_pickle(
+ #            f"C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_with_features\\{data_path.stem}.pickle")
+ #        res = grouped_sessions.build_session_sessions(df, 120)
+ #
+ #        res2 = grouped_sessions.session_sessions_to_aggregate_df(res)
+ #
+ #        df_logs = pd.read_pickle(f"D:\\usersorted_logs_preprocessed\\{data_path.stem}.pickle")
+ #        #"C:\\Users\\florianb\\Downloads\\AN23GE.pickle")
+ #              # AN23GE.pickle")   AN09BI    LE13FO
+ #
+ #        ### add column group_id to df_logs
+ #        # create mapping session_id -> group_id
+ #        mapping = dict()
+ #        counter = 0
+ #        for a_group_i in range(len(res2)):
+ #            a_group = res2.iloc[a_group_i]
+ #            for a_session in a_group['session_ids']:
+ #                mapping[a_session[counter].split("-")[0]] = a_group['group_id']
+ #                counter += 1
+ #        mapping[''] = None
+ #
+ #        df_logs['group_id'] = df_logs['session_id'].apply(lambda x: mapping[str(x)])
+ #
+ #        df_all_sessions = pd.read_pickle(
+ #            f"C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_raw_extracted\\{data_path.stem}-sessions.pickle")
+ #
+ #        df_session_group_features = featureExtractionGroup.get_features_for_sessiongroup(df_logs, df_all_sessions, res2)
+ #
+ #        print('Writing out-file')
+ #        with open(fr'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\session_group_features\{data_path.stem}.pickle', 'wb') as f:
+ #            pickle.dump(df_session_group_features[0], f, pickle.HIGHEST_PROTOCOL)
+ #
+ #
+ #    # 5. concat all session and features df from each user to one
+ #    concat_sessions()
+ #
+ #    # 6. Create the bag of apps for each sessions (using all session df)
+ #    bag_of_apps_create_vocab()
+ #    bag_of_apps_create_bags()
+ #
+ #    # 7. Convert timedeltas to milliseconds and drop unused columns
+ #    drop_sequences()
+ # #   convert_timedeletas() TODO values are already int
+ #
+ #    # 10. On hot encode colums like esm
+ #    # one_hot_encoding_dummies()
+ #    one_hot_encoding_scilearn()
 
     # 11. Filter outliners
     filter_sessions_outliners_all()
-
-    # 12. Only use users that completed the second questionnaire # TODO weiter vorne in der pipeline machen
-    filter_users()
-
-    # 13. reduce feautre dimension by grouping columns together
-    reduce_feature_dimension()
-
-    # 13. create labels as targets (only works with onhot encoded data)
-    create_labels_single()
-    # labeling_combined()
-
-    # 14. If needed - remove personal features like age, gender or absentminded/general use scores
-    remove_personalised_features()
-
-    print('preprocessingGroup main() done.')
+    #
+    # # 12. Only use users that completed the second questionnaire # TODO weiter vorne in der pipeline machen
+    # filter_users()
+    #
+    # # 13. reduce feautre dimension by grouping columns together
+    # reduce_feature_dimension()
+    #
+    # # 13. create labels as targets (only works with onhot encoded data)
+    # create_labels_single()
+    # # labeling_combined()
+    #
+    # # 14. If needed - remove personal features like age, gender or absentminded/general use scores
+    # remove_personalised_features()
+    #
+    # print('preprocessingGroup main() done.')

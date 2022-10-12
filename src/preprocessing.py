@@ -22,7 +22,7 @@ dataframe_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframe
 dataframe_dir_live = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\live'
 
 dataframe_dir_users = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users'
-dataframe_dir_ml = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML'
+dataframe_dir_ml = r'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_ml'
 dataframe_dir_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions'
 dataframe_dir_sessions_features = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions_features'
 dataframe_dir_bagofapps_vocab = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\bag_of_apps_vocabs'
@@ -787,54 +787,54 @@ def clean_df():
 if __name__ == '__main__':
     pd.set_option('display.max_columns', None)
 
-    # 1. Extract the logs from the raw database files
-    extractData()
-
-    # 2. Extract the users without logs from raw database files
-    extractUser()
-
-    # 3. Run the preprocessing steps like transform timestams and extract sessions usw
-    preprocessing()
-
-    # 4. Extract the features from the logs and saves it to the sessions df
-    extract_features()
-
-    # 5. concat all session and features df from each user to one
-    # concat_features_dic() #old
-    concat_sessions()
-
-    # 6. Create the bag of apps for each sessions (using all session df)
-    bag_of_apps_create_vocab()
-    bag_of_apps_create_bags()
-
-    # 7. Convert timedeltas to milliseconds and drop unused columns
-    drop_sequences()
-    convert_timedeletas()
-
-    #  Filter the session to give an overview over sessions with esm
-    # filter_sessions_esm_user_based()
-
-    # 10. On hot encode colums like esm
-    # one_hot_encoding_dummies()
-    one_hot_encoding_scilearn()
-
-    # Bag and endcode demograpgics age
-    # demographics_encode_age()
+    # # 1. Extract the logs from the raw database files
+    # extractData()
+    #
+    # # 2. Extract the users without logs from raw database files
+    # extractUser()
+    #
+    # # 3. Run the preprocessing steps like transform timestams and extract sessions usw
+    # preprocessing()
+    #
+    # # 4. Extract the features from the logs and saves it to the sessions df
+    # extract_features()
+    #
+    # # 5. concat all session and features df from each user to one
+    # # concat_features_dic() #old
+    # concat_sessions()
+    #
+    # # 6. Create the bag of apps for each sessions (using all session df)
+    # bag_of_apps_create_vocab()
+    # bag_of_apps_create_bags()
+    #
+    # # 7. Convert timedeltas to milliseconds and drop unused columns
+    # drop_sequences()
+    # convert_timedeletas()
+    #
+    # #  Filter the session to give an overview over sessions with esm
+    # # filter_sessions_esm_user_based()
+    #
+    # # 10. On hot encode colums like esm
+    # # one_hot_encoding_dummies()
+    # one_hot_encoding_scilearn()
+    #
+    # # Bag and endcode demograpgics age
+    # # demographics_encode_age()
 
     # 11. Filter outliners
     filter_sessions_outliners_all()
-
-    # 12. Only use users that completed the second questionnaire
-    filter_users()
-
-    # 13. reduce feautre dimension by grouping columns together
-    reduce_feature_dimension()
-
-    # 13. create labels as targets (only works with onhot encoded data)
-    create_labels_single()
-    # labeling_combined()
-
-    # 14. If needed - remove personal features like age, gender or absentminded/general use scores
-    remove_personalised_features()
+    #
+    # # 12. Only use users that completed the second questionnaire
+    # filter_users()
+    #
+    # # 13. reduce feautre dimension by grouping columns together
+    # reduce_feature_dimension()
+    #
+    # # 13. create labels as targets (only works with onhot encoded data)
+    # create_labels_single()
+    # # labeling_combined()
+    #
+    # # 14. If needed - remove personal features like age, gender or absentminded/general use scores
+    # remove_personalised_features()
 
     # clean_df()
