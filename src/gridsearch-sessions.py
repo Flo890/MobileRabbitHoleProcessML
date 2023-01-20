@@ -315,7 +315,7 @@ def random_forest_classifier(x_train_features, y_train_labels, x_test_features, 
     plt.show()
 
     fig2 = shap.dependence_plot("f_click_frequency", shap_values[1], x_train_features, interaction_index="f_click_frequency")
-    fig2.savefig("C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\results\\plots\\SESSIONS\\shap-scatter-clickfreq.pdf")
+   #fig2.savefig("C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\results\\plots\\SESSIONS\\shap-scatter-clickfreq.pdf")
 
     # shap.summary_plot(shap_values[1], features=x_train_features, plot_type='dot', feature_names=feature_list) #, max_display=features_list_g.shape[0])
     # shap.summary_plot(shap_values[0], x_train_features, plot_type='layered_violin', max_display=30)
@@ -543,10 +543,14 @@ def calcnewtargetposneg(row):
         else:
             return 'Pos'
 
+# target label representing the new, user-centered RH definition.
 df_sessions['f_newtarget_rh'] = df_sessions.apply(lambda x: calcnewtarget(x), axis=1)
-
+# same as above, but additionally distinguishing between good and bad rabbithole
 df_sessions['f_newtarget_rh2'] = df_sessions.apply(lambda x: calcnewtargetposneg(x), axis=1)
 
+
+# towards ML: filter out NaN sessions
+df_sessions = df_sessions[df_sessions['f_newtarget_rh'] != 'NaN']
 
 lstFeatures = sorted(lstFeatures)
 
@@ -566,13 +570,13 @@ dfTrain = df_sessions[df_sessions.studyID.isin(trainIDs)]
 dfVal = df_sessions[df_sessions.studyID.isin(validationIDs)]
 dfTest = df_sessions[df_sessions.studyID.isin(testIDs)]
 
-xTrain, yTrain = ML_helpers.oversampling_smote(dfTrain[lstFeatures], dfTrain["target_label"])
+xTrain, yTrain = ML_helpers.oversampling_smote(dfTrain[lstFeatures], dfTrain["f_newtarget_rh"])
 #xTrain, yTrain = xTrain.values, yTrain.values
-xVal, yVal = ML_helpers.oversampling_smote(dfVal[lstFeatures], dfVal["target_label"])
+xVal, yVal = ML_helpers.oversampling_smote(dfVal[lstFeatures], dfVal["f_newtarget_rh"])
 #xVal, yVal = xVal.values, yVal.values
 #xTest, yTest = dfTest[lstFeatures], dfTest["target_label"]
 
-xTest, yTest  = ML_helpers.oversampling_smote(dfTest[lstFeatures], dfTest["target_label"])
+xTest, yTest  = ML_helpers.oversampling_smote(dfTest[lstFeatures], dfTest["f_newtarget_rh"])
 
 
 
@@ -648,7 +652,7 @@ xTest, yTest  = ML_helpers.oversampling_smote(dfTest[lstFeatures], dfTest["targe
 #df_sessions['p_id'] = df_sessions['p_id'].apply(lambda x: abs(hash(x)) % (10 ** 8))
 
 print('ML start.')
-filename = "atleastone_more_than_intention"
+filename = "newdefinition"
 
 #  report_all = decision_tree_classifier(x, y, filename, report_all)
 
