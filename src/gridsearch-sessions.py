@@ -518,6 +518,36 @@ for c in df_sessions.columns:
         None
         lstFeatures.append(c)
 
+
+# new target label for MobileHCI'23
+def calcnewtarget(row):
+    if row['f_esm_track_of_time'] == '':
+        return 'NaN'
+    elif float(row['f_esm_track_of_time']) < 3: # maybe adjust this threshold
+        return 'No'
+    elif (row['f_esm_intention'] == 'No concrete intention') | (row['f_esm_more_than_intention'] == 'Yes'):
+        return 'Yes'
+    elif (row['f_esm_intention'] != '') & (row['f_esm_more_than_intention'] != ''):
+        return 'No'
+    else:
+        return 'NaN'
+
+def calcnewtargetposneg(row):
+    if row['f_newtarget_rh'] != 'Yes':
+        return row['f_newtarget_rh']
+    else:
+        if row['f_esm_regret'] == '':
+            return 'NaN'
+        elif float(row['f_esm_regret']) >= 3: # maybe adjust this threshold
+            return 'Neg'
+        else:
+            return 'Pos'
+
+df_sessions['f_newtarget_rh'] = df_sessions.apply(lambda x: calcnewtarget(x), axis=1)
+
+df_sessions['f_newtarget_rh2'] = df_sessions.apply(lambda x: calcnewtargetposneg(x), axis=1)
+
+
 lstFeatures = sorted(lstFeatures)
 
 len(sorted(lstFeatures))
