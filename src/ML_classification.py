@@ -391,7 +391,9 @@ if __name__ == '__main__':
 
     report_all = pd.DataFrame()
 
-    path = fr'../../RabbitHoleProcess/data/dataframes/sessiongroups-ml/labled_data/user-sessions_features_all_labled_more_than_intention_normal_age_no_esm_no_personal.pickle'
+ #   path = fr'../../RabbitHoleProcess/data/dataframes/sessiongroups-ml/labled_data/user-sessions_features_all_labled_more_than_intention_normal_age_no_esm_no_personal.pickle'
+    path = fr'../../RabbitHoleProcess/data/dataframes/sessions_ml/labled_data/user-sessions_features_all_labled_more_than_intention_with_esm.pickle'
+
     # path = fr'{dataframe_dir_ml_labeled}\user-sessions_features_all_labled_more_than_intention_normal_age_no_esm.pickle'
 
     print(f'###################  target: {path}   #############################')  # , file=f)

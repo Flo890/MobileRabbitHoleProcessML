@@ -263,7 +263,7 @@ def random_forest_classifier(x_train_features, y_train_labels, x_test_features, 
     #   shap.plots.bar(shap_values_nparray)
     #
     #   # ### Beeswarm plot
-    #   shap.plots.beeswarm(shap_values_nparray)
+    #shap.plots.beeswarm(shap_values_nparray)
     #
     #   # ### Decision Plot
     #   # Get expected value and shap values array
@@ -272,21 +272,21 @@ def random_forest_classifier(x_train_features, y_train_labels, x_test_features, 
     #   # Descion plot for first 10 observations
     #   shap.decision_plot(expected_value, shap_array[0:10], feature_names=list(X.columns))
 
-    # plt.figure()
-    # fig = plt.figure(dpi=200)
-    # shap.summary_plot(shap_values[0], x_train_features, plot_type="bar", max_display=20, show=False)
-    # plt.title("Random Forest - Shap values 0")
-    # fig.tight_layout()
-    # matplotlib.rcParams["figure.dpi"] = 200
-    # plt.show()
+    plt.figure()
+    fig = plt.figure(dpi=200)
+    shap.summary_plot(shap_values[0], x_train_features, plot_type="bar", max_display=20, show=False)
+    plt.title("Random Forest - Shap values 0")
+    fig.tight_layout()
+    matplotlib.rcParams["figure.dpi"] = 200
+    plt.show()
     # plt.savefig("../../RabbitHoleProcess\\data\\results\\figures\\plt1.png")
     #
-    # fig = plt.figure(dpi=200)
-    # shap.summary_plot(shap_values[1], x_train_features, plot_type="dot", max_display=20, show=False)
-    # plt.title("Random Forest - Shap values 1")
-    # fig.tight_layout()
-    # plt.show()
-    # fig.savefig("C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\results\\plots\\SESSIONS\\shap-beaswarm-1-top20.pdf")
+    fig = plt.figure(dpi=200)
+    shap.summary_plot(shap_values[1], x_train_features, plot_type="dot", max_display=20, show=False)
+    plt.title("Random Forest - Shap values 1")
+    fig.tight_layout()
+    plt.show()
+    fig.savefig("C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\results\\plots\\SESSIONS\\shap-beaswarm-1-top20.pdf")
     #
     # fig = plt.figure(dpi=200)
     # shap.summary_plot(shap_values[1], x_train_features, plot_type="bar", max_display=30, show=False)
@@ -543,14 +543,23 @@ def calcnewtargetposneg(row):
         else:
             return 'Pos'
 
+def calcoldtarget(row):
+    if row['f_esm_more_than_intention'] == '':
+        return 'NaN'
+    elif row['f_esm_more_than_intention'] == 'Yes':
+        return 'Yes'
+    else:
+        return 'No'
+
 # target label representing the new, user-centered RH definition.
 df_sessions['f_newtarget_rh'] = df_sessions.apply(lambda x: calcnewtarget(x), axis=1)
 # same as above, but additionally distinguishing between good and bad rabbithole
 df_sessions['f_newtarget_rh2'] = df_sessions.apply(lambda x: calcnewtargetposneg(x), axis=1)
 
+df_sessions['target_label'] = df_sessions.apply(lambda x: calcoldtarget(x), axis=1)
 
 # towards ML: filter out NaN sessions
-df_sessions = df_sessions[df_sessions['f_newtarget_rh'] != 'NaN']
+df_sessions = df_sessions[df_sessions['target_label'] != 'NaN']
 
 lstFeatures = sorted(lstFeatures)
 
@@ -570,13 +579,13 @@ dfTrain = df_sessions[df_sessions.studyID.isin(trainIDs)]
 dfVal = df_sessions[df_sessions.studyID.isin(validationIDs)]
 dfTest = df_sessions[df_sessions.studyID.isin(testIDs)]
 
-xTrain, yTrain = ML_helpers.oversampling_smote(dfTrain[lstFeatures], dfTrain["f_newtarget_rh"])
+xTrain, yTrain = ML_helpers.oversampling_smote(dfTrain[lstFeatures], dfTrain["target_label"]) #"target_label"  f_newtarget_rh
 #xTrain, yTrain = xTrain.values, yTrain.values
-xVal, yVal = ML_helpers.oversampling_smote(dfVal[lstFeatures], dfVal["f_newtarget_rh"])
+xVal, yVal = ML_helpers.oversampling_smote(dfVal[lstFeatures], dfVal["target_label"])
 #xVal, yVal = xVal.values, yVal.values
 #xTest, yTest = dfTest[lstFeatures], dfTest["target_label"]
 
-xTest, yTest  = ML_helpers.oversampling_smote(dfTest[lstFeatures], dfTest["f_newtarget_rh"])
+xTest, yTest  = ML_helpers.oversampling_smote(dfTest[lstFeatures], dfTest["target_label"])
 
 
 
@@ -652,7 +661,8 @@ xTest, yTest  = ML_helpers.oversampling_smote(dfTest[lstFeatures], dfTest["f_new
 #df_sessions['p_id'] = df_sessions['p_id'].apply(lambda x: abs(hash(x)) % (10 ** 8))
 
 print('ML start.')
-filename = "newdefinition"
+#filename = "newdefinition"
+filename = "atleastone_more_than_intention"
 
 #  report_all = decision_tree_classifier(x, y, filename, report_all)
 
@@ -675,4 +685,18 @@ print(metrics.accuracy_score(yTest, y_predict))
 print('ML done.')
 
 
+#### analysis throw in: app sequences
+#df_sessions['f_sequences_apps'].iloc[0]
+ds = pd.Series([])
+for index, item in df_sessions['f_sequences_apps'].items():
+    print(item)
+   # ds.append(pd.Series([[item[0][0], item[0][-1]]]))
+    ds.append(pd.Series(item[0][0]+" --- " +item[0][-1]))
 
+
+
+ds.value_counts()
+
+df_sessions['f_sequences_apps'].transform(lambda x: x[0][0]+" --- " +x[0][-1])
+
+tmp = df_sessions['f_sequences_apps'][df_sessions['f_sequences_apps']!=0].transform(lambda x: str(x[0][0])+" --- " +str(x[0][-1])).value_counts()
