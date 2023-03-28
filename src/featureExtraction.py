@@ -485,6 +485,7 @@ def get_features_for_session(df_logs, df_sessions):
                 current_app_sequence_list = []
 
     print("finished extracting features")
+
     return df_sessions, bag_of_apps_vocab
 
 

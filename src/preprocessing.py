@@ -792,6 +792,51 @@ def clean_df():
             df_sessions.at[index, 'f_demographics_age'] = df_MRH1.loc[df_qu_user, 'SD02_01']
 
 
+def calculuate_across_session_features():
+    feature_path =  fr'{dataframe_dir_ml}\user-sessions_features_all.pickle'
+    df_sessions = pd.read_pickle(feature_path)
+
+    # --- over-session features ---
+
+    # session length normalized
+    features_to_normalize = ['f_session_length',
+                             'f_time_since_last_session',
+                             'f_glances_since_last_session',
+                             'f_app_category_time_Communication',
+                             'f_app_category_time_Finance',
+                             'f_app_category_time_Internet',
+                             'f_app_category_time_System',
+                             'f_app_category_time_UNKNOWN',
+                             'f_app_category_time_Social_Media',
+                             'f_app_category_time_Health',
+                             'f_app_category_time_Settings',
+                             'f_app_category_time_Shopping',
+                             'f_app_category_time_Audio_Entertainment',
+                             'f_app_category_time_Photo',
+                             'f_app_category_time_Orientation',
+                             'f_app_category_time_Tools',
+                             'f_app_category_time_Visual_Entertainment',
+                             'f_app_category_time_Transportation',
+                             'f_app_category_time_Gaming',
+                             'f_app_category_time_Food',
+                             'f_app_category_time_Security',  'f_app_category_time_Time',
+                             'f_app_category_time_Knowledge',
+                             'f_app_category_time_News', 'f_app_category_time_Weather',
+                             'f_app_category_time_Career', 'f_app_category_time_Dating',
+                             'f_app_category_time_Reading', 'f_app_category_time_other'
+                             ]
+    for featurename in features_to_normalize:
+        usermeans = df_sessions.groupby('studyID')[featurename].mean()
+        df_sessions[featurename+"_nom"] = df_sessions.apply(lambda row : row[featurename]/usermeans[row['studyID']], axis=1)
+
+  #  df_sessions = df_sessions['f_session_length'] / df_sessions["f_session_length_nom"]
+
+
+    df_sessions.ungroup()
+    with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
+        pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
+
+
 if __name__ == '__main__':
     pd.set_option('display.max_columns', None)
 
@@ -805,7 +850,7 @@ if __name__ == '__main__':
     # preprocessing()
     #
     # # 4. Extract the features from the logs and saves it to the sessions df
-    # extract_features()
+   # extract_features()
     #
     # # 5. concat all session and features df from each user to one
     # # concat_features_dic() #old
@@ -830,7 +875,10 @@ if __name__ == '__main__':
     # # demographics_encode_age()
 
     # 11. Filter outliners
-    filter_sessions_outliners_all()
+   # filter_sessions_outliners_all()
+
+    # 11.1
+    calculuate_across_session_features()
     #
     # # 12. Only use users that completed the second questionnaire
     # filter_users()
