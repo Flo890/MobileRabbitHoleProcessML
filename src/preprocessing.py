@@ -283,17 +283,25 @@ def filter_sessions_outliners_all():
     sns.boxplot(df_all_sessions['f_session_length'])
     plt.show()
 
-    # quantile LIMIT --------------------------------------
-    upper_limit = df_all_sessions['f_session_length'].quantile(0.996)  # bis 5.5h bei 0.995 bis 3.5h
-    lower_limit = df_all_sessions['f_session_length'].quantile(0.01)
+    # remove sessions without app
+    df_all_sessions_filtered1 = df_all_sessions[df_all_sessions['f_sequences_apps'].notnull()]
 
-    df_sessions_filtered = df_all_sessions[(df_all_sessions['f_session_length'] <= upper_limit) & (df_all_sessions['f_session_length'] >= lower_limit)]
+    # zscore https://medium.com/clarusway/z-score-and-how-its-used-to-determine-an-outlier-642110f3b482
+    df_all_sessions_filtered1['zscore'] = (df_all_sessions_filtered1['f_session_length'] - df_all_sessions_filtered1['f_session_length'].mean()) / df_all_sessions_filtered1['f_session_length'].std(ddof=0)
+    df_all_sessions_filtered1["is_outlier"] = (abs(df_all_sessions_filtered1["zscore"])>3).astype(int) # = sessions longer than 50 minutes
+    df_sessions_filtered = df_all_sessions_filtered1[(df_all_sessions_filtered1['is_outlier'] == 0)]
+
+    # quantile LIMIT --------------------------------------
+  #  upper_limit = df_all_sessions['f_session_length'].quantile(0.996)  # bis 5.5h bei 0.995 bis 3.5h
+   # lower_limit = df_all_sessions['f_session_length'].quantile(0.01)
+
+   # df_sessions_filtered = df_all_sessions[(df_all_sessions['f_session_length'] <= upper_limit) & (df_all_sessions['f_session_length'] >= lower_limit)]
     print(type(df_sessions_filtered))
     sns.boxplot(df_sessions_filtered['f_session_length'])
     plt.show()
 
-    print(upper_limit)
-    print(lower_limit)
+#    print(upper_limit)
+#    print(lower_limit)
 
     with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
         pickle.dump(df_sessions_filtered, f, pickle.HIGHEST_PROTOCOL)
