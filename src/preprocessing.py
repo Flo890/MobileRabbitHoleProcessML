@@ -10,7 +10,7 @@ import extractSessions
 import featureExtraction
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+from statsmodels import robust
 from sklearn.preprocessing import OneHotEncoder
 
 raw_data_user = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData\live\2022-04-27T20 20 31Z_absentmindedtrack-default-rtdb_data.json.gz'
@@ -24,7 +24,7 @@ dataframe_dir_live = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\data
 dataframe_dir_users = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users'
 dataframe_dir_ml = r'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_ml'
 dataframe_dir_sessions = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions'
-dataframe_dir_sessions_features = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\sessions_features'
+dataframe_dir_sessions_features = r'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_with_features'
 dataframe_dir_bagofapps_vocab = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\bag_of_apps_vocabs'
 
 dataframe_dir_live_logs_sorted = r'D:\usersorted_logs_preprocessed'
@@ -280,14 +280,23 @@ def filter_sessions_outliners_all():
 
     # sns.distplot(df_session_features['f_session_length'] / pd.Timedelta(milliseconds=1))
     # plt.show()
-    sns.boxplot(df_all_sessions['f_session_length'])
-    plt.show()
+#    sns.histplot(df_all_sessions['f_session_length'])
+  #  plt.show()
 
+    df_all_sessions_s = df_all_sessions['f_session_length']
     # remove sessions without app
-    df_all_sessions_filtered1 = df_all_sessions[df_all_sessions['f_sequences_apps'].notnull()]
+    df_all_sessions_filtered1 = df_all_sessions#[df_all_sessions['f_sequences_apps'].notnull()]
 
     # zscore https://medium.com/clarusway/z-score-and-how-its-used-to-determine-an-outlier-642110f3b482
-    df_all_sessions_filtered1['zscore'] = (df_all_sessions_filtered1['f_session_length'] - df_all_sessions_filtered1['f_session_length'].mean()) / df_all_sessions_filtered1['f_session_length'].std(ddof=0)
+    # https://stats.stackexchange.com/questions/16822/how-to-log-transform-z-scores
+    df_all_sessions_filtered1['f_session_length_log'] = np.log(df_all_sessions_filtered1['f_session_length']+1)
+    df_all_sessions_filtered1['zscore'] = (df_all_sessions_filtered1['f_session_length_log'] - df_all_sessions_filtered1['f_session_length_log'].mean()) / df_all_sessions_filtered1['f_session_length_log'].std(ddof=0)
+    # https://towardsdatascience.com/outlier-detection-part1-821d714524c
+    # https://www.statology.org/median-absolute-deviation-in-python/
+    df_all_sessions_filtered1['zscore_mod'] = (df_all_sessions_filtered1['f_session_length_log'] -
+                                           df_all_sessions_filtered1['f_session_length_log'].mean()) / \
+                                          robust.mad(df_all_sessions_filtered1['f_session_length_log'])
+
     df_all_sessions_filtered1["is_outlier"] = (abs(df_all_sessions_filtered1["zscore"])>3).astype(int) # = sessions longer than 50 minutes
     df_sessions_filtered = df_all_sessions_filtered1[(df_all_sessions_filtered1['is_outlier'] == 0)]
 
@@ -296,14 +305,14 @@ def filter_sessions_outliners_all():
    # lower_limit = df_all_sessions['f_session_length'].quantile(0.01)
 
    # df_sessions_filtered = df_all_sessions[(df_all_sessions['f_session_length'] <= upper_limit) & (df_all_sessions['f_session_length'] >= lower_limit)]
-    print(type(df_sessions_filtered))
-    sns.boxplot(df_sessions_filtered['f_session_length'])
+ #   print(type(df_sessions_filtered))
+    plt.hist(df_sessions_filtered['f_session_length_log'])
     plt.show()
 
 #    print(upper_limit)
 #    print(lower_limit)
 
-    with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
+    with open(fr'{dataframe_dir_ml}\user-sessions_features_all_of.pickle', 'wb') as f:
         pickle.dump(df_sessions_filtered, f, pickle.HIGHEST_PROTOCOL)
 
 
@@ -444,12 +453,13 @@ def one_hot_encoding_scilearn():
     One-hot-encode features using scilearn OneHotEncoder
     :return:
     """
-    print('on hot encoding scilearn')
+    print('one hot encoding scilearn')
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
     df_sessions = df_sessions.replace(r'^\s*$', np.nan, regex=True)
     enc = OneHotEncoder(handle_unknown='ignore')
 
-    to_encode = ['f_demographics_gender', 'f_esm_finished_intention', 'f_esm_more_than_intention', 'f_esm_emotion', 'f_esm_track_of_time', 'f_esm_track_of_space', 'f_esm_regret', 'f_esm_agency',
+    to_encode = ['f_demographics_gender',
+         'f_esm_finished_intention', 'f_esm_more_than_intention', 'f_esm_emotion', 'f_esm_track_of_time', 'f_esm_track_of_space', 'f_esm_regret', 'f_esm_agency',
                  'f_hour_of_day', 'f_weekday']
 
     for column in to_encode:
@@ -569,10 +579,20 @@ def convert_timedeletas():
     print('convert timedeltas')
     df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
 
-    df_sessions.dropna(subset=['f_session_length'], inplace=True)
-    df_sessions.reset_index(drop=True, inplace=True)
+    # df_sessions.dropna(subset=['f_session_length'], inplace=True)
+    # df_sessions.reset_index(drop=True, inplace=True)
+    #
+    # def maybe_convert(x):
+    #     try:
+    #         return round(x.total_seconds())
+    #     except AttributeError:
+    #         return x
+    #
+    #
+    # df_sessions['f_session_length'] = df_sessions['f_session_length'].apply(maybe_convert)
 
-    df_sessions['f_session_length'] = df_sessions['f_session_length'].apply(lambda x: round(x.total_seconds() * 1000))
+    # overwrite f_session_length because it has errors (some values in milliseconds, some in seconds)
+    df_sessions['f_session_length'] = df_sessions['session_length'].apply(lambda t : t.total_seconds())
 
     with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
@@ -793,7 +813,7 @@ def clean_df():
 
 
 def calculuate_across_session_features():
-    feature_path =  fr'{dataframe_dir_ml}\user-sessions_features_all.pickle'
+    feature_path =  fr'{dataframe_dir_ml}\user-sessions_features_all_of.pickle'
     df_sessions = pd.read_pickle(feature_path)
 
     # --- over-session features ---
@@ -854,28 +874,28 @@ if __name__ == '__main__':
     #
     # # 5. concat all session and features df from each user to one
     # # concat_features_dic() #old
-    # concat_sessions()
-    #
-    # # 6. Create the bag of apps for each sessions (using all session df)
-    # bag_of_apps_create_vocab()
-    # bag_of_apps_create_bags()
-    #
-    # # 7. Convert timedeltas to milliseconds and drop unused columns
-    # drop_sequences()
-    # convert_timedeletas()
-    #
-    # #  Filter the session to give an overview over sessions with esm
-    # # filter_sessions_esm_user_based()
-    #
-    # # 10. On hot encode colums like esm
-    # # one_hot_encoding_dummies()
-    # one_hot_encoding_scilearn()
-    #
-    # # Bag and endcode demograpgics age
-    # # demographics_encode_age()
+#    concat_sessions()
+
+    # 6. Create the bag of apps for each sessions (using all session df)
+#    bag_of_apps_create_vocab()
+#    bag_of_apps_create_bags()
+
+    # 7. Convert timedeltas to milliseconds and drop unused columns
+#    drop_sequences()
+    convert_timedeletas()
+
+    # Filter the session to give an overview over sessions with esm
+    ## filter_sessions_esm_user_based()
+
+    # 10. On hot encode colums like esm
+    ## one_hot_encoding_dummies()
+   # one_hot_encoding_scilearn()
+
+    # Bag and endcode demograpgics age
+    ## demographics_encode_age()
 
     # 11. Filter outliners
-   # filter_sessions_outliners_all()
+    filter_sessions_outliners_all()
 
     # 11.1
     calculuate_across_session_features()
