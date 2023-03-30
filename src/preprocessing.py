@@ -28,7 +28,7 @@ dataframe_dir_sessions_features = r'C:\projects\rabbithole\RabbitHoleProcess\dat
 dataframe_dir_bagofapps_vocab = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\bag_of_apps_vocabs'
 
 dataframe_dir_live_logs_sorted = r'D:\usersorted_logs_preprocessed'
-questionnaires_dir = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\rawData'
+questionnaires_dir = r'C:\projects\rabbithole\RabbitHoleProcess\data\rawData'
 
 dataframe_dir_ml_labeled = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data'
 clean_users_dir_path = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users'
@@ -283,9 +283,12 @@ def filter_sessions_outliners_all():
 #    sns.histplot(df_all_sessions['f_session_length'])
   #  plt.show()
 
-    df_all_sessions_s = df_all_sessions['f_session_length']
+    # filter duplicates
+    df_all_sessions_filtered1 = df_all_sessions[df_all_sessions['target_label'].notna()]
+
+   # df_all_sessions_s = df_all_sessions['f_session_length']
     # remove sessions without app
-    df_all_sessions_filtered1 = df_all_sessions#[df_all_sessions['f_sequences_apps'].notnull()]
+  #  df_all_sessions_filtered1 = df_all_sessions#[df_all_sessions['f_sequences_apps'].notnull()]
 
     # zscore https://medium.com/clarusway/z-score-and-how-its-used-to-determine-an-outlier-642110f3b482
     # https://stats.stackexchange.com/questions/16822/how-to-log-transform-z-scores
@@ -873,43 +876,43 @@ if __name__ == '__main__':
     #
     # # 5. concat all session and features df from each user to one
     # # concat_features_dic() #old
-#    concat_sessions()
-
-    # 6. Create the bag of apps for each sessions (using all session df)
-#    bag_of_apps_create_vocab()
-#    bag_of_apps_create_bags()
-
-    # 7. Convert timedeltas to milliseconds and drop unused columns
-# #    drop_sequences()
-#     convert_timedeletas()
-#
-#     # Filter the session to give an overview over sessions with esm
-#     ## filter_sessions_esm_user_based()
-#
-#     # 10. On hot encode colums like esm
-#     ## one_hot_encoding_dummies()
-#    # one_hot_encoding_scilearn()
-#
-#     # Bag and endcode demograpgics age
-#     ## demographics_encode_age()
-
-    # 11. Filter outliners
-    filter_sessions_outliners_all()
+   #  concat_sessions()
+   #
+   # # 6. Create the bag of apps for each sessions (using all session df)
+   # # bag_of_apps_create_vocab()
+   # # bag_of_apps_create_bags()
+   #
+   # # 7. Convert timedeltas to milliseconds and drop unused columns
+   #  #    drop_sequences()
+   #  convert_timedeletas()
+   #
+   #  # Filter the session to give an overview over sessions with esm
+   #  ## filter_sessions_esm_user_based()
+   #
+   #  # 10. On hot encode colums like esm
+   #  ## one_hot_encoding_dummies()
+   # # one_hot_encoding_scilearn()
+   #
+   #  # Bag and endcode demograpgics age
+   #  ## demographics_encode_age()
+   #
+   #  # 11. Filter outliners
+   #  filter_sessions_outliners_all()
 
     # 11.1
-    calculuate_across_session_features()
+    calculuate_across_session_features()    # TODO continue in here , throws some error
     #
-    # # 12. Only use users that completed the second questionnaire
-    # filter_users()
-    #
-    # # 13. reduce feautre dimension by grouping columns together
-    # reduce_feature_dimension()
-    #
-    # # 13. create labels as targets (only works with onhot encoded data)
-    # create_labels_single()
-    # # labeling_combined()
-    #
-    # # 14. If needed - remove personal features like age, gender or absentminded/general use scores
-    # remove_personalised_features()
+    # 12. Only use users that completed the second questionnaire
+    filter_users()
 
-    # clean_df()
+    # 13. reduce feautre dimension by grouping columns together
+    reduce_feature_dimension()
+
+    # 13. create labels as targets (only works with onhot encoded data)
+    create_labels_single()
+    # labeling_combined()
+
+    # 14. If needed - remove personal features like age, gender or absentminded/general use scores
+    remove_personalised_features()
+
+    clean_df()

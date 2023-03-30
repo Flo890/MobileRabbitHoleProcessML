@@ -428,6 +428,7 @@ report_all = pd.DataFrame()
 
 # path = fr'/data/user-sessions_features_all_labled_more_than_intention_normal_age_no_esm_no_personal.pickle'
 path = fr'../../RabbitHoleProcess/data/dataframes/sessions_with_features/all_sessions_with_features.pickle'
+# TODO rather read from C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_ml\user-sessions_features_all_f_reduction.pickle
 
 print(f'###################  target: {path}   #############################')  # , file=f)
 df_sessions = pd.read_pickle(path)
