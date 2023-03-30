@@ -843,7 +843,7 @@ def calculuate_across_session_features():
                              'f_app_category_time_Knowledge',
                              'f_app_category_time_News', 'f_app_category_time_Weather',
                              'f_app_category_time_Career', 'f_app_category_time_Dating',
-                             'f_app_category_time_Reading', 'f_app_category_time_other'
+                             'f_app_category_time_Reading'
                              ]
     for featurename in features_to_normalize:
         usermeans = df_sessions.groupby('studyID')[featurename].mean()
@@ -852,7 +852,6 @@ def calculuate_across_session_features():
   #  df_sessions = df_sessions['f_session_length'] / df_sessions["f_session_length_nom"]
 
 
-    df_sessions.ungroup()
     with open(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
@@ -881,18 +880,18 @@ if __name__ == '__main__':
 #    bag_of_apps_create_bags()
 
     # 7. Convert timedeltas to milliseconds and drop unused columns
-#    drop_sequences()
-    convert_timedeletas()
-
-    # Filter the session to give an overview over sessions with esm
-    ## filter_sessions_esm_user_based()
-
-    # 10. On hot encode colums like esm
-    ## one_hot_encoding_dummies()
-   # one_hot_encoding_scilearn()
-
-    # Bag and endcode demograpgics age
-    ## demographics_encode_age()
+# #    drop_sequences()
+#     convert_timedeletas()
+#
+#     # Filter the session to give an overview over sessions with esm
+#     ## filter_sessions_esm_user_based()
+#
+#     # 10. On hot encode colums like esm
+#     ## one_hot_encoding_dummies()
+#    # one_hot_encoding_scilearn()
+#
+#     # Bag and endcode demograpgics age
+#     ## demographics_encode_age()
 
     # 11. Filter outliners
     filter_sessions_outliners_all()
