@@ -580,7 +580,7 @@ if __name__ == '__main__':
     path_list = pathlib.Path(r'C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_with_features').glob('**/*.pickle')
     #  path_list = pathlib.Path(r'C:\Users\florianb\Downloads').glob('**/*.pickle')
 
-    # TODO read from C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_ml\user-sessions_features_all_f_reduction.pickle
+    # TODO read from {dataframe_dir_ml_labeled}\sessions_features_labeled_more_than_intention_with_esm.pickle
 
     df_list = []
     for data_path in path_list:
@@ -615,6 +615,7 @@ if __name__ == '__main__':
 
    # df_sessions_all_labeled = pd.read_pickle(path)
     df_rabbitHole = get_rabbitHoleSessions(df_sessions_all_labeled)
+    df_no_rabbitHole = get_NotRabbitHoleSessions(df_sessions_all_labeled)
     df_no_rabbitHole = get_NotRabbitHoleSessions(df_sessions_all_labeled)
 
  #   rh_analyze_intentions(df_rabbitHole)

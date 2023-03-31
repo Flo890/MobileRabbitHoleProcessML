@@ -426,9 +426,8 @@ pd.set_option('display.max_columns', None)
 
 report_all = pd.DataFrame()
 
-# path = fr'/data/user-sessions_features_all_labled_more_than_intention_normal_age_no_esm_no_personal.pickle'
-path = fr'../../RabbitHoleProcess/data/dataframes/sessions_with_features/all_sessions_with_features.pickle'
-# TODO rather read from C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_ml\user-sessions_features_all_f_reduction.pickle
+# path = fr'/data/user-sessions_features_all_labled_more_than_intention_normal_age_no_esm_no_personal.pickle' <- MobileHCI'23 submission
+path = fr'{dataframe_dir_ml_labeled}\sessions_features_labeled_more_than_intention_with_esm.pickle' # <- MobileHCI'23 revision
 
 print(f'###################  target: {path}   #############################')  # , file=f)
 df_sessions = pd.read_pickle(path)
@@ -552,10 +551,10 @@ def calcoldtarget(row):
     else:
         return 'No'
 
-# target label representing the new, user-centered RH definition.
-df_sessions['f_newtarget_rh'] = df_sessions.apply(lambda x: calcnewtarget(x), axis=1)
-# same as above, but additionally distinguishing between good and bad rabbithole
-df_sessions['f_newtarget_rh2'] = df_sessions.apply(lambda x: calcnewtargetposneg(x), axis=1)
+# # target label representing the new, user-centered RH definition.
+# df_sessions['f_newtarget_rh'] = df_sessions.apply(lambda x: calcnewtarget(x), axis=1)
+# # same as above, but additionally distinguishing between good and bad rabbithole
+# df_sessions['f_newtarget_rh2'] = df_sessions.apply(lambda x: calcnewtargetposneg(x), axis=1)
 
 df_sessions['target_label'] = df_sessions.apply(lambda x: calcoldtarget(x), axis=1)
 
@@ -686,18 +685,18 @@ print(metrics.accuracy_score(yTest, y_predict))
 print('ML done.')
 
 
-#### analysis throw in: app sequences
-#df_sessions['f_sequences_apps'].iloc[0]
-ds = pd.Series([])
-for index, item in df_sessions['f_sequences_apps'].items():
-    print(item)
-   # ds.append(pd.Series([[item[0][0], item[0][-1]]]))
-    ds.append(pd.Series(item[0][0]+" --- " +item[0][-1]))
-
-
-
-ds.value_counts()
-
-df_sessions['f_sequences_apps'].transform(lambda x: x[0][0]+" --- " +x[0][-1])
-
-tmp = df_sessions['f_sequences_apps'][df_sessions['f_sequences_apps']!=0].transform(lambda x: str(x[0][0])+" --- " +str(x[0][-1])).value_counts()
+# #### analysis throw in: app sequences
+# #df_sessions['f_sequences_apps'].iloc[0]
+# ds = pd.Series([])
+# for index, item in df_sessions['f_sequences_apps'].items():
+#     print(item)
+#    # ds.append(pd.Series([[item[0][0], item[0][-1]]]))
+#     ds.append(pd.Series(item[0][0]+" --- " +item[0][-1]))
+#
+#
+#
+# ds.value_counts()
+#
+# df_sessions['f_sequences_apps'].transform(lambda x: x[0][0]+" --- " +x[0][-1])
+#
+# tmp = df_sessions['f_sequences_apps'][df_sessions['f_sequences_apps']!=0].transform(lambda x: str(x[0][0])+" --- " +str(x[0][-1])).value_counts()

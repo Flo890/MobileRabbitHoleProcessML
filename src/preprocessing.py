@@ -30,7 +30,7 @@ dataframe_dir_bagofapps_vocab = r'M:\+Dokumente\PycharmProjects\RabbitHoleProces
 dataframe_dir_live_logs_sorted = r'D:\usersorted_logs_preprocessed'
 questionnaires_dir = r'C:\projects\rabbithole\RabbitHoleProcess\data\rawData'
 
-dataframe_dir_ml_labeled = f'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\ML\labled_data'
+dataframe_dir_ml_labeled = r'C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_ml\labled_data'
 clean_users_dir_path = r'M:\+Dokumente\PycharmProjects\RabbitHoleProcess\data\dataframes\users'
 
 
@@ -312,6 +312,9 @@ def filter_sessions_outliners_all():
     plt.hist(df_sessions_filtered['f_session_length_log'])
     plt.show()
 
+    # cleanup
+    df_sessions_filtered = df_sessions_filtered.drop(columns=['f_session_length_log', 'zscore','is_outlier','zscore_mod'])
+
 #    print(upper_limit)
 #    print(lower_limit)
 
@@ -325,20 +328,27 @@ def create_labels_single():
     """
     print('create label')
 
-    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all.pickle')
+    # TODO effect of this function is overwritten in gridsearch-session anyway
+
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml}\user-sessions_features_all_f_reduction.pickle')
     df_sessions.reset_index(drop=True, inplace=True)
     rh = 'rabbit_hole'
     no_rh = 'no_rabbithole'
 
-    df_sessions.insert(6, 'target_label', '')
+    df_sessions = df_sessions.drop(
+        columns=['f_session_length_log', 'zscore', 'is_outlier', 'zscore_mod']) # TODO remove this after exec -> is moved to outlier method
+
+  #  df_sessions.insert(6, 'target_label', '')
 
     for index, session in enumerate(df_sessions.itertuples(index=False)):
 
         # ['f_esm_intention', 'f_esm_finished_intention', 'f_esm_more_than_intention', 'f_esm_track_of_time', 'f_esm_track_of_space', 'f_esm_emotion', 'f_esm_regret', 'f_esm_agency']
-        if df_sessions.loc[index, 'f_esm_more_than_intention_Yes'] == 1:
+        if df_sessions.loc[index, 'f_esm_more_than_intention'] == "Yes":
             df_sessions.at[index, 'target_label'] = rh
-        else:
+        elif df_sessions.loc[index, 'f_esm_more_than_intention'] == "No":
             df_sessions.at[index, 'target_label'] = no_rh
+        else:
+            df_sessions.at[index, 'target_label'] = np.nan
 
     # df_sessions = drop_esm_features(df_sessions)
 
@@ -898,21 +908,21 @@ if __name__ == '__main__':
    #
    #  # 11. Filter outliners
    #  filter_sessions_outliners_all()
-
-    # 11.1
-    calculuate_across_session_features()    # TODO continue in here , throws some error
-    #
-    # 12. Only use users that completed the second questionnaire
-    filter_users()
-
-    # 13. reduce feautre dimension by grouping columns together
-    reduce_feature_dimension()
+   #
+   #  # 11.1
+   #  calculuate_across_session_features()
+   #  #
+   #  # 12. Only use users that completed the second questionnaire
+   #  filter_users()
+   #
+   #  # 13. reduce feautre dimension by grouping columns together
+   #  reduce_feature_dimension()
 
     # 13. create labels as targets (only works with onhot encoded data)
     create_labels_single()
-    # labeling_combined()
-
-    # 14. If needed - remove personal features like age, gender or absentminded/general use scores
-    remove_personalised_features()
-
-    clean_df()
+    # # labeling_combined()
+    #
+    # # 14. If needed - remove personal features like age, gender or absentminded/general use scores
+    # remove_personalised_features()
+    #
+    # clean_df()

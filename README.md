@@ -34,3 +34,11 @@ One line per unlock/lock session, one column per generated feature. Includes col
 `C:\\Users\\florianb\\Downloads\\AN23GE.pickle` <- one example
 `D:\usersorted_logs_preprocessed\\AN23GE.pickle` <- all
 One line per sensing event log (further data on Flo's external HDD due to lack of storage)
+
+
+## MobileHCI'23 Workflow:
+
+- run preprocessing.py (uncomment the stuff you want in the bottom of the file)
+- run gridsearch-sessions.py
+
+The DescriptiveStatsNew.py file might be used for some descriptive analyses
