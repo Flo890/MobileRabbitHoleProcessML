@@ -356,6 +356,41 @@ def create_labels_single():
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
 
+def filter_users_to_really_final_dataset():
+    def calcoldtarget(row):
+        if row['f_esm_more_than_intention'] == '':
+            return pd.NA
+        elif row['f_esm_more_than_intention'] == 'Yes':
+            return 'rabbit_hole'
+        else:
+            return 'no_rabbithole'
+
+    df_sessions = pd.read_pickle(fr'{dataframe_dir_ml_labeled}\sessions_features_labeled_more_than_intention_with_esm.pickle')
+
+    # # target label representing the new, user-centered RH definition.
+    # df_sessions['f_newtarget_rh'] = df_sessions.apply(lambda x: calcnewtarget(x), axis=1)
+    # # same as above, but additionally distinguishing between good and bad rabbithole
+    # df_sessions['f_newtarget_rh2'] = df_sessions.apply(lambda x: calcnewtargetposneg(x), axis=1)
+
+    df_sessions['target_label'] = df_sessions.apply(lambda x: calcoldtarget(x), axis=1)
+
+    # towards ML: filter out NaN sessions
+   # df_sessions = df_sessions[df_sessions['target_label'] != 'NaN']  # keep sessions without target_label...
+    # ... but remove the users that have no labels at all
+    df_sessions = df_sessions[df_sessions.studyID != 'AY1221']
+    df_sessions = df_sessions[df_sessions.studyID != 'LE13FO']
+    df_sessions = df_sessions[df_sessions.studyID != 'ZA23PA']
+    # ... or have no questionnaire data
+    df_sessions = df_sessions[df_sessions.studyID != 'BR22NO']
+
+    df_sessions = df_sessions[~df_sessions['f_session_length'].isnull()]
+
+    with open(r'C:\projects\rabbithole\RabbitHoleProcess\data\really_final_dataset_mobilehci23_revision.pickle', 'wb') as f:
+        pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
+
+    df_sessions.to_csv(r"C:\projects\rabbithole\RabbitHoleProcess\data\really_final_dataset_mobilehci23_revision.csv", sep=";")
+
+
 def labeling_combined():
     """
     Label the session with a target class, using a combination of features as target
@@ -907,7 +942,7 @@ if __name__ == '__main__':
    #  ## demographics_encode_age()
    #
    #  # 11. Filter outliners
-   #  filter_sessions_outliners_all()
+   # filter_sessions_outliners_all()
    #
    #  # 11.1
    #  calculuate_across_session_features()
@@ -919,7 +954,10 @@ if __name__ == '__main__':
    #  reduce_feature_dimension()
 
     # 13. create labels as targets (only works with onhot encoded data)
-    create_labels_single()
+    # create_labels_single()
+
+    filter_users_to_really_final_dataset()
+
     # # labeling_combined()
     #
     # # 14. If needed - remove personal features like age, gender or absentminded/general use scores

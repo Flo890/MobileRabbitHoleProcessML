@@ -574,62 +574,101 @@ def rh_analyze_demographics_bins(df_rh):
     plt.show()
 
 
+def analyze_esm_new(df):
+    print("Hallo")
+
+    df_sessions.groupby("f_esm_intention").count()
+
+    # number of sessions per user:
+    df_sessions.groupby('studyID').agg('count')['session_id'].mean()
+
+    # means, u.a. session_length
+    df_sessions.mean()
+#    df_sessions[]
+
+    df_sessions['f_number_apps'] = pd.Series()
+    for index, row in df.iterrows():
+        # TODO continue here mit app counts pro session
+        try:
+            df_sessions['f_number_apps'][index] = len(df_sessions['f_sequences_apps'][index][0])
+        except TypeError:
+            df_sessions['f_number_apps'][index] = 0
+     #   df_sessions['f_sequences_apps'].apply(lambda row: len(row), axis=1)
+
+    df_sessions.mean()
+    #df_sessions['apps_count'] = len(df_sessions['f_sequences_apps'][0][0])
+
+    df_sessions_rh = df_sessions[df_sessions["target_label"] == "rabbit_hole"]
+    df_sessions_rh.groupby("f_esm_regret").count()
+    # regret / negative sessions: die zählen wo 4.0 5.0 6.0 7.0
+
 if __name__ == '__main__':
 
     ## select all sessions with features (not grouped) and bind them into one df
     path_list = pathlib.Path(r'C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_with_features').glob('**/*.pickle')
     #  path_list = pathlib.Path(r'C:\Users\florianb\Downloads').glob('**/*.pickle')
 
-    # TODO read from {dataframe_dir_ml_labeled}\sessions_features_labeled_more_than_intention_with_esm.pickle
+    # # old stuff:
+    # df_list = []
+    # for data_path in path_list:
+    #     df_sessions_auser = pd.read_pickle(
+    #         f'C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_with_features\\{data_path.stem}.pickle')
+    #     df_list.append(df_sessions_auser)
+    #
+    # df_sessions = pd.concat(df_list)
 
-    df_list = []
-    for data_path in path_list:
-        df_sessions_auser = pd.read_pickle(
-            f'C:\\projects\\rabbithole\\RabbitHoleProcess\\data\\dataframes\\sessions_with_features\\{data_path.stem}.pickle')
-        df_list.append(df_sessions_auser)
-
-    df_sessions = pd.concat(df_list)
+    # the new (data file)
+    df_sessions = pd.read_pickle(f'../../RabbitHoleProcess/data/really_final_dataset_mobilehci23_revision.pickle')
 
     rh = 'rabbit_hole'
     no_rh = 'no_rabbithole'
 
   #  df_sessions.insert(6, 'target_label', '')
 
-    df_sessions['target_label'] = df_sessions.apply(lambda row: rh if row.f_esm_more_than_intention == 'Yes' else no_rh, axis=1)
-    df_sessions_all_labeled = df_sessions
+    # df_sessions['target_label'] = df_sessions.apply(lambda row: rh if row.f_esm_more_than_intention == 'Yes' else no_rh, axis=1)
+    # df_sessions_all_labeled = df_sessions
 
- #   df_length = df_rh['f_session_length'].apply(lambda x: (x / 1000) / 60)
 
-    df_sessions_all_labeled['f_session_length'].apply(lambda x: (x / 1000) / 60)
+    df_sessions = df_sessions.drop(['session_length'], axis=1)  # f_session_length exists instead (numeric)
+    df_sessions = df_sessions.fillna(0)
+
+    #   df_length = df_rh['f_session_length'].apply(lambda x: (x / 1000) / 60)
+
+    # df_sessions_all_labeled['f_session_length'].apply(lambda x: (x / 1000) / 60)
 
    # df_sessions_all_labeled['f_session_length'] = df_sessions_all_labeled['f_session_length'].apply(lambda x: (x /1)).apply(lambda x: x.total_seconds())
 
     # filter out app features
-    df_sessions_all_labeled = df_sessions_all_labeled.loc[:, [col for col in df_sessions_all_labeled.columns if not ('f_app_' in col and not 'f_app_category_' in col)]]
-    df_sessions_all_labeled = df_sessions_all_labeled.loc[:, [col for col in df_sessions_all_labeled.columns if not ('f_clicks_' in col and not 'f_clicks_app_category_' in col)]]
-    df_sessions_all_labeled = df_sessions_all_labeled.loc[:, [col for col in df_sessions_all_labeled.columns if not ('f_scrolls_' in col and not 'f_scrolls_app_category_' in col)]]
-
-    df_sessions_all_labeled.to_csv(r"C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_with_features\all_sessions_with_features_2k23.csv",sep=";")
-    print('saved df_sessions_all_labeled to csv.')
-    df_sessions_all_labeled.to_pickle(r"C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_with_features\all_sessions_with_features_2k23.pickle")
+    # df_sessions_all_labeled = df_sessions_all_labeled.loc[:, [col for col in df_sessions_all_labeled.columns if not ('f_app_' in col and not 'f_app_category_' in col)]]
+    # df_sessions_all_labeled = df_sessions_all_labeled.loc[:, [col for col in df_sessions_all_labeled.columns if not ('f_clicks_' in col and not 'f_clicks_app_category_' in col)]]
+    # df_sessions_all_labeled = df_sessions_all_labeled.loc[:, [col for col in df_sessions_all_labeled.columns if not ('f_scrolls_' in col and not 'f_scrolls_app_category_' in col)]]
+    #
+    df_sessions.to_csv(r"../../RabbitHoleProcess/data/dataframes/sessions_ml/labled_data\sessions_features_labeled_more_than_intention_with_esm.csv",sep=";")
+  #  print('saved df_sessions_all_labeled to csv.')
+  #  df_sessions_all_labeled.to_pickle(r"C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_with_features\all_sessions_with_features_2k23.pickle")
 
    # df_sessions_all_labeled = pd.read_pickle(path)
-    df_rabbitHole = get_rabbitHoleSessions(df_sessions_all_labeled)
-    df_no_rabbitHole = get_NotRabbitHoleSessions(df_sessions_all_labeled)
-    df_no_rabbitHole = get_NotRabbitHoleSessions(df_sessions_all_labeled)
+ #   df_rabbitHole = get_rabbitHoleSessions(df_sessions_all_labeled)
+  #  df_no_rabbitHole = get_NotRabbitHoleSessions(df_sessions_all_labeled)
 
- #   rh_analyze_intentions(df_rabbitHole)
+    analyze_esm_new(df_sessions)
+
+    rh_analyze_intentions(df_sessions)
 
   #  rh_analyze_context(df_rabbitHole)
   #  rh_analyze_context(df_no_rabbitHole)
 
-    rh_analyze_sessionlenghts(df_no_rabbitHole)
+#     rh_analyze_sessionlenghts(df_no_rabbitHole)
+#
+#     plot_esm_count(df_rabbitHole)
+#
+# #    rh_analyze_apps(df_rabbitHole)
+#
+#     analyze_per_user(df_rabbitHole)
+#
+#     # rh_analyze_demographics(df_rabbitHole)
+#
+#     analyze_esm_features(df_no_rabbitHole)
 
-    # rh_analyze_apps(df_rabbitHole)
-
-    # analyze_per_user(df_rabbitHole)
-
-    # rh_analyze_demographics(df_rabbitHole)
-
-    # analyze_esm_features(df_no_rabbitHole)
+    print("Done.")
 

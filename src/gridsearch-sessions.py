@@ -202,16 +202,16 @@ def random_forest_classifier(x_train_features, y_train_labels, x_test_features, 
 # laut grid search result vom 12.10. beste Config:
     forest = RandomForestClassifier(
         max_features="sqrt",
-        n_estimators=100,
-        max_depth=10,
+        n_estimators=10,
+        max_depth=8,
         criterion="gini",
-        # random_state=42,
-        min_samples_leaf=4,
+        random_state=42,
+        min_samples_leaf=1,
         min_samples_split=10,
         n_jobs=10
     )
     forest.fit(x_train_features, y_train_labels)
-
+    print("number of features: "+str(len(feature_list)))
     print(forest.classes_)
 
     print("----- Report Train (Run 1) -----")
@@ -427,12 +427,15 @@ pd.set_option('display.max_columns', None)
 report_all = pd.DataFrame()
 
 # path = fr'/data/user-sessions_features_all_labled_more_than_intention_normal_age_no_esm_no_personal.pickle' <- MobileHCI'23 submission
-path = fr'{dataframe_dir_ml_labeled}\sessions_features_labeled_more_than_intention_with_esm.pickle' # <- MobileHCI'23 revision
+#path = fr'{dataframe_dir_ml_labeled}\sessions_features_labeled_more_than_intention_with_esm.pickle' # <- MobileHCI'23 revision
+
+path = r'../../RabbitHoleProcess/data/really_final_dataset_mobilehci23_revision.pickle'
 
 print(f'###################  target: {path}   #############################')  # , file=f)
 df_sessions = pd.read_pickle(path)
+df_sessions = df_sessions[df_sessions['target_label'] != 'NaN']
+df_sessions = df_sessions[~df_sessions['target_label'].isnull()]
 
-df_sessions = df_sessions[~df_sessions['f_session_length'].isnull()]
 df_sessions = df_sessions.drop(['session_length'],axis=1) # f_session_length exists instead (numeric)
 df_sessions = df_sessions.fillna(0)
 #df_sessions = df_sessions.fillna(pd.Timedelta(seconds=0))
@@ -462,6 +465,8 @@ df_sessions['f_scroll_frequency'] = df_sessions['f_scrolls'] / df_sessions['f_se
 df_sessions = df_sessions[df_sessions.studyID != 'AN09BI']
 df_sessions = df_sessions[df_sessions.studyID != 'NI23HE']
 df_sessions = df_sessions[df_sessions.studyID != 'PI02MA']
+
+
 
 lstFeatures = [
     #'f_activity_resumed_count', TODO
@@ -543,23 +548,11 @@ def calcnewtargetposneg(row):
         else:
             return 'Pos'
 
-def calcoldtarget(row):
-    if row['f_esm_more_than_intention'] == '':
-        return 'NaN'
-    elif row['f_esm_more_than_intention'] == 'Yes':
-        return 'Yes'
-    else:
-        return 'No'
 
-# # target label representing the new, user-centered RH definition.
-# df_sessions['f_newtarget_rh'] = df_sessions.apply(lambda x: calcnewtarget(x), axis=1)
-# # same as above, but additionally distinguishing between good and bad rabbithole
-# df_sessions['f_newtarget_rh2'] = df_sessions.apply(lambda x: calcnewtargetposneg(x), axis=1)
 
-df_sessions['target_label'] = df_sessions.apply(lambda x: calcoldtarget(x), axis=1)
 
-# towards ML: filter out NaN sessions
-df_sessions = df_sessions[df_sessions['target_label'] != 'NaN']
+#### the really final dataset ####
+
 
 lstFeatures = sorted(lstFeatures)
 
@@ -567,8 +560,8 @@ len(sorted(lstFeatures))
 
 ids = df_sessions['studyID'].unique()
 trainIDs = ids[:15]
-validationIDs = ids[15:20]
-testIDs = ids[20:]
+validationIDs = ids[15:18]
+testIDs = ids[18:]
 #trainIDs = ids[:13]
 #validationIDs = ids[13:20]
 #testIDs = ids[20:]
