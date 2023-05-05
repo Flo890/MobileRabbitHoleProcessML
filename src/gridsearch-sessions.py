@@ -429,7 +429,7 @@ report_all = pd.DataFrame()
 # path = fr'/data/user-sessions_features_all_labled_more_than_intention_normal_age_no_esm_no_personal.pickle' <- MobileHCI'23 submission
 #path = fr'{dataframe_dir_ml_labeled}\sessions_features_labeled_more_than_intention_with_esm.pickle' # <- MobileHCI'23 revision
 
-path = r'../../RabbitHoleProcess/data/really_final_dataset_mobilehci23_revision.pickle'
+path = r'../../RabbitHoleProcess/data/really_final_dataset_mobilehci23_revision_newdefinition.pickle'
 
 print(f'###################  target: {path}   #############################')  # , file=f)
 df_sessions = pd.read_pickle(path)
@@ -523,6 +523,8 @@ for c in df_sessions.columns:
         None
         lstFeatures.append(c)
 
+df_sessions = df_sessions.drop('target_label_posneg', axis=1)
+
 
 # new target label for MobileHCI'23
 def calcnewtarget(row):
@@ -552,7 +554,6 @@ def calcnewtargetposneg(row):
 
 
 #### the really final dataset ####
-
 
 lstFeatures = sorted(lstFeatures)
 

@@ -371,8 +371,34 @@ def filter_users_to_really_final_dataset():
     # df_sessions['f_newtarget_rh'] = df_sessions.apply(lambda x: calcnewtarget(x), axis=1)
     # # same as above, but additionally distinguishing between good and bad rabbithole
     # df_sessions['f_newtarget_rh2'] = df_sessions.apply(lambda x: calcnewtargetposneg(x), axis=1)
+    # new target label for MobileHCI'23
+    def calcnewtarget(row):
+        if row['f_esm_track_of_time'] == '':
+            return 'NaN'
+        elif float(row['f_esm_track_of_time']) < 3:  # maybe adjust this threshold
+            return 'No'
+        elif (row['f_esm_intention'] == 'No concrete intention') | (row['f_esm_more_than_intention'] == 'Yes'):
+            return 'Yes'
+        elif (row['f_esm_intention'] != '') & (row['f_esm_more_than_intention'] != ''):
+            return 'No'
+        else:
+            return 'NaN'
 
-    df_sessions['target_label'] = df_sessions.apply(lambda x: calcoldtarget(x), axis=1)
+    def calcnewtargetposneg(row):
+        if row['target_label'] != 'Yes':
+            return row['target_label']
+        else:
+            if row['f_esm_regret'] == '':
+                return 'NaN'
+            elif float(row['f_esm_regret']) >= 3:  # maybe adjust this threshold
+                return 'Neg'
+            else:
+                return 'Pos'
+
+  #  df_sessions['target_label'] = df_sessions.apply(lambda x: calcoldtarget(x), axis=1)
+    df_sessions['target_label'] = df_sessions.apply(lambda x: calcnewtarget(x), axis=1)
+    df_sessions['target_label_posneg'] = df_sessions.apply(lambda x: calcnewtargetposneg(x), axis=1)
+
 
     # towards ML: filter out NaN sessions
    # df_sessions = df_sessions[df_sessions['target_label'] != 'NaN']  # keep sessions without target_label...
@@ -385,10 +411,10 @@ def filter_users_to_really_final_dataset():
 
     df_sessions = df_sessions[~df_sessions['f_session_length'].isnull()]
 
-    with open(r'C:\projects\rabbithole\RabbitHoleProcess\data\really_final_dataset_mobilehci23_revision.pickle', 'wb') as f:
+    with open(r'C:\projects\rabbithole\RabbitHoleProcess\data\really_final_dataset_mobilehci23_revision_newdefinition.pickle', 'wb') as f:
         pickle.dump(df_sessions, f, pickle.HIGHEST_PROTOCOL)
 
-    df_sessions.to_csv(r"C:\projects\rabbithole\RabbitHoleProcess\data\really_final_dataset_mobilehci23_revision.csv", sep=";")
+    df_sessions.to_csv(r"C:\projects\rabbithole\RabbitHoleProcess\data\really_final_dataset_mobilehci23_revision_newdefinition.csv", sep=";")
 
 
 def labeling_combined():

@@ -618,7 +618,7 @@ if __name__ == '__main__':
     # df_sessions = pd.concat(df_list)
 
     # the new (data file)
-    df_sessions = pd.read_pickle(f'../../RabbitHoleProcess/data/really_final_dataset_mobilehci23_revision.pickle')
+    df_sessions = pd.read_pickle(f'../../RabbitHoleProcess/data/really_final_dataset_mobilehci23_revision_newdefinition.pickle')
 
     rh = 'rabbit_hole'
     no_rh = 'no_rabbithole'
@@ -643,7 +643,7 @@ if __name__ == '__main__':
     # df_sessions_all_labeled = df_sessions_all_labeled.loc[:, [col for col in df_sessions_all_labeled.columns if not ('f_clicks_' in col and not 'f_clicks_app_category_' in col)]]
     # df_sessions_all_labeled = df_sessions_all_labeled.loc[:, [col for col in df_sessions_all_labeled.columns if not ('f_scrolls_' in col and not 'f_scrolls_app_category_' in col)]]
     #
-    df_sessions.to_csv(r"../../RabbitHoleProcess/data/dataframes/sessions_ml/labled_data\sessions_features_labeled_more_than_intention_with_esm.csv",sep=";")
+    df_sessions.to_csv(r"../../RabbitHoleProcess/data/dataframes/sessions_ml/labled_data\sessions_features_labeled_more_than_intention_with_esm_newdefinition.csv",sep=";")
   #  print('saved df_sessions_all_labeled to csv.')
   #  df_sessions_all_labeled.to_pickle(r"C:\projects\rabbithole\RabbitHoleProcess\data\dataframes\sessions_with_features\all_sessions_with_features_2k23.pickle")
 
